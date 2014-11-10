@@ -9,14 +9,11 @@ package com.example.magegame;
 public final class Enemy_Mage extends Enemy
 {
 	private int reactTimer = 0;
+	private int rollTimer = 0;
 	private double xMoveRoll;
 	private double yMoveRoll;
-	private double sp = 0;
-	private double spMax = 1;
-	private int rollTimer = 0;
 	private int reactionTimeRating;
 	private String reaction;
-	private double abilityTimer_teleport = 0;
 	private double abilityTimer_burst = 0;
 	private double abilityTimer_powerBall = 0;
 	private boolean rolledSideways;
@@ -30,18 +27,21 @@ public final class Enemy_Mage extends Enemy
 	private double teleportAwayChooseDistance;
 	private double teleportAwayChooseX;
 	private double teleportAwayChooseY;
-	public Enemy_Mage(Controller creator)
+	public Enemy_Mage(Controller creator, int setX, int setY)
 	{
 		super();
 		mainController = creator;
-		humanType = mainController.getEnemyType();
 		visualImage = mainController.imageLibrary.mage_Image[0];
 		setImageDimensions();
 		width = 30;
 		height = 30;
-		x = 110;
-		y = 160;
+		x = setX;
+		y = setY;
+		lastPlayerX = x;
+		lastPlayerY = y;
 		speedCur = 4.5;
+		hp = (int)(3000 * mainController.getDifficultyLevelMultiplier());
+		setHpMax(hp);
 	}
 	/*
 	 * Replenishes stats, counts down timers, and checks los etc
@@ -49,54 +49,23 @@ public final class Enemy_Mage extends Enemy
 	 */
 	@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
-		sp += 0.001;
-		if(humanType==2)
-		{
-			speedCur = 3.5*(1+sp);
-		}
+		rollTimer--;
 		reactionTimeRating = mainController.getDifficultyLevel();
 		reactTimer--;
-		if(abilityTimer_teleport < 350)
-		{
-			if(humanType==2)
-			{
-				abilityTimer_teleport += mainController.getDifficultyLevelMultiplier()*(1+sp);
-			} else
-			{
-				abilityTimer_teleport += mainController.getDifficultyLevelMultiplier();
-			}
-		}
 		if(abilityTimer_burst < 500)
 		{
-			if(humanType==1)
-			{
-				abilityTimer_burst += mainController.getDifficultyLevelMultiplier()*(1+sp);
-			} else
-			{
-				abilityTimer_burst += mainController.getDifficultyLevelMultiplier();
-			}
+			abilityTimer_burst += mainController.getDifficultyLevelMultiplier();
 		}
-		if(abilityTimer_powerBall < 30)
+		if(abilityTimer_powerBall < 40)
 		{
-			if(humanType==1)
-			{
-				abilityTimer_powerBall += 3*mainController.getDifficultyLevelMultiplier()*(1+sp);
-			} else
-			{
-				abilityTimer_powerBall += 3*mainController.getDifficultyLevelMultiplier();
-			}
+			abilityTimer_powerBall += 3*Math.pow(mainController.getDifficultyLevelMultiplier(), 0.5);
 		}
-		rollTimer--;
 		if(currentFrame == 58)
 		{
 			currentFrame = 0;
 			playing = false;
-		}
-		if(sp > spMax)
-		{
-			sp = spMax;
 		}
 		if(getCheckLOSTimer() < 1)
 		{
@@ -108,12 +77,18 @@ public final class Enemy_Mage extends Enemy
 			if(getCheckLOSTimer() < 1)
 			{
 				checkLOS();
+				if(LOS)
+				{
+					lastPlayerX = mainController.player.x;
+					lastPlayerY = mainController.player.y;
+					checkedPlayerLast = false;
+				}
 				resetCheckLOSTimer();
 			}
 			checkDanger();
 			if(getPathedToHitLength() > 0)
 			{
-				if(LOS == true)
+				if(LOS)
 				{
 					frameReactionsDangerLOS();
 				}
@@ -169,7 +144,7 @@ public final class Enemy_Mage extends Enemy
 	/*
 	 * Starts counting timer until the specific reaction is performed
 	 */
-	public void setReactTimer()
+	protected void setReactTimer()
 	{
 		if(Math.random() > (reactionTimeRating / 10))
 		{
@@ -180,39 +155,24 @@ public final class Enemy_Mage extends Enemy
 			reactTimer = reactionTimeRating + 10;
 		}
 	}
-	@Override
-	public void getHit(int damage)
-	{
-		if(humanType == 3)
-		{
-			damage /= (1+sp);
-		}
-		super.getHit(damage);
-		if(deleted)
-		{
-			mainController.activity.startMenu();
-		}
-	}
 	/*
 	 * Converts reactions from Strings to integers so they can be switched through (strings were used to make code more understandable)
 	 * @return Returns reaction as an integer
 	 */
-	public int convertReactionToInt(String reaction)
+	protected int convertReactionToInt(String reaction)
 	{
 		int react = 0;
 		if(reaction.equalsIgnoreCase("Power Ball")) react = 1;
-		if(reaction.equalsIgnoreCase("Teleport Away")) react = 2;
-		if(reaction.equalsIgnoreCase("Teleport Towards")) react = 3;
-		if(reaction.equalsIgnoreCase("Roll")) react = 4;
-		if(reaction.equalsIgnoreCase("Roll Away")) react = 5;
-		if(reaction.equalsIgnoreCase("Roll Towards")) react = 6;
-		if(reaction.equalsIgnoreCase("Roll Sideways")) react = 7;
-		if(reaction.equalsIgnoreCase("Run Away")) react = 8;
-		if(reaction.equalsIgnoreCase("Power Burst")) react = 9;
+		if(reaction.equalsIgnoreCase("Roll")) react = 2;
+		if(reaction.equalsIgnoreCase("Roll Away")) react = 3;
+		if(reaction.equalsIgnoreCase("Roll Towards")) react = 4;
+		if(reaction.equalsIgnoreCase("Roll Sideways")) react = 5;
+		if(reaction.equalsIgnoreCase("Run Away")) react = 6;
+		if(reaction.equalsIgnoreCase("Power Burst")) react = 7;
 		return react;
 	}@
 	Override
-	public void frameReactionsDangerLOS()
+	protected void frameReactionsDangerLOS()
 	{
 		distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
 		if(distanceFound < 80)
@@ -250,9 +210,9 @@ public final class Enemy_Mage extends Enemy
 		{
 			frameReactionsNoDangerLOS();
 		}
-	}@
-	Override
-	public void frameReactionsDangerNoLOS()
+	}
+	@Override
+	protected void frameReactionsDangerNoLOS()
 	{
 		distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
 		if(distanceFound < 80)
@@ -268,73 +228,61 @@ public final class Enemy_Mage extends Enemy
 		}
 	}@
 	Override
-	public void frameReactionsNoDangerLOS()
+	protected void frameReactionsNoDangerLOS()
 	{
-		distanceFound = checkDistance(x, y, mainController.player.x, mainController.player.y);
-		if(distanceFound < 30)
+		double playerDistance = checkDistance(x, y, mainController.player.x, mainController.player.y);
+		if(playerDistance < 30)
 		{
-			if(playerAreaProtected == true)
+			if(playerAreaProtected == true && abilityTimer_burst > 400)
 			{
-				if(abilityTimer_powerBall >= 400)
-				{
-					setReactTimer();
-					reaction = "Power Burst";
-				}
-				else
-				{
-						if(abilityTimer_teleport >= 250)
-						{
-							setReactTimer();
-							reaction = "Teleport Away";
-						}
-						else
-						{
-							setReactTimer();
-							reaction = "Roll Away";
-						}
-				}
+				setReactTimer();
+				reaction = "Power Burst";
 			}
 			else
 			{
 				setReactTimer();
 				reaction = "Roll Away";
 			}
-		}
-		else
+		} else
 		{
-			distanceFound = checkDistance(x, y, mainController.player.x, mainController.player.y);
-			if(distanceFound < 80)
+			if(playerDistance < 80)
 			{
-				setReactTimer();
-				reaction = "Run Away";
-			}
-			else
-			{
-				if(abilityTimer_powerBall >= 50)
+				if(abilityTimer_burst > 400)
 				{
 					setReactTimer();
-					reaction = "Power Ball";
+					reaction = "Roll Towards";
+				} else if(abilityTimer_powerBall > 30)
+				{
+					releasePowerBall();
+				} else
+				{
+					setReactTimer();
+					reaction = "Roll Away";
+				}
+			} else 
+			{
+				if(abilityTimer_powerBall > 30)
+				{
+					releasePowerBall();
 				}
 			}
 		}
-	}@
-	Override
-	public void frameReactionsNoDangerNoLOS()
-	{
-		if(playerAreaProtected == true)
-		{
-			if(abilityTimer_teleport >= 250 && abilityTimer_burst >= 400)
+	}
+	@Override
+	protected void frameReactionsNoDangerNoLOS()
+	{		
+			currentFrame = 0;
+			playing = false;
+			if(mainController.getRandomInt(20) == 0)
 			{
-				setReactTimer();
-				reaction = "Teleport Towards";
+				runRandom();
 			}
-		}
 	}
 	/*
 	 * Checks whether the point given is in a mostly enclosed area
 	 * @return returns whether point is protected
 	 */
-	public boolean checkAreaProtected(double X, double Y)
+	protected boolean checkAreaProtected(double X, double Y)
 	{
 		boolean areaProtected = false;
 		areaProtectedRotation = 0;
@@ -358,7 +306,7 @@ public final class Enemy_Mage extends Enemy
 	/*
 	 * Rolls away from player
 	 */
-	public void rollAway()
+	protected void rollAway()
 	{
 		rads = Math.atan2(-(mainController.player.y - y), -(mainController.player.x - x));
 		rotation = rads * r2d;
@@ -396,7 +344,7 @@ public final class Enemy_Mage extends Enemy
 	/*
 	 * Rolls towards player
 	 */
-	public void rollTowards()
+	protected void rollTowards()
 	{
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 		rotation = rads * r2d;
@@ -405,7 +353,7 @@ public final class Enemy_Mage extends Enemy
 	/*
 	 * Rolls as close to perpendicular as possible to the player
 	 */
-	public void rollSideways()
+	protected void rollSideways()
 	{
 		rolledSideways = true;
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
@@ -452,7 +400,7 @@ public final class Enemy_Mage extends Enemy
 	/*
 	 * Rolls in the current direction to enemy is rotated
 	 */
-	public void roll()
+	protected void roll()
 	{
 		rollTimer = 11;
 		playing = true;
@@ -460,73 +408,13 @@ public final class Enemy_Mage extends Enemy
 		xMoveRoll = Math.cos(rads) * speedCur * 2.2;
 		yMoveRoll = Math.sin(rads) * speedCur * 2.2;
 	}
-	public void teleport(int newX, int newY)
-	{
-		mainController.teleportStart(x, y);
-		x = newX;
-		y = newY;
-		mainController.teleportFinish(x, y);
-	}
-	/* 
-	 * Teleports to players position
-	 */
-	public void teleportTowards()
-	{
-		if(abilityTimer_teleport > 250)
-		{
-			rotation = Math.random() * 360;
-			rads = rotation / r2d;
-			if(!mainController.player.isTeleporting())
-			{
-				teleport((int)(mainController.player.x + Math.cos(rads) * 10), (int)(mainController.player.y + Math.sin(rads) * 10));
-			}
-			setReactTimer();
-			reaction = "Power Burst";
-			abilityTimer_teleport -= 250;
-		}
-	}
-	/* 
-	 * Teleports to farthest defined teleport spot in Controller
-	 */
-	public void teleportAway()
-	{
-		if(abilityTimer_teleport > 250)
-		{
-			distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 0), mainController.getTeleportSpots(1, 0));
-			teleportAwayChooseDistance = distanceFound;
-			teleportAwayChooseX = mainController.getTeleportSpots(0, 0);
-			teleportAwayChooseY = mainController.getTeleportSpots(1, 0);
-			distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 1), mainController.getTeleportSpots(1, 1));
-			if(distanceFound > teleportAwayChooseDistance)
-			{
-				teleportAwayChooseDistance = distanceFound;
-				teleportAwayChooseX = mainController.getTeleportSpots(0, 1);
-				teleportAwayChooseY = mainController.getTeleportSpots(1, 1);
-			}
-			distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 2), mainController.getTeleportSpots(1, 2));
-			if(distanceFound > teleportAwayChooseDistance)
-			{
-				teleportAwayChooseDistance = distanceFound;
-				teleportAwayChooseX = mainController.getTeleportSpots(0, 2);
-				teleportAwayChooseY = mainController.getTeleportSpots(1, 2);
-			}
-			distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 3), mainController.getTeleportSpots(1, 3));
-			if(distanceFound > teleportAwayChooseDistance)
-			{
-				teleportAwayChooseDistance = distanceFound;
-				teleportAwayChooseX = mainController.getTeleportSpots(0, 3);
-				teleportAwayChooseY = mainController.getTeleportSpots(1, 3);
-			}
-			teleport((int) teleportAwayChooseX, (int) teleportAwayChooseY);
-			abilityTimer_teleport -= 250;
-		}
-	}
+	
 	/*
 	 * Releases stored powerBall towards player
 	 */
-	public void releasePowerBall()
+	protected void releasePowerBall()
 	{
-		if(abilityTimer_powerBall > 20)
+		if(abilityTimer_powerBall > 30)
 		{
 			playing = false;
 			currentFrame = 0;
@@ -539,11 +427,11 @@ public final class Enemy_Mage extends Enemy
 				rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 			}
 			rotation = rads * r2d;
-			mainController.createPowerBallEnemy(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 170, x, y);
-			abilityTimer_powerBall -= 20;
+			mainController.createPowerBallEnemy(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 130, x, y);
+			abilityTimer_powerBall -= 30;
 		}
 	}
-	public void powerBurst()
+	protected void powerBurst()
 	{
 		if(abilityTimer_burst > 400)
 		{
@@ -561,7 +449,7 @@ public final class Enemy_Mage extends Enemy
 	/*
 	 * Acts out stored reaction
 	 */
-	public void react()
+	protected void react()
 	{
 		switch(convertReactionToInt(reaction))
 		{
@@ -569,80 +457,57 @@ public final class Enemy_Mage extends Enemy
 			releasePowerBall();
 			break;
 		case 2:
-			teleportAway();
-			break;
-		case 3:
-			teleportTowards();
-			break;
-		case 4:
 			roll();
 			break;
-		case 5:
+		case 3:
 			rollAway();
 			break;
-		case 6:
+		case 4:
 			rollTowards();
 			break;
-		case 7:
+		case 5:
 			rollSideways();
 			if(rolledSideways == false)
 			{
-				if(abilityTimer_teleport >= 250)
-				{
-					teleportAway();
-				}
-				else
-				{
-					rollTowards();
-				}
+				rollTowards();
 			}
 			break;
-		case 8:
+		case 6:
 			runAway();
 			run();
 			break;
-		case 9:
+		case 7:
 			powerBurst();
 			break;
 		}
 	}
-	public void stun()
+	protected void stun()
 	{
         rotation =rads * r2d + 180;
-        roll();                                    
-        currentFrame = 1;
-        xMoveRoll /= 3;
-        yMoveRoll /= 3;                                    
+        rollTimer = 11;
+		playing = true;
+		xMoveRoll = Math.cos(rads) * speedCur * 0.7;
+		yMoveRoll = Math.sin(rads) * speedCur * 0.7;
+        currentFrame = 1;                                 
         reactTimer = 0;
 	}
-	public int getReactTimer() {
+	protected int getReactTimer() {
 		return reactTimer;
 	}
-	public double getXMoveRoll() {
+	protected double getXMoveRoll() {
 		return xMoveRoll;
 	}
-	public double getYMoveRoll() {
+	protected double getYMoveRoll() {
 		return yMoveRoll;
 	}
-	public double getSp() {
-		return sp;
-	}
-	public double getSpMax() {
-		return spMax;
-	}
-	public int getRollTimer() {
+	protected int getRollTimer() {
 		return rollTimer;
 	}
-	public void setRollTimer(int rollTimer) {
+	protected void setRollTimer(int rollTimer) {
 		this.rollTimer = rollTimer;
 	}
-	public void lowerSp(double lowered) {
-		sp -= lowered;
-	}
-	public void setSp(int sp) {
-		this.sp = sp;
-	}
-	public void setSpMax(int spMax) {
-		this.spMax = spMax;
+	@Override
+	protected void stun(int time) {
+		
 	}
 }

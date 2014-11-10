@@ -9,11 +9,11 @@ public final class Enemy_Archer extends Enemy_Muggle
 		super(creator, setX, setY);
 		visualImage = mainController.imageLibrary.pikeman_Image[0];
 		setImageDimensions();
-		setHpMax(3500);
-		hp = getHpMax();
+		hp = (int)(3000 * mainController.getDifficultyLevelMultiplier());
+		setHpMax(hp);
 	}@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
 		if(currentFrame == 159)
 		{
@@ -25,17 +25,17 @@ public final class Enemy_Archer extends Enemy_Muggle
 		super.frameCall();
 	}@
 	Override
-	public void frameReactionsDangerLOS()
+	protected void frameReactionsDangerLOS()
 	{
 		frameReactionsNoDangerLOS();
 	}@
 	Override
-	public void frameReactionsDangerNoLOS()
+	protected void frameReactionsDangerNoLOS()
 	{
 		frameReactionsNoDangerNoLOS();
 	}@
 	Override
-	public void frameReactionsNoDangerLOS()
+	protected void frameReactionsNoDangerLOS()
 	{
 		rads = Math.atan2((mainController.getPlayerY() - y), (mainController.getPlayerX() - x));
 		rotation = rads * r2d;
@@ -56,7 +56,7 @@ public final class Enemy_Archer extends Enemy_Muggle
 		}
 	}@
 	Override
-	public void frameReactionsNoDangerNoLOS()
+	protected void frameReactionsNoDangerNoLOS()
 	{
 		setDistanceFound(checkDistance(x, y, getLastPlayerX(), getLastPlayerY()));
 		if(isCheckedPlayerLast() || getDistanceFound() < 10)
@@ -78,7 +78,7 @@ public final class Enemy_Archer extends Enemy_Muggle
 		}
 	}@
 	Override
-	public void attacking()
+	protected void attacking()
 	{
 		if(currentFrame == 79)
 		{

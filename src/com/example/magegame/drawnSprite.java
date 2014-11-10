@@ -11,15 +11,18 @@ abstract public class DrawnSprite extends Sprite
 	/*
 	 * Calculates images current dimensions to draw centered
 	 */
-	public void setImageDimensions()
+	protected void setImageDimensions()
 	{
-		imageWidth = visualImage.getWidth();
-		imageHeight = visualImage.getHeight();
+		if(visualImage != null)
+		{
+			imageWidth = visualImage.getWidth();
+			imageHeight = visualImage.getHeight();
+		}
 	}
-	public int getImageWidth() {
+	protected int getImageWidth() {
 		return imageWidth;
 	}
-	public Bitmap getVisualImage() {
+	protected Bitmap getVisualImage() {
 		return visualImage;
 	}
 }

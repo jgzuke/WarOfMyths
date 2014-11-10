@@ -68,22 +68,15 @@ public final class LoadingScreen extends AllViews
 		opts.inSampleSize = 1;
 		packageName = contextSet.getPackageName();
 		res = contextSet.getResources();
-	}
-	public void frameCall()
-	{
 		invalidate();
 	}
 	@ Override
-	public void onDraw(Canvas g)
+	protected void onDraw(Canvas g)
 	{
 			g.translate(screenMinX+(int)(80*screenDimensionMultiplier), screenMinY);
-			if(currentFrame > 20 && percentLoaded >99)
-			{
-				activity.startMenu();
-			}
-			g.scale((float) screenDimensionMultiplier/4, (float) screenDimensionMultiplier/4);
+			g.scale((float) screenDimensionMultiplier/2, (float) screenDimensionMultiplier/2);
 			drawBitmap(loadFrame(), 0, 0, g);
-			drawRect(0, 0, (int)(percentLoaded*4.8), 20, g);
+			//drawRect(0, 0, (int)(percentLoaded*4.8), 20, g);
 			currentFrame ++;
 	}
 	/*
@@ -93,35 +86,10 @@ public final class LoadingScreen extends AllViews
 	 * @param width End width of image being loaded
 	 * @param height End height of image being loaded
 	 */
-	public Bitmap loadFrame()
+	protected Bitmap loadFrame()
 	{
 		int imageNumber = res.getIdentifier("menu_loading", "drawable", packageName);
 		//int imageNumber = res.getIdentifier("loadsequence"+correctDigits(currentFrame + 1, 4), "drawable", packageName);
-		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), 1280, 1280, false);
-	}
-	/*
-	 * Adds 0's before string to make it four digits long
-	 * Animations done in flash which when exporting .png sequence end file name with four character number
-	 * @return Returns four character version of number
-	 */
-	private String correctDigits(int start, int digits)
-	{
-		String end = Integer.toString(start);
-		while(end.length() < digits)
-		{
-			end = "0" + end;
-		}
-		return end;
-	}
-	public void incrementPercentLoaded(int percentLoaded)
-	{
-		if(percentLoaded > 0)
-		{
-			this.percentLoaded += percentLoaded;
-			if(percentLoaded>100)
-			{
-				percentLoaded = 100;
-			}
-		}
+		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), 640, 640, false);
 	}
 }

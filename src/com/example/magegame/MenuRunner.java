@@ -46,6 +46,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -58,7 +59,10 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 	private int playerType;
 	private int level;
 	protected Bitmap now = null;
+	private Bitmap check;
 	private boolean drawn = false;
+	private byte size = 2;
+	private int fixYClickOffset = -20;
 	public MenuRunner(Context contextSet, StartActivity activitySet)
 	{
 		super(contextSet);
@@ -74,11 +78,13 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 		packageName = contextSet.getPackageName();
 		res = contextSet.getResources();
 		now = loadImage(currentScreen);
+		check = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, res.getIdentifier("menu_check", "drawable", packageName), opts), 20*size, 20*size, false);
 		setOnTouchListener(this);
 	}
-	public void frameCall()
+	protected void frameCall()
 	{
-		if(drawn)
+		
+		/*if(drawn)
 		{
 			if(currentScreen.equals("fightdetails1"))
 			{
@@ -117,23 +123,70 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 				}
 			}
 			drawn = false;
-		}
+		}*/
 	}
 	@ Override
-	public void onDraw(Canvas g)
+	protected void onDraw(Canvas g)
 	{
 			g.translate(screenMinX, screenMinY);
-			g.scale((float) screenDimensionMultiplier/4, (float) screenDimensionMultiplier/4);
+			g.scale((float) screenDimensionMultiplier/size, (float) screenDimensionMultiplier/size);
 			drawBitmap(now, 0, 0, g);
-			now = null;
 			drawn = true;
+			if(currentScreen.equals("fightdetails2"))
+			{
+				paint.setColor(Color.GRAY);
+				paint.setAlpha(151);
+				if(activity.levelBeaten < 1)
+				{
+					drawRect(245*size, 35*size, 365*size, 155*size, g);
+				}
+				if(activity.levelBeaten < 2)
+				{
+					drawRect(50*size, 165*size, 170*size, 285*size, g);
+				}
+				if(activity.levelBeaten < 3)
+				{
+					drawRect(180*size, 165*size, 300*size, 285*size, g);
+				}
+				if(activity.levelBeaten < 4)
+				{
+					drawRect(310*size, 165*size, 430*size, 285*size, g);
+				}
+			}
+			if(currentScreen.equals("options"))
+			{
+				if(activity.stickOnRight)
+				{
+					drawBitmap(check, 263*size, 147*size, g);
+				} else
+				{
+					drawBitmap(check, 192*size, 147*size, g);
+				}
+				if(activity.shootTapScreen)
+				{
+					drawBitmap(check, 319*size, 227*size, g);
+				} else
+				{
+					drawBitmap(check, 205*size, 227*size, g);
+				}
+				if(activity.shootTapDirectional)
+				{
+					drawBitmap(check, 195*size, 255*size, g);
+				} else
+				{
+					drawBitmap(check, 338*size, 255*size, g);
+				}
+			} else
+			{
+				now = null;
+			}
 	}
 	protected Bitmap loadImage(String imageName)
 	{
 		int imageNumber = res.getIdentifier("menu_"+imageName, "drawable", packageName);
-		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), 1920, 1280, false);
+		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), 480*size, 320*size, false);
 	}
-	public void changeScreen(String newScreen)
+	protected void changeScreen(String newScreen)
 	{
 		currentScreen = newScreen;
 		activity.playEffect(R.raw.pageflip);
@@ -154,6 +207,7 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 			{
 				if(currentScreen.equals("tutorial0023") || pointOnSquare(x, y, 400, 275, 480, 320))
 				{
+					now = null;
 					changeScreen("main");
 				} else
 				{
@@ -178,13 +232,17 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 				}
 			} else if(currentScreen.equals("main"))
 			{
-				if(pointOnSquare(x, y, 146.4, 71.25, 333.7, 169.35))
+				if(pointOnSquare(x, y, 146, 41, 334, 139))
 				{
 					changeScreen("fightdetails1");
 				}
-				if(pointOnSquare(x, y, 10, 180, 140, 217))
+				if(pointOnSquare(x, y, 10, 150, 140, 187))
 				{
 					changeScreen("tutorial0001");
+				}
+				if(pointOnSquare(x, y, 340, 107, 470, 144))
+				{
+					changeScreen("options");
 				}
 			} else if(currentScreen.equals("fightdetails1"))
 			{
@@ -212,29 +270,27 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 					if(x > 115 && x < 235)
 					{
 						level = 0;
-						changeScreen("fightdetails2");
-						currentScreen = "fightdetails3";
+						changeScreen("fightdetails3");
 					}
-					if(x > 245 && x < 365)
+					if(x > 245 && x < 365 && activity.levelBeaten > 0)
 					{
 						level = 1;
-						changeScreen("fightdetails2");
-						currentScreen = "fightdetails3";
+						changeScreen("fightdetails3");
 					}
 				}
-				if(y > 165 && y < 285)
+				if(y > 165 && y < 285 && activity.levelBeaten > 1)
 				{
 					if(x > 50 && x < 170)
 					{
 						level = 2;
 						changeScreen("fightdetails3");
 					}
-					if(x > 180 && x < 300)
+					if(x > 180 && x < 300 && activity.levelBeaten > 2)
 					{
 						level = 3;
 						changeScreen("fightdetails3");
 					}
-					if(x > 310 && x < 430)
+					if(x > 310 && x < 430 && activity.levelBeaten > 3)
 					{
 						level = 4;
 						changeScreen("fightdetails3");
@@ -288,9 +344,49 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 							activity.startFight(playerType, level, 0);
 						}
 				}
-			} else if(currentScreen.equals("fightdetails3"))
+			} else if(currentScreen.equals("options"))
 			{
-				
+				if(pointOnSquare(x, y, 205, 227, 225, 247))
+				{
+					activity.shootTapScreen = false;
+					activity.playEffect(R.raw.pageflip);
+					invalidate();
+				}
+				if(pointOnSquare(x, y, 319, 227, 339, 247))
+				{
+					activity.shootTapScreen = true;
+					activity.playEffect(R.raw.pageflip);
+					invalidate();
+				}
+				if(pointOnSquare(x, y, 195, 255, 215, 275))
+				{
+					activity.shootTapDirectional = true;
+					activity.playEffect(R.raw.pageflip);
+					invalidate();
+				}
+				if(pointOnSquare(x, y, 338, 255, 358, 275))
+				{
+					activity.shootTapDirectional = false;
+					activity.playEffect(R.raw.pageflip);
+					invalidate();
+				}
+				if(pointOnSquare(x, y, 263, 147, 283, 167))
+				{
+					activity.stickOnRight = true;
+					activity.playEffect(R.raw.pageflip);
+					invalidate();
+				}
+				if(pointOnSquare(x, y, 192, 147, 212, 167))
+				{
+					activity.stickOnRight = false;
+					activity.playEffect(R.raw.pageflip);
+					invalidate();
+				}
+				if(pointOnSquare(x, y, 11, 11, 126, 55))
+				{
+					now = null;
+					changeScreen("main");
+				}
 			} else if(currentScreen.equals("fightdetails3"))
 			{
 				
@@ -298,15 +394,15 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 		}
 		return true;
 	}
-	public double realX(double x)
+	protected double realX(double x)
 	{
 		return (x-screenMinX)/screenDimensionMultiplier;
 	}
-	public double realY(double y)
+	protected double realY(double y)
 	{
-		return (y-screenMinX)/screenDimensionMultiplier;
+		return ((y-screenMinX)/screenDimensionMultiplier);
 	}
-	public boolean pointOnSquare(double x, double y, double lowX, double lowY, double highX, double highY)
+	protected boolean pointOnSquare(double x, double y, double lowX, double lowY, double highX, double highY)
 	{
 		if(x > lowX && x < highX && y > lowY && y < highY)
         {
@@ -316,7 +412,7 @@ public final class MenuRunner extends AllViews implements OnTouchListener
         	return false;
         }
 	}
-	public boolean pointOnCircle(double x, double y, double midX, double midY, double radius)
+	protected boolean pointOnCircle(double x, double y, double midX, double midY, double radius)
 	{
 		if(Math.sqrt(Math.pow(x-midX, 2) + Math.pow(y-midY, 2)) < radius)
         {

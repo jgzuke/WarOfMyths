@@ -18,7 +18,7 @@ public final class Graphic_Teleport extends DrawnSprite
 		visualImage = mainController.imageLibrary.teleport_Image[startInt][currentFrame];
 	}@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
 		visualImage = mainController.imageLibrary.teleport_Image[startInt][currentFrame];
 		setImageDimensions();

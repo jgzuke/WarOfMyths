@@ -12,29 +12,29 @@ abstract public class Sprite
 	protected boolean deleted = false;
 	public Sprite()
 	{}
-	abstract public void frameCall();
-	public double getX() {
+	abstract protected void frameCall();
+	protected double getX() {
 		return x;
 	}
-	public double getY() {
+	protected double getY() {
 		return y;
 	}
-	public void setX(double x) {
+	protected void setX(double x) {
 		this.x = x;
 	}
-	public void setY(double y) {
+	protected void setY(double y) {
 		this.y = y;
 	}
-	public double getRotation() {
+	protected double getRotation() {
 		return rotation;
 	}
-	public double getWidth() {
+	protected double getWidth() {
 		return width;
 	}
-	public double getHeight() {
+	protected double getHeight() {
 		return height;
 	}
-	public boolean isDeleted() {
+	protected boolean isDeleted() {
 		return deleted;
 	}
 	

@@ -13,6 +13,8 @@ import android.os.Handler;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
@@ -28,13 +30,24 @@ public class StartActivity extends Activity
 	protected double screenDimensionMultiplier;
 	protected int screenMinX;
 	protected int screenMinY;
+	protected int worshipApollo = 1;
+	protected int worshipPoseidon = 1;
+	protected int worshipZues = 1;
+	protected int worshipHades = 1;
+	protected int worshipHephaestus = 1;
+	protected int worshipAres = 1;
+	protected int worshipAthena = 1;
+	protected int worshipHermes = 1;
 	private ViewSwitcher viewSwitcher;
 	private Handler mHandler = new Handler();
-	protected boolean stickOnRight = true;
+	protected boolean stickOnRight = false;
+	protected boolean shootTapScreen = false;
+	protected boolean shootTapDirectional = false;
+	protected byte levelBeaten = 0;
 	private FileOutputStream fileWrite;
 	private FileInputStream fileRead;
-	private int savePoints = 10;
-	private byte[] savedData = new byte[savePoints];
+	private int savePoints = 5;
+	protected byte[] savedData = new byte[savePoints];
 	private MediaPlayer backMusic;
 	private SoundPool spool;
 	private AudioManager audioManager;
@@ -51,13 +64,6 @@ public class StartActivity extends Activity
 					control.frameCall();
 				}
 			}
-			if(loading != null)
-			{
-				if(loading.gameRunning)
-				{
-					loading.frameCall();
-				}
-			}
 			if(menuRun != null)
 			{
 				if(menuRun.gameRunning)
@@ -70,7 +76,7 @@ public class StartActivity extends Activity
 	};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);        
+        super.onCreate(savedInstanceState);
         frameCaller.run();
         viewSwitcher = new ViewSwitcher(this);
     	setScreenDimensions();
@@ -78,21 +84,35 @@ public class StartActivity extends Activity
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		loading = new LoadingScreen(this, this);
 		loading.setBackgroundColor(Color.BLACK);
-		loading.gameRunning = true;
 		changeView(loading);
     	currentView = loading;
         setContentView(viewSwitcher);
+        viewSwitcher.setKeepScreenOn(true);
 		imageLibrary = new ImageLibrary(this, this);
 		menuRun = new MenuRunner(this, this);
     	menuRun.setBackgroundColor(Color.BLACK);
     	control = new Controller(this, this, imageLibrary);
-    	control.setBackgroundColor(Color.BLACK);
-    	control.primeFighting();
-		loading.incrementPercentLoaded(30);
+    	control.setBackgroundColor(Color.WHITE);
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		spool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		volume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+		read();
+    	if(savedData[0] == 0)
+    	{
+    		savedData[0] = 1;
+    		write();
+    		menuRun.changeScreen("tutorial0001");
+    	} else
+    	{
+    		menuRun.changeScreen("main");
+    	}
+    	changeView(menuRun);
+    	currentView = menuRun;
+    	menuRun.gameRunning = true;
+    	startStoreMusic();
+		loading = null;
+    	control.primeFighting();
     }
     private void changeView(AllViews view)
     {
@@ -102,42 +122,28 @@ public class StartActivity extends Activity
     	viewSwitcher.addView(view);
     	viewSwitcher.showNext();
     }
-    public void startTutorial()
+    protected void startMenu()
     {
-        read();
-    }
-    public void startMenu()
-    {
-    	read();
-    	if(savedData[0] == 0)
-    	{
-    		startTutorial();
-    		savedData[0] = 1;
-    		write();
-    		menuRun.currentScreen = "tutorial0001";
-    	} else
-    	{
-	    	menuRun.currentScreen = "main";
-    	}
-    	menuRun.now = menuRun.loadImage("main");
+    	imageLibrary.recycleImages();
+    	menuRun.changeScreen("main");
     	changeView(menuRun);
     	currentView = menuRun;
-    	//stickOnRight = !stickOnRight;
-    	loading.gameRunning = false;
     	menuRun.gameRunning = true;
     	control.gameRunning = false;
+    	startStoreMusic();
     	control.primeFighting();
     }
-    public void startFight(int playerTypeSet, int levelSet, int difficultySet)
+    protected void startFight(int playerTypeSet, int levelSet, int difficultySet)
     {
+    	imageLibrary.loadAllImages();
     	control.startFighting(playerTypeSet, levelSet, difficultySet);
     	currentView = control;
     	changeView(control);
-    	loading.gameRunning = false;
     	menuRun.gameRunning = false;
     	control.gameRunning = true;
+    	startMusic();
     }
-	public void setScreenDimensions()
+	protected void setScreenDimensions()
 	{
 		int dimension1 = getResources().getDisplayMetrics().heightPixels;
 		int dimension2 = getResources().getDisplayMetrics().widthPixels;
@@ -166,8 +172,9 @@ public class StartActivity extends Activity
 			screenDimensionMultiplier = ((screenWidthstart/1.5)/320);
 		}
 	}
-	public void startMusic()
+	protected void startMusic()
 	{
+		stopMusic();
         backMusic= MediaPlayer.create((Context)this, R.raw.backsound);
         backMusic.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
@@ -177,7 +184,19 @@ public class StartActivity extends Activity
         });
         backMusic.setLooping(true);
 	}
-	public void playEffect(int ID)
+	protected void startStoreMusic()
+	{
+		stopMusic();
+        /*backMusic= MediaPlayer.create((Context)this, R.raw.store);
+        backMusic.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer backMusic) {
+                backMusic.start();
+            }
+        });
+        backMusic.setLooping(true);*/
+	}
+	protected void playEffect(int ID)
 	{
 		soundID = spool.load((Context)this, ID, 1);
 		spool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
@@ -186,7 +205,7 @@ public class StartActivity extends Activity
 		    }
 		});
 	}
-	public void stopMusic()
+	protected void stopMusic()
 	{
 		if(backMusic != null)
 		{
@@ -205,36 +224,57 @@ public class StartActivity extends Activity
     @Override
     public void onStart() {
         super.onStart();
-        currentView.gameRunning = true;
-        startMusic();
     }
 
    @Override
     public void onResume() {
         super.onResume();
+        read();
+        stickOnRight = !(savedData[1] == 1);
+    	shootTapScreen = savedData[2] == 1;
+    	shootTapDirectional = !(savedData[3] == 1);
+    	levelBeaten = savedData[4];
         currentView.gameRunning = true;
-        startMusic();
+        if(control != null)
+        {
+        	if(control.gameRunning)
+        	{
+        		startMusic();
+        		imageLibrary.loadAllImages();
+        	} else
+        	{
+        		startStoreMusic();
+        	}
+        } else
+        {
+        	startStoreMusic();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        savedData[1] = 1;
+        savedData[2] = 0;
+        savedData[3] = 1;
+        if(stickOnRight) savedData[1] = 0;
+        if(shootTapScreen) savedData[2] = 1;
+        if(shootTapDirectional) savedData[3] = 0;
+        savedData[4] = levelBeaten;
+    	write();
         currentView.gameRunning = false;
         stopMusic();
+        imageLibrary.recycleImages();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        currentView.gameRunning = false;
-        stopMusic();
     }
 
    @Override
     public void onDestroy() {
         super.onDestroy();
-        currentView.gameRunning = false;
-        stopMusic();
     }
    private void read()
    {

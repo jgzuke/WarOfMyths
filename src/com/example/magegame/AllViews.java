@@ -66,28 +66,28 @@ abstract public class AllViews extends View
 	/*
 	 * Replaces canvas.drawRect(int, int, int, int, Paint) and auto scales
 	 */
-	public void drawRect(int x, int y, int x2, int y2, Canvas g)
+	protected void drawRect(int x, int y, int x2, int y2, Canvas g)
 	{
 		g.drawRect(x, y, x2, y2, paint);
 	}
 	/*
 	 * Replaces canvas.drawCircle(int, int, int paint) and auto scales
 	 */
-	public void drawCircle(int x, int y, int radius, Canvas g)
+	protected void drawCircle(int x, int y, int radius, Canvas g)
 	{
 		g.drawCircle(x, y, radius, paint);
 	}
 	/*
 	 * Replaces canvas.drawBitmap(Bitmap, int, int, paint) and auto scales
 	 */
-	public void drawBitmap(Bitmap picture, int x, int y, Canvas g)
+	protected void drawBitmap(Bitmap picture, int x, int y, Canvas g)
 	{
 		g.drawBitmap(picture, x, y, paint);
 	}
 	/*
 	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
 	 */
-	public void drawBitmapRotated(DrawnSprite sprite, Canvas g)
+	protected void drawBitmapRotated(DrawnSprite sprite, Canvas g)
 	{
 		rotateImages.reset();
 		rotateImages.postTranslate(-sprite.getVisualImage().getWidth() / 2, -sprite.getVisualImage().getHeight() / 2);
@@ -99,14 +99,14 @@ abstract public class AllViews extends View
 	/*
 	 * Replaces canvas.drawBitmap(Bitmap, Rect, Rect, Paint) and auto scales
 	 */
-	public void drawBitmapRect(Bitmap picture, Rect rectangle, Canvas g)
+	protected void drawBitmapRect(Bitmap picture, Rect rectangle, Canvas g)
 	{
 		g.drawBitmap(picture, null, rectangle, paint);
 	}
 	/*
 	 * Replaces canvas.drawText(String, int, int, Paint) and auto scales
 	 */
-	public void drawText(String text, int x, int y, Canvas g)
+	protected void drawText(String text, int x, int y, Canvas g)
 	{
 		// TODO
 		g.drawText(text, x, y, paint);

@@ -9,15 +9,15 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		super(creator, setX, setY);
 	}@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
-		if(currentFrame == 109)
+		if(currentFrame == 94)
 		{
 			currentFrame = 0;
 			playing = false;
 			attacking = false;
 		}
-		if(currentFrame == 96)
+		if(currentFrame == 84)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -26,22 +26,25 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		super.frameCall();
 	}@
 	Override
-	public void getHit(int damage)
+	protected void getHit(int damage)
 	{
-		if(97 < currentFrame && currentFrame < 110) damage /= 8;
+		if(85 < currentFrame && currentFrame < 96) damage /= 8;
 		super.getHit(damage);
 	}@
 	Override
-	public void frameReactionsDangerLOS()
+	protected void frameReactionsDangerLOS()
 	{
 		distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
-		if(distanceFound < 100)
+		if(distanceFound < 100 && distanceFound > 60)
 		{
-			rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
-			rotation = rads * r2d;
-			currentFrame = 98;
-			attacking = true;
-			playing = true;
+			if(mainController.getRandomInt(3) == 0)
+			{
+				rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
+				rotation = rads * r2d;
+				currentFrame = 86;
+				attacking = true;
+				playing = true;
+			}
 		}
 		else
 		{
@@ -49,14 +52,14 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		}
 	}@
 	Override
-	public void frameReactionsDangerNoLOS()
+	protected void frameReactionsDangerNoLOS()
 	{
 		distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
 		if(distanceFound < 100)
 		{
 			rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
 			rotation = rads * r2d;
-			currentFrame = 98;
+			currentFrame = 86;
 			attacking = true;
 			playing = true;
 		}
@@ -66,7 +69,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		}
 	}@
 	Override
-	public void frameReactionsNoDangerLOS()
+	protected void frameReactionsNoDangerLOS()
 	{
 		rads = Math.atan2((mainController.getPlayerY() - y), (mainController.getPlayerX() - x));
 		rotation = rads * r2d;
@@ -85,12 +88,11 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		}
 	}@
 	Override
-	public void frameReactionsNoDangerNoLOS()
+	protected void frameReactionsNoDangerNoLOS()
 	{
 		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY);
 		if(isCheckedPlayerLast() || distanceFound < 10)
 		{
-			hp += 5;
 			currentFrame = 0;
 			playing = false;
 			if(mainController.getRandomInt(20) == 0)
@@ -107,24 +109,30 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		}
 	}@
 	Override
-	public void attacking()
+	protected void attacking()
 	{
-		if(currentFrame == 73)
+		if(currentFrame == 64)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 20, y + Math.sin(rads) * 20, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
 			{
-				mainController.player.getHit(600);
+				mainController.player.getHit((int)(600*mainController.getDifficultyLevelMultiplier()));
 				mainController.activity.playEffect(R.raw.sword1);
+			} else
+			{
+				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
-		if(currentFrame == 87)
+		if(currentFrame == 78)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 20, y + Math.sin(rads) * 20, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
 			{
-				mainController.player.getHit(400);
+				mainController.player.getHit((int)(400*mainController.getDifficultyLevelMultiplier()));
 				mainController.activity.playEffect(R.raw.sword2);
+			} else
+			{
+				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
 	}

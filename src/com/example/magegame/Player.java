@@ -9,8 +9,9 @@ public final class Player extends Human
 	protected int rollTimer = 0;
 	private double xMoveRoll;
 	private double yMoveRoll;
-	private double sp = 0;
-	private double spMax = 1;
+	protected double sp = 0;
+	protected double spMod = 1;
+	protected double spChangeForType;
 	private double abilityTimer_roll = 0;
 	private double abilityTimer_teleport = 0;
 	private double abilityTimer_burst = 0;
@@ -31,6 +32,8 @@ public final class Player extends Human
 		y = 160;
 		thisPlayer = true;
 		speedCur = 4.5;
+		hp = (int)(7000 * mainController.activity.worshipHephaestus);
+		setHpMax(hp);
 	}
 	/*
 	 * Counts timers and executes movement and predefined behaviors
@@ -38,51 +41,55 @@ public final class Player extends Human
 	 */
 	@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
-		sp += 0.001;
+		mainController.player.sp += 0.0001;
+		spMod = 1+(sp*spChangeForType);
 		if(humanType==2)
 		{
-			speedCur = 3.5*(1+sp);
+			speedCur = 4*Math.pow(spMod, 0.5)*Math.pow(mainController.activity.worshipHermes, 0.5);
+		} else
+		{
+			speedCur = 4*Math.pow(mainController.activity.worshipHermes, 0.5);
 		}
 		if(abilityTimer_roll < 120)
 		{
 			if(humanType==2)
 			{
-				abilityTimer_roll += 1+sp;
+				abilityTimer_roll += spMod*mainController.activity.worshipAthena;
 			} else
 			{
-				abilityTimer_roll ++;
+				abilityTimer_roll += mainController.activity.worshipAthena;
 			}
 		}
 		if(abilityTimer_teleport < 350)
 		{
 			if(humanType==2)
 			{
-				abilityTimer_teleport += 1+sp;
+				abilityTimer_teleport += spMod*mainController.activity.worshipAthena;
 			} else
 			{
-				abilityTimer_teleport ++;
+				abilityTimer_teleport += mainController.activity.worshipAthena;
 			}
 		}
 		if(abilityTimer_burst < 500)
 		{
 			if(humanType==1)
 			{
-				abilityTimer_burst += 1+sp;
+				abilityTimer_burst += spMod*mainController.activity.worshipAthena;
 			} else
 			{
-				abilityTimer_burst ++;
+				abilityTimer_burst += mainController.activity.worshipAthena;
 			}
 		}
 		if(abilityTimer_powerBall < 40)
 		{
 			if(humanType==1)
 			{
-				abilityTimer_powerBall += 3*(1+sp);
+				abilityTimer_powerBall += 3*spMod*mainController.activity.worshipAthena;
 			} else
 			{
-				abilityTimer_powerBall += 3;
+				abilityTimer_powerBall += 3*mainController.activity.worshipAthena;
 			}
 		}
 		rollTimer--;
@@ -91,9 +98,9 @@ public final class Player extends Human
 			currentFrame = 0;
 			playing = false;
 		}
-		if(sp > spMax)
+		if(sp > 1)
 		{
-			sp = spMax;
+			sp = 1;
 		}
 		super.frameCall();
 		if(rollTimer < 1)
@@ -132,14 +139,14 @@ public final class Player extends Human
 		visualImage = mainController.imageLibrary.player_Image[currentFrame];
 		setImageDimensions();
 	}
-	public void movement()
+	protected void movement()
 	{
 		rads = Math.atan2(touchY, touchX);
 		rotation = rads * r2d;
 		x += Math.cos(rads) * speedCur;
 		y += Math.sin(rads) * speedCur;
 	}
-	public void releasePowerBall()
+	protected void releasePowerBall()
 	{
 		if(abilityTimer_powerBall > 30)
 		{
@@ -147,7 +154,7 @@ public final class Player extends Human
 			{
 					playing = false;
 					currentFrame = 0;
-					mainController.createPowerBallPlayer(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 170, x, y);
+					mainController.createPowerBallPlayer(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 130, x, y);
 					abilityTimer_powerBall -= 30;
 			}
 		} else
@@ -155,7 +162,7 @@ public final class Player extends Human
 			mainController.coolDown();
 		}
 	}
-	public void roll()
+	protected void roll()
 	{
 		if(abilityTimer_roll > 50)
 		{
@@ -173,7 +180,7 @@ public final class Player extends Human
 			mainController.coolDown();
 		}
 	}
-	public void teleport(double X, double Y)
+	protected void teleport(double X, double Y)
 	{
 		if(abilityTimer_teleport > 250)
 		{
@@ -201,7 +208,7 @@ public final class Player extends Human
 			mainController.coolDown();
 		}
 	}
-	public void burst()
+	protected void burst()
 	{
 		if(abilityTimer_burst > 400)
 		{
@@ -222,75 +229,69 @@ public final class Player extends Human
 			mainController.coolDown();
 		}
 	}
-	public void stun()
+	protected void stun()
 	{
 		rotation = rads * r2d + 180;
         roll();
         currentFrame = 1;
         xMoveRoll /= 3;
         yMoveRoll /= 3;
-        abilityTimer_roll += 100;
+        abilityTimer_roll += 20;
 	}
 	@Override
-	public void getHit(int damage)
+	protected void getHit(int damage)
 	{
 		if(humanType == 3)
 		{
-			damage /= (1+sp);
+			damage /= spMod;
 		}
 		super.getHit(damage);
+		sp -= sp*damage/2000;
 		if(deleted)
 		{
 			mainController.activity.startMenu();
 		}
 	}
-	public double getAbilityTimer_roll() {
+	protected double getAbilityTimer_roll() {
 		return abilityTimer_roll;
 	}
-	public double getXSave() {
+	protected double getXSave() {
 		return xSave;
 	}
-	public double getYSave() {
+	protected double getYSave() {
 		return ySave;
 	}
-	public boolean isTeleporting() {
+	protected boolean isTeleporting() {
 		return teleporting;
 	}
-	public double getAbilityTimer_teleport() {
+	protected double getAbilityTimer_teleport() {
 		return abilityTimer_teleport;
 	}
-	public double getAbilityTimer_burst() {
+	protected double getAbilityTimer_burst() {
 		return abilityTimer_burst;
 	}
-	public double getAbilityTimer_powerBall() {
+	protected double getAbilityTimer_powerBall() {
 		return abilityTimer_powerBall;
 	}
-	public int getRollTimer() {
+	protected int getRollTimer() {
 		return rollTimer;
 	}
-	public void setRollTimer(int rollTimer) {
+	protected void setRollTimer(int rollTimer) {
 		this.rollTimer = rollTimer;
 	}
-	public void setAbilityTimer_roll(int abilityTimer_roll) {
+	protected void setAbilityTimer_roll(int abilityTimer_roll) {
 		this.abilityTimer_roll = abilityTimer_roll;
 	}
-	public void setAbilityTimer_teleport(int abilityTimer_teleport) {
+	protected void setAbilityTimer_teleport(int abilityTimer_teleport) {
 		this.abilityTimer_teleport = abilityTimer_teleport;
 	}
-	public void setAbilityTimer_burst(int abilityTimer_burst) {
+	protected void setAbilityTimer_burst(int abilityTimer_burst) {
 		this.abilityTimer_burst = abilityTimer_burst;
 	}
-	public void setAbilityTimer_powerBall(int abilityTimer_powerBall) {
+	protected void setAbilityTimer_powerBall(int abilityTimer_powerBall) {
 		this.abilityTimer_powerBall = abilityTimer_powerBall;
 	}
-	public double getSp() {
+	protected double getSp() {
 		return sp;
 	}
-	public double getSpMax() {
-		return spMax;
-	}
-	public void lowerSp(double lowered) {
-		sp -= lowered;
-	}
-	
 }

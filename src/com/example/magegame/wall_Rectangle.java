@@ -1,75 +1,123 @@
 package com.example.magegame;
+
+import android.util.Log;
+
 public class Wall_Rectangle extends Wall
 {
 	private int x;
 	private int y;
-	private int width;
-	private int height;
 	private int oRX1;
 	private int oRX2;
 	private int oRY1;
 	private int oRY2;
-	public Wall_Rectangle(Controller creator, int ORX1, int ORX2, int ORY1, int ORY2)
+	private int humanWidth = 10;
+	public Wall_Rectangle(Controller creator, int ORX, int ORY, int wallWidth, int wallHeight)
 	{
-		oRX1 = ORX1;
-		oRX2 = ORX2;
-		oRY1 = ORY1;
-		oRY2 = ORY2;
-		width = Math.abs(oRX1 - oRX2) - 15;
-		height = Math.abs(oRY1 - oRY2) - 15;
-		x = (ORX1 + ORX2) / 2;
-		y = (ORY1 + ORY2) / 2;
+		oRX1 = ORX;
+		oRY1 = ORY;
+		oRX2 = ORX+wallWidth;
+		oRY2 = ORY+wallHeight;
+		x = (oRX1 + oRX2) / 2;
+		y = (oRY1 + oRY2) / 2;
 		mainController = creator;
-		mainController.setObstaclesRectanglesX1(mainController.getCurrentRectangle(), ORX1);
-		mainController.setObstaclesRectanglesX2(mainController.getCurrentRectangle(), ORX2);
-		mainController.setObstaclesRectanglesY1(mainController.getCurrentRectangle(), ORY1);
-		mainController.setObstaclesRectanglesY2(mainController.getCurrentRectangle(), ORY2);
+		mainController.setObstaclesRectanglesX1(mainController.getCurrentRectangle(), oRX1);
+		mainController.setObstaclesRectanglesX2(mainController.getCurrentRectangle(), oRX2);
+		mainController.setObstaclesRectanglesY1(mainController.getCurrentRectangle(), oRY1);
+		mainController.setObstaclesRectanglesY2(mainController.getCurrentRectangle(), oRY2);
 		mainController.incrementCurrentRectangle();
+		oRX1 -= humanWidth;
+		oRY1 -= humanWidth;
+		oRX2 += humanWidth;
+		oRY2 += humanWidth;
 	}
         @ Override
-	public void frameCall()
+        protected void frameCall()
 	{
-		changing = true;
-		Human hold = mainController.player;
-		while(hold != null)
+			if(mainController.player.x > oRX1 && mainController.player.x < oRX2 && mainController.player.y > oRY1 && mainController.player.y < oRY2)
+			{
+				double holdX;
+				double holdY;
+				if(mainController.player.x > x)
+				{
+					holdX = Math.abs(mainController.player.x - oRX2);
+				} else
+				{
+					holdX = Math.abs(mainController.player.x - oRX1);
+				}
+				if(mainController.player.y > y)
+				{
+					holdY = Math.abs(mainController.player.y - oRY2);
+				} else
+				{
+					holdY = Math.abs(mainController.player.y - oRY1);
+				}
+				if((holdX) < (holdY))
+				{
+					if(mainController.player.x > x)
+					{
+						mainController.player.x = oRX2;
+					}
+					else
+					{
+						mainController.player.x = oRX1;
+					}
+				} else
+				{
+					if(mainController.player.y > y)
+					{
+						mainController.player.y = oRY2;
+					}
+					else
+					{
+						mainController.player.y = oRY1;
+					}
+				}
+			}
+		for(int i = 0; i < mainController.enemies.length; i++)
 		{
-				//if(hold.x > oRX1-playerRollWidth && hold.x < oRX2+playerRollWidth && hold.y > oRY1-playerRollWidth && hold.y < oRY2+playerRollWidth)
-					
-			if(hold.x > oRX1 && hold.x < oRX2 && hold.y > oRY1 && hold.y < oRY2)
+			if(mainController.enemies[i] != null)
 			{
-				double holdX = Math.abs(hold.x - x);
-				double holdY = Math.abs(hold.y - y);
-				if((holdX / width) > (holdY / height))
+				if(mainController.enemies[i].x > oRX1 && mainController.enemies[i].x < oRX2 && mainController.enemies[i].y > oRY1 && mainController.enemies[i].y < oRY2)
 				{
-					if(hold.x > x)
+					double holdX;
+					double holdY;
+					if(mainController.enemies[i].x > x)
 					{
-						hold.x = oRX2;
+						holdX = Math.abs(mainController.enemies[i].x - oRX2);
+					} else
+					{
+						holdX = Math.abs(mainController.enemies[i].x - oRX1);
+					}
+					if(mainController.enemies[i].y > y)
+					{
+						holdY = Math.abs(mainController.enemies[i].y - oRY2);
+					} else
+					{
+						holdY = Math.abs(mainController.enemies[i].y - oRY1);
+					}
+					if((holdX) < (holdY))
+					{
+						if(mainController.enemies[i].x > x)
+						{
+							mainController.enemies[i].x = oRX2;
+						}
+						else
+						{
+							mainController.enemies[i].x = oRX1;
+						}
 					}
 					else
 					{
-						hold.x = oRX1;
+						if(mainController.enemies[i].y > y)
+						{
+							mainController.enemies[i].y = oRY2;
+						}
+						else
+						{
+							mainController.enemies[i].y = oRY1;
+						}
 					}
 				}
-				else
-				{
-					if(hold.y > y)
-					{
-						hold.y = oRY2;
-					}
-					else
-					{
-						hold.y = oRY1;
-					}
-				}
-			}
-			if(changing)
-			{
-				hold = mainController.enemy;
-				changing = false;
-			}
-			else
-			{
-				hold = null;
 			}
 		}
 	}

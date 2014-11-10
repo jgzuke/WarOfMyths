@@ -4,8 +4,8 @@
 package com.example.magegame;
 abstract public class Human extends DrawnSprite
 {
-	protected int hp = 7000;
-	private int hpMax = 7000;
+	protected int hp;
+	private int hpMax;
 	protected double r2d = 180 / Math.PI;
 	protected double rads;
 	protected double speedCur;
@@ -20,7 +20,7 @@ abstract public class Human extends DrawnSprite
 	 */
 	@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
 		hp ++;
 		if(currentFrame == 47)
@@ -36,10 +36,10 @@ abstract public class Human extends DrawnSprite
 			hp = hpMax;
 		}
 	}
-	public int getHp() {
+	protected int getHp() {
 		return hp;
 	}
-	public void getHit(int damage)
+	protected void getHit(int damage)
 	{
 		hp -= damage;
 		if(hp < 1)
@@ -48,19 +48,19 @@ abstract public class Human extends DrawnSprite
 			deleted = true;
 		}
 	}
-	public int getHpMax() {
+	protected int getHpMax() {
 		return hpMax;
 	}
-	public void setSpeedCur(double speedCur) {
+	protected void setSpeedCur(double speedCur) {
 		this.speedCur = speedCur;
 	}
-	public void setHpMax(int hpMax) {
+	protected void setHpMax(int hpMax) {
 		this.hpMax = hpMax;
 	}
-	public void setHp(int hp) {
+	protected void setHp(int hp) {
 		this.hp = hp;
 	}
-	public boolean isThisPlayer() {
+	protected boolean isThisPlayer() {
 		return thisPlayer;
 	}
 }

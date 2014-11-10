@@ -9,11 +9,11 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		super(creator, setX, setY);
 		visualImage = mainController.imageLibrary.pikeman_Image[0];
 		setImageDimensions();
-		setHpMax(4000);
-		hp = 4000;
+		hp = (int)(4000 * mainController.getDifficultyLevelMultiplier());
+		setHpMax(hp);
 	}@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
 		if(currentFrame == 159)
 		{
@@ -25,17 +25,17 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		super.frameCall();
 	}@
 	Override
-	public void frameReactionsDangerLOS()
+	protected void frameReactionsDangerLOS()
 	{
 		frameReactionsNoDangerLOS();
 	}@
 	Override
-	public void frameReactionsDangerNoLOS()
+	protected void frameReactionsDangerNoLOS()
 	{
 		frameReactionsNoDangerNoLOS();
 	}@
 	Override
-	public void frameReactionsNoDangerLOS()
+	protected void frameReactionsNoDangerLOS()
 	{
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 		rotation = rads * r2d;
@@ -52,12 +52,11 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		}
 	}@
 	Override
-	public void frameReactionsNoDangerNoLOS()
+	protected void frameReactionsNoDangerNoLOS()
 	{
 		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY);
 		if(isCheckedPlayerLast() || distanceFound < 10)
 		{
-			hp += 5;
 			currentFrame = 0;
 			playing = false;
 			if(mainController.getRandomInt(20) == 0)
@@ -74,15 +73,18 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		}
 	}@
 	Override
-	public void attacking()
+	protected void attacking()
 	{
 		if(currentFrame == 79)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
 			{
-				mainController.player.getHit(700);
+				mainController.player.getHit((int)(700*mainController.getDifficultyLevelMultiplier()));
 				mainController.activity.playEffect(R.raw.sword1);
+			} else
+			{
+				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
 		if(currentFrame == 121)
@@ -90,8 +92,11 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
 			{
-				mainController.player.getHit(400);
+				mainController.player.getHit((int)(400*mainController.getDifficultyLevelMultiplier()));
 				mainController.activity.playEffect(R.raw.sword2);
+			} else
+			{
+				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
 		if(currentFrame == 126)
@@ -100,6 +105,9 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 			if(distanceFound < 30)
 			{
 				mainController.activity.playEffect(R.raw.sword2);
+			} else
+			{
+				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
 		if(currentFrame == 131)
@@ -107,7 +115,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
 			{
-				mainController.player.getHit(400);
+				mainController.player.getHit((int)(400*mainController.getDifficultyLevelMultiplier()));
 			}
 		}
 	}

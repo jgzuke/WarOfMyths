@@ -9,11 +9,11 @@ public final class Enemy_Swordsman extends Enemy_Shield
 		super(creator, setX, setY);
 		visualImage = mainController.imageLibrary.swordsman_Image[0];
 		setImageDimensions();
-		setHpMax(6500);
-		hp = 6500;
+		hp = (int)(6500 * mainController.getDifficultyLevelMultiplier());
+		setHpMax(hp);
 	}@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
 		super.frameCall();
 		visualImage = mainController.imageLibrary.swordsman_Image[currentFrame];

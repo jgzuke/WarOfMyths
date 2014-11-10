@@ -16,62 +16,47 @@ public final class PowerBall_Player extends PowerBall
 		rotation = Rotation;
 	}@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
 		super.frameCall();
 		visualImage = mainController.imageLibrary.powerBall_Image[mainController.getPlayerType()][mainController.getRandomInt(5)];
-		mainController.enemy.setLevels(mainController.enemy.getLevelCurrentPosition(), x, y, xForward, yForward);
-		mainController.enemy.incrementLevelCurrentPosition();
-		if(mainController.enemy.getRollTimer() < 1)
+		for(int i = 0; i < mainController.enemies.length; i++)
 		{
-			xDif = x - mainController.enemy.x;
-			yDif = y - mainController.enemy.y;
-			if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100)
+			if(mainController.enemies[i] != null)
 			{
-				if(mainController.player.humanType == 0)
+				mainController.enemies[i].setLevels(mainController.enemies[i].getLevelCurrentPosition(), x, y, xForward, yForward);
+				mainController.enemies[i].incrementLevelCurrentPosition();
+				xDif = x - mainController.enemies[i].x;
+				yDif = y - mainController.enemies[i].y;
+				if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100)
 				{
-					mainController.enemy.getHit((int)(power*(1+mainController.player.getSp())));
-				} else
-				{
-					mainController.enemy.getHit(power);
+					if(mainController.player.humanType == 0)
+					{
+						mainController.enemies[i].getHit((int)(power * mainController.player.spMod*mainController.activity.worshipAres));
+					}
+					else
+					{
+						mainController.enemies[i].getHit(power*mainController.activity.worshipAres);
+					}
+					explode();
 				}
-				mainController.enemy.lowerSp((mainController.enemy.getSp()/2));
-				mainController.createPowerBallPlayerAOE(x, y, power);
-				deleted = true;
-                                if(mainController.getRandomInt(3) == 0)
-                                {
-                                    mainController.enemy.rads = Math.atan2(yForward, xForward);
-                                    mainController.enemy.stun();
-                                }
 			}
 		}
-                for(int i = 0; i < mainController.enemies.length; i++)
-                {
-                    if(mainController.enemies[i] != null)
-			{
-                    	mainController.enemies[i].setLevels(mainController.enemy.getLevelCurrentPosition(), x, y, xForward, yForward);
-                		mainController.enemies[i].incrementLevelCurrentPosition();
-                            xDif = x - mainController.enemies[i].x;
-                            yDif = y - mainController.enemies[i].y;
-                            if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100)
-                            {
-                            	if(mainController.player.humanType == 0)
-                				{
-                					mainController.enemies[i].getHit((int)(power*(1+mainController.player.getSp())));
-                				} else
-                				{
-                					mainController.enemies[i].getHit(power);
-                				}
-                                    mainController.createPowerBallPlayerAOE(x, y, power);
-                                    deleted = true;
-                            }
-                        }
-                }
-		checkHitBack(x, y);
-		if(hitBack == true)
+		if(mainController.checkHitBack(x, y))
 		{
-			mainController.createPowerBallPlayerAOE(x, y, power);
-			deleted = true;
+			explode();
 		}
+	}
+	public void explode()
+	{
+		if(mainController.player.humanType == 0)
+		{
+			mainController.createPowerBallPlayerAOE(x, y, (int)(power * mainController.player.spMod*mainController.activity.worshipAres));
+		}
+		else
+		{
+			mainController.createPowerBallPlayerAOE(x, y, power*mainController.activity.worshipAres);
+		}
+		deleted = true;
 	}
 }

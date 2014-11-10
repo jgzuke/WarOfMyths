@@ -7,7 +7,7 @@ abstract public class PowerBallAOE extends DrawnSprite
 	protected byte alpha;
 	protected int timeToDeath;@
 	Override
-	public void frameCall()
+	protected void frameCall()
 	{
 		timeToDeath--;
 		if(timeToDeath == 0)
@@ -19,7 +19,7 @@ abstract public class PowerBallAOE extends DrawnSprite
 		alpha -= 10;
 		widthDone = 7.5 + (width / 2);
 	}
-	public byte getAlpha() {
+	protected byte getAlpha() {
 		return alpha;
 	}
 }

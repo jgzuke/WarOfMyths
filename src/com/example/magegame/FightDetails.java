@@ -68,7 +68,7 @@ public final class FightDetails extends AllViews
 		res = contextSet.getResources();
 	}
 	@ Override
-	public void onDraw(Canvas g)
+	protected void onDraw(Canvas g)
 	{
 			g.translate(screenMinX, screenMinY);
 			g.scale((float) screenDimensionMultiplier, (float) screenDimensionMultiplier);
