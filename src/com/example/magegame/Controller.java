@@ -45,34 +45,32 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.os.Handler;
-import android.view.View;
+import android.util.Log;
+
 import java.util.Random;
-import android.view.MotionEvent;
-public final class Controller extends View
+public final class Controller extends AllViews
 {
+	protected Enemy_Muggle[] enemies = new Enemy_Muggle[30];
+	private PowerBall[] powerBalls = new PowerBall[30];
+	private SpGraphic[] spGraphic = new SpGraphic[30];
+	private PowerBallAOE[] powerBallAOEs = new PowerBallAOE[30];
+	private Graphic_Teleport[] graphic_Teleport = new Graphic_Teleport[30];
+	private Wall_Rectangle[] walls = new Wall_Rectangle[30];
+	private Wall_Circle[] wallCircles = new Wall_Circle[30];
+	private Rect aoeRect = new Rect();
+	private int wallWidth = 10;
+	private boolean gameEnded = false;
+	private int currentCircle = 0;
+	private int currentRectangle = 0;
+	private int[][] teleportSpots = new int[2][4];
 	protected Player player;
 	protected Enemy_Mage enemy;
-	protected Enemy_Muggle[] enemies = new Enemy_Muggle[30];
-	protected Game game;
 	protected Context context;
 	protected SpControl spGraphicEnemy;
 	protected SpControl spGraphicPlayer;
 	protected ImageLibrary imageLibrary;
-	View.OnTouchListener gestureListener;
-	private SpGraphic[] spGraphic = new SpGraphic[30];
-	private Paint paint = new Paint();
-	private Matrix rotateImages = new Matrix();
-	private Rect aoeRect = new Rect();
-	private Handler mHandler = new Handler();
-	private PowerBall[] powerBalls = new PowerBall[30];
-	private PowerBallAOE[] powerBallAOEs = new PowerBallAOE[30];
-	private Graphic_Teleport[] graphic_Teleport = new Graphic_Teleport[30];
-	private Wall_Rectangle[] walls = new Wall_Rectangle[30];
-	private Wall_Circle[] wallCircles = new Wall_Circle[30];	
 	private Random randomGenerator;
 	private int playerColour;
 	private int enemyColour;
@@ -80,15 +78,9 @@ public final class Controller extends View
 	private double difficultyLevelMultiplier;
 	private int enemyType;
 	private int playerType;
-	private int wallWidth = 10;
 	private int levelNum;
 	private int warningTimer;
 	private int warningType;
-	private boolean gameEnded = false;
-	protected int screenMinX;
-	protected int screenMinY;
-	private int currentCircle = 0;
-	private int currentRectangle = 0;
 	private int[] obstaclesRectanglesX1;
 	private int[] obstaclesRectanglesX2;
 	private int[] obstaclesRectanglesY1;
@@ -96,112 +88,118 @@ public final class Controller extends View
 	private int[] obstaclesCirclesX;
 	private int[] obstaclesCirclesY;
 	private int[] obstaclesCirclesRadius;
-	private int[][] teleportSpots = new int[2][4];
-	protected double screenDimensionMultiplier;
-	protected boolean gameRunning = true;
 	private Bitmap background;
-	private Runnable frameCaller = new Runnable()
-	{
-		public void run()
-		{
-			if(gameRunning)
-			{
-				frameCall();
-			}
-			mHandler.postDelayed(this, 50);
-		}
-	};
+	private PlayerGestureDetector detect;
 	/* 
 	 * Initializes all undecided variables, loads level, creates player and enemy objects, and starts frameCaller
 	 */
-	public Controller(Context startSet, Game gameSet, int PlayerTypeSet, int DifficultyLevelSet, int LevelNumSet, double screenDimensionMultiplierSet, int screenMinXSet, int screenMinYSet)
+	public Controller(Context startSet, StartActivity activitySet, ImageLibrary imageLibrarySet)
 	{
 		super(startSet);
-		game = gameSet;
-		imageLibrary = game.imageLibrary;
-		screenMinX = screenMinXSet;
-		screenMinY = screenMinYSet;
-		screenDimensionMultiplier = screenDimensionMultiplierSet;
+		activity = activitySet;
+		imageLibrary = imageLibrarySet;
+		screenMinX = activitySet.screenMinX;
+		screenMinY = activitySet.screenMinY;
+		screenDimensionMultiplier = activitySet.screenDimensionMultiplier;
 		paint.setAntiAlias(true);
 		paint.setFilterBitmap(true);
 		paint.setDither(true);
-		playerType = PlayerTypeSet;
-		difficultyLevel = DifficultyLevelSet;
-		levelNum = LevelNumSet;
-		difficultyLevelMultiplier = 20 / (double)(difficultyLevel + 10);
 		context = startSet;
-		paint.setColor(Color.BLACK);
 		randomGenerator = new Random();
-		enemyType = randomGenerator.nextInt(4);
+		detect = new PlayerGestureDetector(this);
+		setOnTouchListener(detect);
 		spGraphicEnemy = new SpControl(this, false);
 		spGraphicPlayer = new SpControl(this, true);
+		imageLibrary.changeArrayLoaded("swordsman", true);
+		for(int i = 0; i < 4; i++)
+		{
+			enemies[i] = new Enemy_Swordsman(this, teleportSpots[0][i], teleportSpots[1][i]);
+		}
+	}
+	public void primeFighting()
+	{
+		enemies = new Enemy_Muggle[30];
+		powerBalls = new PowerBall[30];
+		spGraphic = new SpGraphic[30];
+		powerBallAOEs = new PowerBallAOE[30];
+		graphic_Teleport = new Graphic_Teleport[30];
+		walls = new Wall_Rectangle[30];
+		wallCircles = new Wall_Circle[30];
+		teleportSpots = new int[2][4];
+		aoeRect = new Rect();
+		wallWidth = 10;
+		gameEnded = false;
+		currentCircle = 0;
+		currentRectangle = 0;
+		enemyType = randomGenerator.nextInt(4);
 		player = new Player(this);
+		detect.setPlayer(player);
 		enemy = new Enemy_Mage(this);
-		setOnTouchListener(new PlayerGestureDetector(player, this));
 		switch(enemyType)
 		{
 		case 0:
-			imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001");
-			imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(4, "powerball0001_");
+			imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001", 80, 80);
+			imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(5, "powerball0001_", 35, 15);
 			enemyColour = Color.rgb(255, 0, 0);
 			break;
 		case 1:
-			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002");
-			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(4, "powerball0002_");
+			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002", 80, 80);
+			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(5, "powerball0002_", 35, 15);
 			enemyColour = Color.rgb(0, 0, 255);
 			enemy.setMp(2250);
 			enemy.setMpMax(4500);
 			break;
 		case 2:
-			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003");
-			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(4, "powerball0003_");
+			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003", 80, 80);
+			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(5, "powerball0003_", 35, 15);
 			enemyColour = Color.rgb(170, 119, 221);
 			enemy.setSpeedCur(4);
 			break;
 		case 3:
-			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004");
-			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(4, "powerball0004_");
+			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004", 80, 80);
+			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(5, "powerball0004_", 35, 15);
 			enemyColour = Color.rgb(102, 51, 0);
 			enemy.setHp(9000);
 			enemy.setHpMax(9000);
 			break;
 		}
+	}
+	public void startFighting(int playerTypeSet, int levelNumSet, int difficultyLevelSet)
+	{
+		playerType = playerTypeSet;
+		difficultyLevel = difficultyLevelSet;
+		levelNum = levelNumSet;
+		difficultyLevelMultiplier = 20 / (double)(difficultyLevel + 10);
 		switch(playerType)
 		{
 		case 0:
-			imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001");
-			imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(4, "powerball0001_");
+			imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001", 80, 80);
+			imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(5, "powerball0001_", 35, 15);
 			playerColour = Color.rgb(255, 0, 0);
 			break;
 		case 1:
-			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002");
-			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(4, "powerball0002_");
+			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002", 80, 80);
+			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(5, "powerball0002_", 35, 15);
 			playerColour = Color.rgb(0, 0, 255);
 			player.setMp(2250);
 			player.setMpMax(4500);
 			break;
 		case 2:
-			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003");
-			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(4, "powerball0003_");
+			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003", 80, 80);
+			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(5, "powerball0003_", 35, 15);
 			playerColour = Color.rgb(170, 119, 221);
 			player.setSpeedCur(4);
 			break;
 		case 3:
-			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004");
-			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(4, "powerball0004_");
+			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004", 80, 80);
+			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(5, "powerball0004_", 35, 15);
 			playerColour = Color.rgb(102, 51, 0);
 			player.setHp(9000);
 			player.setHpMax(9000);
 			break;
 		}
 		loadLevel();
-		imageLibrary.changeArrayLoaded("swordsman", true);
-		for(int i = 0; i < 4; i++)
-		{
-			enemies[i] = new Enemy_Swordsman(this, teleportSpots[0][i], teleportSpots[1][i]);
-		}
 		background = drawStart();
-		frameCaller.run();
 	}
 	/*
 	 * Loads the level the user picked and initializes teleport and wall array variables
@@ -331,42 +329,34 @@ public final class Controller extends View
 	{
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.WHITE);
-		drawRect(395, 240, 475, 316, g);
-		drawRect(5, 240, 85, 316, g);
+		//drawRect(395, 240, 475, 316, g);
+		//drawRect(5, 240, 85, 316, g);
 		paint.setColor(Color.RED);
-		drawRect(405, 250, 405 + (60 * player.getHp() / player.getHpMax()), 266, g);
-		drawRect(15, 250, 15 + (60 * enemy.getHp() / enemy.getHpMax()), 266, g);
+		drawRect(400, 116, 400 + (70 * player.getHp() / player.getHpMax()), 132, g);
 		paint.setColor(Color.BLUE);
-		drawRect(405, 270, 405 + (60 * player.getMp() / player.getMpMax()), 286, g);
-		drawRect(15, 270, 15 + (60 * enemy.getMp() / enemy.getMpMax()), 286, g);
+		drawRect(400, 157, 400 + (70 * player.getMp() / player.getMpMax()), 173, g);
 		paint.setColor(Color.GREEN);
-		drawRect(405, 290, 405 + (60 * player.getSp() / player.getSpMax()), 306, g);
-		drawRect(15, 290, 15 + (60 * enemy.getSp() / enemy.getSpMax()), 306, g);
+		drawRect(400, 203, 400 + (int)(70 * player.getSp()), 219, g);
 		paint.setColor(Color.BLACK);
 		paint.setStyle(Paint.Style.STROKE);
-		drawRect(405, 250, 465, 266, g);
-		drawRect(405, 270, 465, 286, g);
-		drawRect(405, 290, 465, 306, g);
-		drawRect(15, 250, 75, 266, g);
-		drawRect(15, 270, 75, 286, g);
-		drawRect(15, 290, 75, 306, g);
-		drawText(Integer.toString(player.getHp()), 420, 263, g);
-		drawText(Integer.toString(player.getMp()), 420, 283, g);
-		drawText(Integer.toString(player.getSp()), 420, 303, g);
-		drawText(Integer.toString(enemy.getHp()), 30, 263, g);
-		drawText(Integer.toString(enemy.getMp()), 30, 283, g);
-		drawText(Integer.toString(enemy.getSp()), 30, 303, g);
+		drawRect(400, 116, 470, 132, g);
+		drawRect(400, 157, 470, 173, g);
+		drawRect(400, 203, 470, 219, g);
+		Log.e("game", Double.toString(player.getSp()));
+		drawText(Integer.toString(player.getHp()), 417, 129, g);
+		drawText(Integer.toString(player.getMp()), 417, 170, g);
+		drawText(Integer.toString((int)(3500*player.getSp())), 417, 216, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.YELLOW);
-		drawRect(15, 137, 15 + ((60 * player.getAbilityTimer_roll()) / 400), 147, g);
-		drawRect(15, 202, 15 + ((60 * player.getAbilityTimer_teleport()) / 350), 212, g);
-		drawRect(405, 137, 405 + ((60 * player.getAbilityTimer_burst()) / 500), 147, g);
-		drawRect(190, 295, 190 + ((100 * player.getAbilityTimer_powerBall()) / 90), 310, g);
+		drawRect(10, 70, 10 + (int)((70 * player.getAbilityTimer_burst()) / 400), 80, g);
+		drawRect(10, 223, 10 + (int)((70 * player.getAbilityTimer_roll()) / 350), 233, g);
+		drawRect(10, 300, 10 + (int)((70 * player.getAbilityTimer_teleport()) / 500), 310, g);
+		drawRect(190, 295, 190 + (int)((100 * player.getAbilityTimer_powerBall()) / 90), 310, g);
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setColor(Color.BLACK);
-		drawRect(15, 137, 75, 147, g);
-		drawRect(15, 202, 75, 212, g);
-		drawRect(405, 137, 465, 147, g);
+		drawRect(10, 70, 80, 80, g);
+		drawRect(10, 223, 80, 233, g);
+		drawRect(10, 300, 80, 310, g);
 		drawRect(190, 295, 290, 310, g);
 		paint.setColor(Color.RED);
 		paint.setStyle(Paint.Style.FILL);
@@ -397,6 +387,13 @@ public final class Controller extends View
 			if(walls[i] != null)
 			{
 				walls[i].frameCall();
+			}
+		}
+		for(int i = 0; i < wallCircles.length; i++)
+		{
+			if(wallCircles[i] != null)
+			{
+				wallCircles[i].frameCall();
 			}
 		}
 		for(int i = 0; i < graphic_Teleport.length; i++)
@@ -504,55 +501,7 @@ public final class Controller extends View
 		spGraphicEnemy.frameCall();
 		invalidate();
 	}
-	/*
-	 * Replaces canvas.drawRect(int, int, int, int, Paint) and auto scales
-	 */
-	public void drawRect(int x, int y, int x2, int y2, Canvas g)
-	{
-		g.drawRect(x, y, x2, y2, paint);
-	}
-	/*
-	 * Replaces canvas.drawCircle(int, int, int paint) and auto scales
-	 */
-	public void drawCircle(int x, int y, int radius, Canvas g)
-	{
-		g.drawCircle(x, y, radius, paint);
-	}
-	/*
-	 * Replaces canvas.drawBitmap(Bitmap, int, int, paint) and auto scales
-	 */
-	public void drawBitmap(Bitmap picture, int x, int y, Canvas g)
-	{
-		g.drawBitmap(picture, x, y, paint);
-	}
-	/*
-	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
-	 */
-	public void drawBitmapRotated(DrawnSprite sprite, Canvas g)
-	{
-		rotateImages.reset();
-		rotateImages.postTranslate(-sprite.getVisualImage().getWidth() / 2, -sprite.getVisualImage().getHeight() / 2);
-		rotateImages.postRotate((float) sprite.getRotation());
-		rotateImages.postTranslate((float) sprite.getX(), (float) sprite.getY());
-		g.drawBitmap(sprite.getVisualImage(), rotateImages, paint);
-		sprite = null;
-	}
-	/*
-	 * Replaces canvas.drawBitmap(Bitmap, Rect, Rect, Paint) and auto scales
-	 */
-	public void drawBitmapRect(Bitmap picture, Rect rectangle, Canvas g)
-	{
-		g.drawBitmap(picture, null, rectangle, paint);
-	}
-	/*
-	 * Replaces canvas.drawText(String, int, int, Paint) and auto scales
-	 */
-	public void drawText(String text, int x, int y, Canvas g)
-	{
-		// TODO
-		g.drawText(text, x, y, paint);
-	}
-	/*
+	 /*
 	 * draws background, player screens, level etc (TODO generate bitmap to draw instead)
 	 */
 	public Bitmap drawStart()
@@ -561,13 +510,12 @@ public final class Controller extends View
 		Canvas toReturn = new Canvas(drawTo);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(playerColour);
-		drawRect(240, 0, 480, 320, toReturn);
-		paint.setColor(enemyColour);
-		drawRect(0, 0, 240, 320, toReturn);
+		drawRect(0, 0, 480, 320, toReturn);
 		paint.setColor(Color.WHITE);
 		drawRect(90, 10, 390, 310, toReturn);
-		drawBitmap(imageLibrary.fullScreen1, 15, 87, toReturn);
-		drawBitmap(imageLibrary.fullScreen2, 405, 87, toReturn);
+		drawBitmap(imageLibrary.loadImage("symbol000" + Integer.toString(playerType+1), 80, 80), 395, 10, toReturn);
+		drawBitmap(imageLibrary.loadImage("fullscreen0001", 90, 320), 0, 0, toReturn);
+		drawBitmap(imageLibrary.loadImage("fullscreen0002", 90, 320), 390, 0, toReturn);
 		paint.setColor(Color.GRAY);
 		for(int i = 0; i < obstaclesRectanglesX1.length; i++)
 		{
@@ -617,9 +565,9 @@ public final class Controller extends View
 			if(powerBallAOEs[i] != null)
 			{
 				aoeRect.top = (int)(powerBallAOEs[i].getY() - (powerBallAOEs[i].getHeight() / 2));
-				aoeRect.bottom = (int)(powerBallAOEs[i].getY() - (powerBallAOEs[i].getHeight() / 2)) + powerBallAOEs[i].getHeight();
+				aoeRect.bottom = (int)(powerBallAOEs[i].getY() - (powerBallAOEs[i].getHeight() / 2)) + (int)powerBallAOEs[i].getHeight();
 				aoeRect.left = (int)(powerBallAOEs[i].getX() - (powerBallAOEs[i].getWidth() / 2));
-				aoeRect.right = (int)(powerBallAOEs[i].getX() - (powerBallAOEs[i].getWidth() / 2)) + powerBallAOEs[i].getWidth();
+				aoeRect.right = (int)(powerBallAOEs[i].getX() - (powerBallAOEs[i].getWidth() / 2)) + (int)powerBallAOEs[i].getWidth();
 				paint.setAlpha(powerBallAOEs[i].getAlpha());
 				drawBitmapRect(powerBallAOEs[i].getVisualImage(), aoeRect, g);
 			}
@@ -638,7 +586,7 @@ public final class Controller extends View
 		{
 			if(spGraphic[i] != null)
 			{
-				drawCircle((int)(spGraphic[i].getX() - (spGraphic[i].getWidth() / 2)), (int)(spGraphic[i].getY() - (spGraphic[i].getWidth() / 2)), spGraphic[i].getWidth(), g);
+				drawCircle((int)(spGraphic[i].getX() - (spGraphic[i].getWidth() / 2)), (int)(spGraphic[i].getY() - (spGraphic[i].getWidth() / 2)), (int)spGraphic[i].getWidth(), g);
 			}
 		}
 		if(warningTimer > 0)
@@ -703,7 +651,7 @@ public final class Controller extends View
 	public void notEnoughMana()
 	{
 		warningTimer = 30;
-		warningType = 0;
+		warningType = 1;
 	}
 	/*
 	 * Starts 'cooldown' warning
@@ -711,7 +659,7 @@ public final class Controller extends View
 	public void coolDown()
 	{
 		warningTimer = 30;
-		warningType = 1;
+		warningType = 0;
 	}
 	public boolean pointOnScreen(double x, double y)
 	{
@@ -730,6 +678,18 @@ public final class Controller extends View
 		x = (x-screenMinX)/screenDimensionMultiplier;
 		y = (y-screenMinY)/screenDimensionMultiplier;
 		if(x > lowX && x < highX && y > lowY && y < highY)
+        {
+			return true;
+        } else
+        {
+        	return false;
+        }
+	}
+	public boolean pointOnCircle(double x, double y, double midX, double midY, double radius)
+	{
+		x = (x-screenMinX)/screenDimensionMultiplier;
+		y = (y-screenMinY)/screenDimensionMultiplier;
+		if(Math.sqrt(Math.pow(x-midX, 2) + Math.pow(y-midY, 2)) < radius)
         {
 			return true;
         } else
@@ -768,12 +728,6 @@ public final class Controller extends View
 	}
 	public SpGraphic getSpGraphic(int i) {
 		return spGraphic[i];
-	}
-	public Wall_Rectangle getWalls(int i) {
-		return walls[i];
-	}
-	public Wall_Circle getWallCircless(int i) {
-		return wallCircles[i];
 	}
 	public int getObstaclesRectanglesX1(int i) {
 		return obstaclesRectanglesX1[i];

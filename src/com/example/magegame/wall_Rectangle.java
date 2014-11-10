@@ -30,9 +30,11 @@ public class Wall_Rectangle extends Wall
 	public void frameCall()
 	{
 		changing = true;
-		Sprite hold = mainController.player;
+		Human hold = mainController.player;
 		while(hold != null)
 		{
+				//if(hold.x > oRX1-playerRollWidth && hold.x < oRX2+playerRollWidth && hold.y > oRY1-playerRollWidth && hold.y < oRY2+playerRollWidth)
+					
 			if(hold.x > oRX1 && hold.x < oRX2 && hold.y > oRY1 && hold.y < oRY2)
 			{
 				double holdX = Math.abs(hold.x - x);

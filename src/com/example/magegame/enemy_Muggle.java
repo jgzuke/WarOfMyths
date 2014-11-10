@@ -14,7 +14,6 @@ abstract public class Enemy_Muggle extends Enemy
 	{
 		super();
 		mainController = creator;
-		humanType = mainController.getEnemyType();
 		width = 30;
 		height = 30;
 		x = setX;
@@ -22,7 +21,7 @@ abstract public class Enemy_Muggle extends Enemy
 		rotation = 0;
 		lastPlayerX = x;
 		lastPlayerY = y;
-		speedCur = 2.5 + mainController.getRandomDouble();
+		speedCur = 2.5 + (mainController.getRandomDouble()*2);
 	}
 	/*
 	 * Calls correct ai method, sets correct los and in danger states
@@ -208,5 +207,21 @@ abstract public class Enemy_Muggle extends Enemy
 	}
 	public boolean isCheckedPlayerLast() {
 		return checkedPlayerLast;
+	}
+	@Override
+	public void getHit(int damage)
+	{
+		super.getHit(damage);
+		if(deleted)
+		{
+			mainController.createPowerBallEnemy(0, 10, 0, 170, x, y);
+			mainController.createPowerBallEnemy(45, 7, 7, 170, x, y);
+			mainController.createPowerBallEnemy(90, 0, 10, 170, x, y);
+			mainController.createPowerBallEnemy(135, -7, 7, 170, x, y);
+			mainController.createPowerBallEnemy(180, -10, 0, 170, x, y);
+			mainController.createPowerBallEnemy(225, -7, -7, 170, x, y);
+			mainController.createPowerBallEnemy(270, 0, -10, 170, x, y);
+			mainController.createPowerBallEnemy(315, 7, -7, 170, x, y);
+		}
 	}
 }

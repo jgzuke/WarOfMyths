@@ -23,8 +23,6 @@ public final class ImageLibrary
 	public Bitmap[] powerBallAOE_Image = new Bitmap[4];
 	public Bitmap[][] teleport_Image = new Bitmap[2][15];
 	public Bitmap[] warnings = new Bitmap[2];
-	public Bitmap fullScreen1;
-	public Bitmap fullScreen2;
 	private String getting;
 	public Resources res;
 	public String packageName;
@@ -32,8 +30,9 @@ public final class ImageLibrary
 	/*
 	 * Loads all images needed for every game
 	 */
-	public ImageLibrary(Context contextSet)
+	public ImageLibrary(Context contextSet, StartActivity activitySet)
 	{
+		activitySet.loading.incrementPercentLoaded(0);
 		opts = new BitmapFactory.Options();
 		opts.inDither = false;
 		opts.inPurgeable = true;
@@ -42,13 +41,17 @@ public final class ImageLibrary
 		packageName = contextSet.getPackageName();
 		res = contextSet.getResources();
 		getting = "gainsp";
-		teleport_Image[0] = loadArray1D(15, "teleportstart");
-		teleport_Image[1] = loadArray1D(15, "teleportfinish");
-		mage_Image = loadArray1D(59, "mage");
-		warnings = loadArray1D(2, "warn");
-		fullScreen1 = loadImage("fullscreen0001", 60, 154);
-		fullScreen2 = loadImage("fullscreen0002", 60, 154);
-		player_Image = loadArray1D(59, "player");
+		teleport_Image[0] = loadArray1D(15, "teleportstart", 160, 160);
+		activitySet.loading.incrementPercentLoaded(20);
+		teleport_Image[1] = loadArray1D(15, "teleportfinish", 160, 160);
+		activitySet.loading.incrementPercentLoaded(10);
+		mage_Image = loadArray1D(59, "mage", 30, 30);
+		activitySet.loading.incrementPercentLoaded(10);
+		warnings[0] = loadImage("warn0001", 147, 27);
+		warnings[1] = loadImage("warn0002", 173, 74);
+		activitySet.loading.incrementPercentLoaded(20);
+		player_Image = loadArray1D(59, "player", 30, 30);
+		activitySet.loading.incrementPercentLoaded(10);
 	}
 	/*
 	 * Loads or recycles a human animation array
@@ -61,22 +64,22 @@ public final class ImageLibrary
 		{
 			if(toChange.equals("archer"))
 			{
-				archer_Image = loadArray1D(125, "archer");
+				archer_Image = loadArray1D(125, "archer", 80, 50);
 				archerLoaded = true;
 			}
 			else if(toChange.equals("pikeman"))
 			{
-				pikeman_Image = loadArray1D(159, "pikeman");
+				pikeman_Image = loadArray1D(159, "pikeman", 110, 40);
 				pikemanLoaded = true;
 			}
 			else if(toChange.equals("axeman"))
 			{
-				axeman_Image = loadArray1D(109, "axeman");
+				axeman_Image = loadArray1D(109, "axeman", 80, 60);
 				axemanLoaded = true;
 			}
 			else if(toChange.equals("swordsman"))
 			{
-				swordsman_Image = loadArray1D(109, "sword");
+				swordsman_Image = loadArray1D(109, "sword", 110, 70);
 				swordsmanLoaded = true;
 			}
 		}
@@ -121,52 +124,13 @@ public final class ImageLibrary
 		}
 	}
 	/*
-	 * Unused
-	 */
-	private Bitmap[][] loadArray2D(int length1, int length2, String start, int width, int height)
-	{
-		Bitmap[][] newArray = new Bitmap[length1][length2];
-		for(int i = 0; i < length1; i++)
-		{
-			newArray[i] = loadArray1D(length2, (start + correctDigits(i + 1, 4) + "_"), width, height);
-		}
-		return newArray;
-	}
-	/*
-	 * Unused
-	 */
-	private Bitmap[][] loadArray2D(int length1, int length2, String start)
-	{
-		Bitmap[][] newArray = new Bitmap[length1][length2];
-		for(int i = 0; i < length1; i++)
-		{
-			newArray[i] = loadArray1D(length2, (start + correctDigits(i + 1, 4) + "_"));
-		}
-		return newArray;
-	}
-	/*
-	 * Loads array of images
-	 * @param length Length of array to load
-	 * @param start Starting string which precedes array index to match resource name
-	 */
-	public Bitmap[] loadArray1D(int length, String start)
-	{
-		Bitmap[] newArray = new Bitmap[length];
-		for(int i = 0; i < length; i++)
-		{
-			getting = start + correctDigits(i + 1, 4);
-			newArray[i] = loadImage(getting);
-		}
-		return newArray;
-	}
-	/*
 	 * Loads and resizes array of images
 	 * @param length Length of array to load
 	 * @param start Starting string which precedes array index to match resource name
 	 * @param width End width of image being loaded
 	 * @param height End height of image being loaded
 	 */
-	private Bitmap[] loadArray1D(int length, String start, int width, int height)
+	public Bitmap[] loadArray1D(int length, String start, int width, int height)
 	{
 		Bitmap[] newArray = new Bitmap[length];
 		for(int i = 0; i < length; i++)
@@ -191,21 +155,10 @@ public final class ImageLibrary
 		return end;
 	}
 	/*
-	 * Loads image of name given from resources
-	 * @return Returns bitmap loaded
-	 */
-	public Bitmap loadImage(String imageName)
-	{
-		Log.e("**********", imageName);
-		opts.inSampleSize = 8;
-		int imageNumber = res.getIdentifier(imageName, "drawable", packageName);
-		return BitmapFactory.decodeResource(res, imageNumber, opts);
-	}
-	/*
 	 * Loads image of name given from resources and scales to specified width and height
 	 * @return Returns bitmap loaded and resized
 	 */
-	private Bitmap loadImage(String imageName, int width, int height)
+	public Bitmap loadImage(String imageName, int width, int height)
 	{
 		Log.e("**********", imageName);
 		opts.inSampleSize = 1;

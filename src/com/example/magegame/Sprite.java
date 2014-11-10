@@ -2,8 +2,8 @@ package com.example.magegame;
 
 abstract public class Sprite
 {
-	protected int width;
-	protected int height;
+	protected double width;
+	protected double height;
 	protected int currentFrame = 0;
 	protected double x;
 	protected double y;
@@ -28,10 +28,10 @@ abstract public class Sprite
 	public double getRotation() {
 		return rotation;
 	}
-	public int getWidth() {
+	public double getWidth() {
 		return width;
 	}
-	public int getHeight() {
+	public double getHeight() {
 		return height;
 	}
 	public boolean isDeleted() {

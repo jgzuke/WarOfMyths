@@ -1,108 +1,125 @@
 package com.example.magegame;
 import android.util.Log;
-import android.view.GestureDetector.OnGestureListener;
-import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
-class PlayerGestureDetector implements OnGestureListener, OnTouchListener
-{
+public class PlayerGestureDetector implements OnTouchListener {
 	private Player player;
-	private Controller mainController;
-	private GestureDetector gestureScanner;
-	public PlayerGestureDetector(Player setPlayer, Controller control)
+	private Controller main;
+	private long milliSecondsLastPress;
+	private double startFlingX;
+	private double startFlingY;
+	private double screenDimensionMultiplier;
+	private int screenMinX;
+	private int screenMinY;
+	public PlayerGestureDetector(Controller mainSet)
 	{
-		player = setPlayer;
-		mainController = control;
-		gestureScanner = new GestureDetector(mainController.context,this);
-		Log.e("game", "worked");
+		main = mainSet;
+		screenDimensionMultiplier = mainSet.screenDimensionMultiplier;
+		screenMinX = mainSet.screenMinX;
+		screenMinY = mainSet.screenMinY;
 	}
-	@Override
-	public boolean onDown(MotionEvent e) {
-		Log.e("game", "downed");
-		return true;
-	}
-	@Override
-	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,	float velocityY)
+	public void setPlayer(Player playerSet)
 	{
-		Log.e("game", "roll");
-		player.rads = Math.atan2(velocityY, velocityX);
-		player.rotation = player.rads * player.r2d;
-		player.roll();
-		return true;
-	}
-	@Override
-	public boolean onSingleTapUp(MotionEvent e) {
-		Log.e("game", "tap");
-		if(mainController.pointOnSquare(e.getX(), e.getY(), 15, 152, 75, 212))
-        {
-        	player.teleport(e.getX(), e.getY());
-        } else if(mainController.pointOnSquare(e.getX(), e.getY(), 405, 87, 465, 147))
-        {
-        	player.burst();
-        } else if(mainController.pointOnSquare(e.getX(), e.getY(), 405, 152, 465, 212))
-        {
-        	player.chargingSp = true;
-        } else if(mainController.pointOnScreen(e.getX(), e.getY()) && player.teleporting)
-        {
-        	player.teleport((e.getX()-mainController.screenMinX)/mainController.screenDimensionMultiplier, (e.getY()-mainController.screenMinY)/mainController.screenDimensionMultiplier);
-        } else
-        {
-        	player.rads = Math.atan2(e.getX()-player.getX(), e.getY()-player.getY());
-			player.rotation = player.rads * player.r2d;
-			player.releasePowerBall();
-		}
-		return true;
-	}
-	@Override
-	public void onLongPress(MotionEvent e) {
-	}
-	@Override
-	public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-			float distanceY) {
-		// TODO Auto-generated method stub
-		return true;
-	}
-	@Override
-	public void onShowPress(MotionEvent e) {
-		// TODO Auto-generated method stub
+		player = playerSet;
 	}
 	@Override
     public boolean onTouch(View v, MotionEvent e) {
-        switch (e.getAction()){
-        case MotionEvent.ACTION_DOWN:
-        	if(mainController.pointOnSquare(e.getX(), e.getY(), 15, 152, 75, 212))
-            {
-            	player.teleport(e.getX(), e.getY());
-            } else if(mainController.pointOnSquare(e.getX(), e.getY(), 405, 87, 465, 147))
-            {
-            	player.burst();
-            } else if(mainController.pointOnSquare(e.getX(), e.getY(), 405, 152, 465, 212))
-            {
-            	player.chargingSp = true;
-            } else if(mainController.pointOnScreen(e.getX(), e.getY()) && player.teleporting)
-            {
-            	player.teleport((e.getX()-mainController.screenMinX)/mainController.screenDimensionMultiplier, (e.getY()-mainController.screenMinY)/mainController.screenDimensionMultiplier);
-            } else
-            {
-            	player.touching = true;
-            	player.touchX = (e.getX()-mainController.screenMinX)/mainController.screenDimensionMultiplier;
-            	player.touchY = (e.getY()-mainController.screenMinY)/mainController.screenDimensionMultiplier;
-            }
-        break;
-        case MotionEvent.ACTION_MOVE:
-            if(player.touching)
-            {
-            	player.touchX = (e.getX()-mainController.screenMinX)/mainController.screenDimensionMultiplier;
-            	player.touchY = (e.getY()-mainController.screenMinY)/mainController.screenDimensionMultiplier;
-            }
-        break;
-        case MotionEvent.ACTION_UP:
-        	player.touching = false;
-        	player.chargingSp = false;
-        break;
-        }
-        return true;
+		if(main.gameRunning)
+		{
+		        switch (e.getAction()){
+		        case MotionEvent.ACTION_DOWN:
+		        	/*if(System.currentTimeMillis()-milliSecondsLastPress < 200)
+		        	{
+		        		// TODO double click
+		        	} else */if(main.pointOnSquare(e.getX(), e.getY(), 420, 0, 480, 60))
+		            {
+		            	main.activity.startMenu();
+		            } else if(main.pointOnSquare(e.getX(), e.getY(), 10, 240, 80, 310))
+		            {
+		            	player.teleport(visualX(e.getX()), visualY(e.getY()));
+		            } else if(main.pointOnSquare(e.getX(), e.getY(), 10, 10, 80, 80))
+		            {
+		            	player.burst();
+		            } else if(main.pointOnSquare(e.getX(), e.getY(), 10, 86, 80, 157))
+		            {
+		            	player.chargingSp = true;
+		            } else if(main.pointOnSquare(e.getX(), e.getY(), 10, 163, 80, 233))
+		            {
+		            	player.roll();
+		            } else if(main.pointOnScreen(e.getX(), e.getY()))
+		            {
+		            	if(player.teleporting)
+		            	{
+			            	player.teleport(visualX(e.getX()), visualY(e.getY()));
+		            	} else
+		            	{
+		            		//startFlingX = e.getX();
+			            	//startFlingY = e.getY();
+		            		player.rads = Math.atan2(visualY(e.getY())-player.y, visualX(e.getX())-player.x);
+			        		player.rotation = player.rads*player.r2d;
+			        		player.touchX = visualX(e.getX())-player.x;
+			            	player.touchY = visualY(e.getY())-player.y;
+			        		player.releasePowerBall();
+		            	}
+		            } else if(main.pointOnCircle(e.getX(), e.getY(), 437, 267, 50))
+		            {
+		            	player.touching = true;
+		            	player.touchX = visualX(e.getX())-437;
+		            	player.touchY = visualY(e.getY())-267;
+		            } else
+		            {
+		            	startFlingX = e.getX();
+		            	startFlingY = e.getY();
+		            }
+		        	milliSecondsLastPress = System.currentTimeMillis();
+		        break;
+		        case MotionEvent.ACTION_MOVE:
+		            if(player.touching)
+		            {
+		            	player.touchX = visualX(e.getX())-437;
+		            	player.touchY = visualY(e.getY())-267;
+		            }
+		        break;
+		        case MotionEvent.ACTION_UP:
+		        	/*if(System.currentTimeMillis()-milliSecondsLastPress < 200)
+		        	{
+		        		Log.e("game", Long.toString(System.currentTimeMillis()-milliSecondsLastPress));
+			        	if(getDistance(e.getX(), e.getY(), startFlingX, startFlingY) > 80)
+			        	{
+			        		player.rads = Math.atan2(visualY(e.getY())-player.y, visualX(e.getX())-player.x);
+			        		player.rotation = player.rads*player.r2d;
+			        		player.roll();
+			        	} else
+			        	{
+			        		player.rads = Math.atan2(visualY(e.getY())-player.y, visualX(e.getX())-player.x);
+			        		player.rotation = player.rads*player.r2d;
+			        		player.touchX = visualX(e.getX())-player.x;
+			            	player.touchY = visualY(e.getY())-player.y;
+			        		player.releasePowerBall();
+			        	}
+		        	}*/
+		        	player.touching = false;
+		        	player.chargingSp = false;
+		        break;
+		        }
+		        return true;
+		} else
+		{
+			return false;
+		}
     }
+	public double getDistance(double x1, double y1, double x2, double y2)
+	{
+		return Math.sqrt(Math.pow(visualX(x1)-visualX(x2), 2) + Math.pow(visualY(y1)-visualY(y2), 2));
+	}
+	public double visualX(double x)
+	{
+		return (x-screenMinX)/screenDimensionMultiplier;
+	}
+	public double visualY(double y)
+	{
+		return (y-screenMinY)/screenDimensionMultiplier;
+	}
 }

@@ -11,9 +11,9 @@ public final class Enemy_Mage extends Enemy
 	private double xMoveRoll;
 	private double yMoveRoll;
 	private int mp = 1750;
-	private int sp = 0;
+	private double sp = 0;
 	private int mpMax = 3500;
-	private int spMax = 3500;
+	private double spMax = 1;
 	private int rollTimer = 0;
 	private int reactionTimeRating;
 	private String reaction;
@@ -43,6 +43,7 @@ public final class Enemy_Mage extends Enemy
 		height = 30;
 		x = 110;
 		y = 160;
+		speedCur = 3.5;
 	}
 	/*
 	 * Replenishes stats, counts down timers, and checks los etc
@@ -52,23 +53,51 @@ public final class Enemy_Mage extends Enemy
 	Override
 	public void frameCall()
 	{
+		if(humanType==2)
+		{
+			speedCur = 3.5*(1+sp);
+		}
 		reactionTimeRating = mainController.getDifficultyLevel();
 		reactTimer--;
 		if(abilityTimer_roll < 400)
 		{
-			abilityTimer_roll += mainController.getDifficultyLevelMultiplier();
+			if(humanType==2)
+			{
+				abilityTimer_roll += mainController.getDifficultyLevelMultiplier()*(1+sp);
+			} else
+			{
+				abilityTimer_roll += mainController.getDifficultyLevelMultiplier();
+			}
 		}
 		if(abilityTimer_teleport < 350)
 		{
-			abilityTimer_teleport += mainController.getDifficultyLevelMultiplier();
+			if(humanType==2)
+			{
+				abilityTimer_teleport += mainController.getDifficultyLevelMultiplier()*(1+sp);
+			} else
+			{
+				abilityTimer_teleport += mainController.getDifficultyLevelMultiplier();
+			}
 		}
 		if(abilityTimer_burst < 500)
 		{
-			abilityTimer_burst += mainController.getDifficultyLevelMultiplier();
+			if(humanType==2)
+			{
+				abilityTimer_burst += mainController.getDifficultyLevelMultiplier()*(1+sp);
+			} else
+			{
+				abilityTimer_burst += mainController.getDifficultyLevelMultiplier();
+			}
 		}
 		if(abilityTimer_powerBall < 90)
 		{
-			abilityTimer_powerBall += mainController.getDifficultyLevelMultiplier();
+			if(humanType==2)
+			{
+				abilityTimer_powerBall += mainController.getDifficultyLevelMultiplier()*(1+sp);
+			} else
+			{
+				abilityTimer_powerBall += mainController.getDifficultyLevelMultiplier();
+			}
 		}
 		if(isThisPlayer())
 		{
@@ -87,7 +116,13 @@ public final class Enemy_Mage extends Enemy
 			}
 		}
 		rollTimer--;
-		mp += 5 * mainController.getDifficultyLevelMultiplier();
+		if(humanType==1)
+		{
+			mp += 5 * mainController.getDifficultyLevelMultiplier()*(1+(2*sp));
+		} else
+		{
+			mp += 5 * mainController.getDifficultyLevelMultiplier();
+		}
 		if(currentFrame == 58)
 		{
 			currentFrame = 0;
@@ -143,31 +178,13 @@ public final class Enemy_Mage extends Enemy
 			{
 				if(getRunTimer() < 1)
 				{
-					if(humanType == 2 && sp > 45)
-					{
-						x += xMoveRoll * 1.5;
-						y += yMoveRoll * 1.5;
-						sp -= 45;
-					}
-					else
-					{
 						x += xMoveRoll;
 						y += yMoveRoll;
-					}
 				}
 				else
 				{
-					if(humanType == 2 && sp > 30)
-					{
-						x += Math.cos(rads) * (speedCur * 1.5);
-						y += Math.sin(rads) * (speedCur * 1.5);
-						sp -= 30;
-					}
-					else
-					{
 						x += Math.cos(rads) * speedCur;
 						y += Math.sin(rads) * speedCur;
-					}
 				}
 				if(rollTimer == 1 || getRunTimer() == 1)
 				{
@@ -199,6 +216,19 @@ public final class Enemy_Mage extends Enemy
 		else
 		{
 			reactTimer = reactionTimeRating + 10;
+		}
+	}
+	@Override
+	public void getHit(int damage)
+	{
+		if(humanType == 3)
+		{
+			damage /= (1+sp);
+		}
+		super.getHit(damage);
+		if(deleted)
+		{
+			mainController.activity.startMenu();
 		}
 	}
 	/*
@@ -339,12 +369,12 @@ public final class Enemy_Mage extends Enemy
 				setReactTimer();
 				reaction = "Teleport Towards";
 			}
-			sp += 5 * mainController.getDifficultyLevelMultiplier();
+			sp += mainController.getDifficultyLevelMultiplier()/700;
 			createSpecialGraphicGainCounter = true;
 		}
 		else
 		{
-			sp += 5 * mainController.getDifficultyLevelMultiplier();
+			sp += mainController.getDifficultyLevelMultiplier()/700;
 			createSpecialGraphicGainCounter = true;
 		}
 	}
@@ -475,8 +505,8 @@ public final class Enemy_Mage extends Enemy
 		rollTimer = 11;
 		playing = true;
 		currentFrame = 48;
-		xMoveRoll = Math.cos(rads) * speedCur * 2;
-		yMoveRoll = Math.sin(rads) * speedCur * 2;
+		xMoveRoll = Math.cos(rads) * speedCur * 2.2;
+		yMoveRoll = Math.sin(rads) * speedCur * 2.2;
 	}
 	public void teleport(int newX, int newY)
 	{
@@ -484,15 +514,8 @@ public final class Enemy_Mage extends Enemy
 		x = newX;
 		y = newY;
 		mainController.teleportFinish(x, y);
-		if(humanType == 1 && sp > 30)
-		{
-			mp -= 580;
-			sp -= 30;
-		}
-		else
-		{
+		
 			mp -= 600;
-		}
 	}
 	/* 
 	 * Teleports to players position
@@ -547,15 +570,8 @@ public final class Enemy_Mage extends Enemy
 	 */
 	public void releasePowerBall()
 	{
-		if(humanType == 1 && sp > 30)
-		{
-			mp -= 280;
-			sp -= 30;
-		}
-		else
-		{
+		
 			mp -= 300;
-		}
 		playing = false;
 		currentFrame = 0;
 		if(mainController.player.isTeleporting())
@@ -572,15 +588,7 @@ public final class Enemy_Mage extends Enemy
 	}
 	public void powerBurst()
 	{
-		if(humanType == 1 && sp > 30)
-		{
-			mp -= 2480;
-			sp -= 30;
-		}
-		else
-		{
-			mp -= 2500;
-		}
+		mp -= 2500;
 		mainController.createPowerBallEnemy(0, 10, 0, 170, x, y);
 		mainController.createPowerBallEnemy(45, 7, 7, 170, x, y);
 		mainController.createPowerBallEnemy(90, 0, 10, 170, x, y);
@@ -660,13 +668,13 @@ public final class Enemy_Mage extends Enemy
 	public int getMp() {
 		return mp;
 	}
-	public int getSp() {
+	public double getSp() {
 		return sp;
 	}
 	public int getMpMax() {
 		return mpMax;
 	}
-	public int getSpMax() {
+	public double getSpMax() {
 		return spMax;
 	}
 	public int getRollTimer() {
@@ -675,7 +683,7 @@ public final class Enemy_Mage extends Enemy
 	public void setRollTimer(int rollTimer) {
 		this.rollTimer = rollTimer;
 	}
-	public void lowerSp(int lowered) {
+	public void lowerSp(double lowered) {
 		sp -= lowered;
 	}
 	public void setMp(int mp) {

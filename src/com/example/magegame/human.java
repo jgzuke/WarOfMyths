@@ -8,7 +8,7 @@ abstract public class Human extends DrawnSprite
 	private int hpMax = 7000;
 	protected double r2d = 180 / Math.PI;
 	protected double rads;
-	protected double speedCur = 3;
+	protected double speedCur;
 	protected boolean hitBack;
 	protected boolean playing = false;
 	protected boolean createSpecialGraphicGainCounter = false;

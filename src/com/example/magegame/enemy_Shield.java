@@ -37,6 +37,8 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
 		if(distanceFound < 100)
 		{
+			rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
+			rotation = rads * r2d;
 			currentFrame = 98;
 			attacking = true;
 			playing = true;
@@ -50,7 +52,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	public void frameReactionsDangerNoLOS()
 	{
 		distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
-		if(distanceFound < 50)
+		if(distanceFound < 100)
 		{
 			rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
 			rotation = rads * r2d;
