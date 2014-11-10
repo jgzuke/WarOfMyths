@@ -33,7 +33,7 @@ public final class CrossbowBolt extends PowerBall
 			yDif = y - control.player.y;
 			if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100) // if player within 10 pixels
 			{
-				control.player.getHit(power*7);
+				control.player.getHit(power*4);
 				deleted = true;
 				control.activity.playEffect("arrowhit");
 				if(control.getRandomDouble()*(0.5+control.getDifficultyLevelMultiplier()) > 1.7) // chance of stunning player
@@ -53,8 +53,11 @@ public final class CrossbowBolt extends PowerBall
 		super.frameCall();
 		if(control.checkHitBack(x, y) && !deleted)
 		{
-			x -= xForward;
-			y -= yForward;
+			deleted = true;
+			control.activity.playEffect("arrowhit");
+		}
+		if(control.checkHitBack(x-(xForward/2), y-(yForward/2)) && !deleted)
+		{
 			deleted = true;
 			control.activity.playEffect("arrowhit");
 		}
@@ -64,7 +67,7 @@ public final class CrossbowBolt extends PowerBall
 			yDif = y - control.player.y;
 			if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100) // if player within 10 pixels
 			{
-				control.player.getHit(power*7);
+				control.player.getHit(power*4);
 				deleted = true;
 				control.activity.playEffect("arrowhit");
 				if(control.getRandomDouble()*(0.5+control.getDifficultyLevelMultiplier()) > 1.7) // chance of stunning player

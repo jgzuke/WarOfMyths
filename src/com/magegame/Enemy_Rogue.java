@@ -22,7 +22,8 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		currentFrame = 49;
 		visualImage = control.imageLibrary.rogue_Image[53];
 		setImageDimensions();
-		hp = (int)(4000);//  * control.getDifficultyLevelMultiplier());
+		hp = 3000;
+		baseHp();
 		setHpMax(hp);
 		worth = 7;
 		weight = 0.8;
@@ -80,7 +81,6 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
 		rotation = rads * r2d;
 		rads = (rotation + 90) / r2d;
-		double areaProtectedRads;
 		if(control.checkObstructionsAll(x, y, rads, 42))
 		{
 			rads = (rotation - 90) / r2d;

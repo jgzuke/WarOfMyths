@@ -3,9 +3,6 @@
  */
 package com.magegame;
 
-import android.graphics.Bitmap;
-import android.util.Log;
-
 public final class Player extends Human
 {
 	protected int transformedTimer = 30000;
@@ -15,11 +12,11 @@ public final class Player extends Human
 	protected int rollTimer = 0;
 	private double xMoveRoll;
 	private double yMoveRoll;
-	protected double sp = 0;
+	protected double sp = 1;
 	protected double spMod = 1;
 	protected double spChangeForType;
-	private double abilityTimer_roll = 0;
-	private double abilityTimer_burst = 0;
+	protected double abilityTimer_roll = 0;
+	protected double abilityTimer_burst = 0;
 	protected double abilityTimer_powerBall = 0;
 	protected double abilityTimerTransformed_pound = 0;
 	protected double abilityTimerTransformed_hit = 0;
@@ -70,7 +67,7 @@ public final class Player extends Human
 		transformedTimer = 30000;
 		damageMultiplier = 1;
 		rollTimer = 0;
-		sp = 0.5;
+		sp = 1;
 		abilityTimer_roll = 120;
 		abilityTimer_burst = 250;
 		abilityTimer_powerBall = 0;
@@ -79,7 +76,7 @@ public final class Player extends Human
 		touching = false;
 		x = 370;
 		y = 160;
-		hp = (int)(7000 * Math.pow((double)control.activity.wHephaestus/10, 0.9));
+		hp = (int)(4890 * Math.pow((double)control.activity.wHephaestus/10, 0.9))+2000;
 		if(control.lowerHp)
 		{
 			hp = (int)(hp/8);
@@ -102,7 +99,7 @@ public final class Player extends Human
 			control.imageLibrary.loadTrans();
 			if(transformed == 1)
 			{
-				control.imageLibrary.player_Image = control.imageLibrary.loadArray1D(58, "human_playergolem", 80, 80);
+				control.imageLibrary.player_Image = control.imageLibrary.loadArray1D(58, "human_playergolem", 85, 85);
 			} else
 			{
 				control.imageLibrary.player_Image = control.imageLibrary.loadArray1D(58, "human_playerhammer", 80, 80);
@@ -135,6 +132,7 @@ public final class Player extends Human
 		sp -= 0.0001;
 		spMod = 1+(sp*spChangeForType);
 		speedCur = 4.7*Math.pow((double)control.activity.wHermes/10, 0.4);
+		speedCur *= 1.2;
 		if(humanType==2)
 		{
 			speedCur *= Math.pow(spMod, 0.5);
@@ -143,16 +141,17 @@ public final class Player extends Human
 		{
 			speedCur += 0.7*(double)control.activity.wZues/10;
 		}
-		if(sp > 1)
+		if(sp > 1.5)
 		{
-			sp = 1;
+			sp = 1.5;
 		}
-		if(sp < 0)
+		if(sp < 0.5)
 		{
-			sp = 0;
+			sp = 0.5;
 		}
 		if(transformed == 1||transformed == 2)
 		{
+			hp += 7;
 			speedCur *= 1.2;	
 			double cooldown;
 			cooldown = (double)control.activity.wAthena/10;
@@ -213,7 +212,7 @@ public final class Player extends Human
 					}
 					for(int i = 0; i<6; i++)
 					{	
-						control.createPowerBallPlayerAOE(newX-20+control.getRandomInt(40), newY-20+control.getRandomInt(40), 130);
+						control.createPowerBallPlayerAOE(newX-20+control.getRandomInt(40), newY-20+control.getRandomInt(40), 130, true);
 					}
 					control.createPowerBallPlayerBurst(newX, newY, 0);
 					control.activity.playEffect("burst");
@@ -241,7 +240,7 @@ public final class Player extends Human
 			{
 				cooldown *= spMod;
 			}
-			abilityTimer_roll += cooldown;
+			abilityTimer_roll += cooldown*1.4;
 			if(abilityTimer_roll >= 120)
 			{
 				abilityTimer_roll = 120;
@@ -255,15 +254,15 @@ public final class Player extends Human
 			{
 				cooldown *= 1.5*(double)control.activity.wPoseidon/10;
 			}
-			abilityTimer_burst += cooldown;
-			abilityTimer_powerBall += cooldown*4.5;
+			abilityTimer_burst += cooldown*1.4;
+			abilityTimer_powerBall += cooldown*5;
 			if(abilityTimer_burst >= 500)
 			{
 				abilityTimer_burst = 500;
 			}
-			if(abilityTimer_powerBall >= 90)
+			if(abilityTimer_powerBall >= 91+(control.activity.bReserve*20))
 			{
-				abilityTimer_powerBall = 90;
+				abilityTimer_powerBall = 91+(control.activity.bReserve*20);
 			}
 			if(control.limitSpells)
 			{
@@ -344,9 +343,9 @@ public final class Player extends Human
 	{
 		if(abilityTimer_powerBall > 30)
 		{
-			if(rollTimer < 0)
+			if(rollTimer < 0&&control.levelNum!=10)
 			{
-					control.createPowerBallPlayer(rads*r2d, Math.cos(rads) * projectileSpeed, Math.sin(rads) * projectileSpeed, 130, x, y);
+					control.createPowerBallPlayer(rads*r2d, projectileSpeed, 130, x, y);
 					abilityTimer_powerBall -= 30;
 					control.activity.playEffect("shoot");
 			}
@@ -360,17 +359,16 @@ public final class Player extends Human
 	 */
 	protected void roll()
 	{
-		if(abilityTimer_roll > 50)
+		if(abilityTimer_roll > 40)
 		{
-			if(rollTimer < 0)
-			{
-				rollTimer = 11;
-				playing = true;
-				currentFrame = 21;
-				xMoveRoll = Math.cos(rads) * 8;
-				yMoveRoll = Math.sin(rads) * 8;
-				abilityTimer_roll -= 50;
-			}
+			rads = Math.atan2(touchY, touchX);
+			rotation = rads * r2d;
+			rollTimer = 11;
+			playing = true;
+			currentFrame = 21;
+			xMoveRoll = Math.cos(rads) * 8;
+			yMoveRoll = Math.sin(rads) * 8;
+			abilityTimer_roll -= 40;
 		} else
 		{
 			control.startWarning("Cool Down");
@@ -417,21 +415,18 @@ public final class Player extends Human
 	 */
 	protected void burst()
 	{
-		if(abilityTimer_burst > 400)
+		if(abilityTimer_burst > 300)
 		{
-			if(rollTimer < 0)
-			{
-				for(int i = 0; i<6; i++)
-				{	
-					control.createPowerBallPlayerAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130);
-				}
-				control.createPowerBallPlayerBurst(x, y, 0);
-				abilityTimer_burst -= 400;
-				control.activity.playEffect("burst");
-				control.activity.playEffect("burst");
-				control.activity.playEffect("burst");
-				control.activity.playPlayerEffect();
+			for(int i = 0; i<6; i++)
+			{	
+				control.createPowerBallPlayerAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130, true);
 			}
+			control.createPowerBallPlayerBurst(x, y, 0);
+			abilityTimer_burst -= 300;
+			control.activity.playEffect("burst");
+			control.activity.playEffect("burst");
+			control.activity.playEffect("burst");
+			control.activity.playPlayerEffect();
 		} else
 		{
 			control.startWarning("Cool Down");
@@ -444,27 +439,36 @@ public final class Player extends Human
 	{
 		if(transformed == 0)
 		{
-			rotation = rads * r2d + 180;
-	        roll();
-	        currentFrame = 0;
-	        xMoveRoll /= 3;
-	        yMoveRoll /= 3;
-	        abilityTimer_roll += 20;
-	        control.startWarning("Stunned!");
+			if(rollTimer<2)
+			{
+				rotation = rads * r2d + 180;
+		        roll();
+		        currentFrame = 0;
+		        xMoveRoll /= 3;
+		        yMoveRoll /= 3;
+		        abilityTimer_roll += 20;
+		        control.startWarning("Stunned!");
+			}
 		}
 	}
 	/**
-	 * reduces and amplifies damage based on sheilds etc.
+	 * reduces and amplifies damage based on shields etc.
 	 */
 	@Override
 	protected void getHit(double damage)
 	{
-		if(transformed == 1) damage *= 0.2;
-		if(transformed == 2) damage *= 0.3;
+		if(transformed == 1)
+		{
+			damage *= 0.08;
+		}
+		if(transformed == 2)
+		{
+			damage *= 0.1;
+		}
 		damage *= 0.7;
 		if(powerUpTimer>0 && powerID == 2)
 		{
-			damage *= (0.7/control.activity.wHephaestus*10);
+			damage *= (0.7/control.activity.wHades*10);
 		}
 			damage *= damageMultiplier;
 			if(humanType == 3)
@@ -486,7 +490,7 @@ public final class Player extends Human
 		switch(PowerID)
 		{
 		case 1:
-			hp += getHpMax()/2;
+			hp += 2000;
 			if(hp>getHpMax())hp=getHpMax();
 			break;
 		case 2:

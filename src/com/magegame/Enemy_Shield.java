@@ -1,8 +1,8 @@
 /**
- * Object behavior and ai for enemies with sheilds
+ * Object behavior and ai for enemies with shields
  */
 package com.magegame;
-abstract public class Enemy_Shield extends Enemy_Muggle
+public class Enemy_Shield extends Enemy_Muggle
 {
 	/**
 	 * Calls super
@@ -13,10 +13,16 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	public Enemy_Shield(Controller creator, double setX, double setY)
 	{
 		super(creator, setX, setY); //sets x, y and creator
+		hp = 5000;
+		baseHp();
+		visualImage = control.imageLibrary.shield_Image[0];
+		setImageDimensions();
+		setHpMax(hp);
 	}@
 	Override
 	protected void frameCall()
 	{
+		visualImage = control.imageLibrary.shield_Image[currentFrame];
 		if(currentFrame == 54)
 		{
 			currentFrame = 0;
@@ -103,20 +109,20 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	Override
 	protected void frameReactionsNoDangerNoLOS()
 	{
-		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY);
+		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY); // lastPlayerX and Y are the last seen coordinates
 		if(isCheckedPlayerLast() || distanceFound < 10)
 		{
 			currentFrame = 0;
 			playing = false;
-			if(control.getRandomInt(10) == 0)
+			if(control.getRandomInt(10) == 0) // around ten frames of pause between random wandering
 			{
 				runRandom();
 			}
-			setCheckedPlayerLast(true);
+			setCheckedPlayerLast(true);// has checked where player was last seen
 		}
 		else
 		{
-			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x));
+			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x)); // move towards last seen coordinates
 			rotation = rads * r2d;
 			runTowardPlayer();
 		}
@@ -141,7 +147,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 			distanceFound = checkDistance(x + Math.cos(rads) * 25, y + Math.sin(rads) * 25, control.player.x, control.player.y);
 			if(distanceFound < 25)
 			{
-				control.player.getHit((int)(450*control.getDifficultyLevelMultiplier()));
+				control.player.getHit((int)(420*control.getDifficultyLevelMultiplier()));
 				control.activity.playEffect("sword2");
 				if(control.getRandomInt(3) == 0)
 				{
@@ -167,5 +173,10 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 				control.activity.playEffect("swordmiss");
 			}
 		}
+	}
+	@Override
+	protected int getType()
+	{
+		return 1;
 	}
 }

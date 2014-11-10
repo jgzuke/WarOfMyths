@@ -43,6 +43,23 @@ public final class PowerBallAOE_Player extends PowerBallAOE
 					}
 				}
 			}
+			for(int i = 0; i < control.structures.length; i++)
+			{
+				if(control.structures[i] != null)
+				{
+					xDif = x - control.structures[i].x;
+					yDif = y - control.structures[i].y;
+					if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone+15)
+					{
+						double damage = 60*Math.pow((double)control.activity.wAres/10, 0.5);
+						if(control.player.humanType == 0)
+						{
+							damage*= Math.pow(control.player.spMod, 0.7);
+						}
+						control.structures[i].getHit((int)damage);
+					}
+				}
+			}
 		}
 	}
 	/**
@@ -52,9 +69,9 @@ public final class PowerBallAOE_Player extends PowerBallAOE
 	protected void explode(int power)
 	{
 		control.activity.playPlayerEffect();
-		for(int i = 0; i<6; i++)
+		for(int i = 0; i<9; i++)
 		{
-			control.createPowerBallPlayerAOE(x-15+control.getRandomInt(30), y-15+control.getRandomInt(30), power);
+			control.createPowerBallPlayerAOE(x-15+control.getRandomInt(30), y-15+control.getRandomInt(30), power+22, true);
 		}
 		/*int power = 130;
 		double veloc = 2+(control.getDifficultyLevelMultiplier()*5);

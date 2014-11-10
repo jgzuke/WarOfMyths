@@ -15,7 +15,8 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		super(creator, setX, setY);
 		visualImage = control.imageLibrary.pikeman_Image[0];
 		setImageDimensions();
-		hp = (int)(4500);//  * control.getDifficultyLevelMultiplier());
+		hp = 4000;
+		baseHp();
 		setHpMax(hp);
 		weight = 1.5;
 	}@
@@ -61,20 +62,20 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 	Override
 	protected void frameReactionsNoDangerNoLOS()
 	{
-		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY);
+		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY); // lastPlayerX and Y are the last seen coordinates
 		if(isCheckedPlayerLast() || distanceFound < 10)
 		{
 			currentFrame = 0;
 			playing = false;
-			if(control.getRandomInt(10) == 0)
+			if(control.getRandomInt(10) == 0) // around ten frames of pause between random wandering
 			{
 				runRandom();
 			}
-			setCheckedPlayerLast(true);
+			setCheckedPlayerLast(true);// has checked where player was last seen
 		}
 		else
 		{
-			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x));
+			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x)); // move towards last seen coordinates
 			rotation = rads * r2d;
 			runTowardPlayer();
 		}

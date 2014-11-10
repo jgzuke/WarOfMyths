@@ -17,9 +17,14 @@ public class PlayerGestureDetector implements OnTouchListener {
 	private double xTouch;
 	private double yTouch;
 	protected int buttonShiftX;
-	private boolean lastScreenWorship=false;
+	private String lastScreen;
 	private boolean startDragMusic = false;
 	private boolean startDragEffect = false;
+	private boolean startDragLevels = false;
+	private int startDragLevelsYSave = 0;
+	private int startDragLevelsSlideYSave = 0;
+	private boolean startDragLevelSlider = false;
+	protected int chooseLevelSliderY = 35;
 	private int touchingShootID = 0;
 	/**
 	 * sets screen dimensions and checks current option settings
@@ -80,7 +85,6 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            }
 		            if(player.touchingShoot)
 		            {
-		            	//TODO
 		            	if(control.activity.shootTapDirectional)
 		            	{
 		            		if(!control.activity.shootTapScreen)
@@ -119,6 +123,24 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            		control.invalidate();
 		            	}
 		            }
+		            if(control.gamePaused&&control.currentPause.equals("chooseLevel"))
+		            {
+		            	if(startDragLevels)
+		            	{
+		            		chooseLevelSliderY = startDragLevelsSlideYSave;
+		            		chooseLevelSliderY += startDragLevelsYSave-(int)visualY(e.getY(trackingId));
+		            		if(chooseLevelSliderY<35) chooseLevelSliderY=35;
+		            		if(chooseLevelSliderY>285) chooseLevelSliderY=285;
+		            		control.invalidate();
+		            	}
+		            	if(startDragLevelSlider)
+		            	{
+		            		chooseLevelSliderY = (int)visualY(e.getY(trackingId));
+		            		if(chooseLevelSliderY<35) chooseLevelSliderY=35;
+		            		if(chooseLevelSliderY>285) chooseLevelSliderY=285;
+		            		control.invalidate();
+		            	}
+		            }
 		        break;
 		        case MotionEvent.ACTION_UP:
 		        	player.touching = false;
@@ -129,6 +151,8 @@ public class PlayerGestureDetector implements OnTouchListener {
 		        	}
 		        	startDragMusic = false;
 		        	startDragEffect = false;
+		        	startDragLevels = false;
+		        	startDragLevelSlider = false;
 		        break;
 		        case MotionEvent.ACTION_POINTER_UP:
 		        	if(e.getPointerId(e.getActionIndex()) == trackingId)
@@ -140,6 +164,8 @@ public class PlayerGestureDetector implements OnTouchListener {
 			        	}
 		        		startDragMusic = false;
 			        	startDragEffect = false;
+			        	startDragLevels = false;
+			        	startDragLevelSlider = false;
 		        	}
 		        	if(e.getPointerId(e.getActionIndex()) == touchingShootID)
 		        	{
@@ -172,6 +198,9 @@ public class PlayerGestureDetector implements OnTouchListener {
 			} else if(control.currentPause.equals("startfight"))
 			{
 				clickDownStartFight(x, y);
+			} else if(control.currentPause.equals("buyall"))
+			{
+				clickDownBuyAll(x, y);
 			} else if(control.currentPause.equals("buy"))
 			{
 				clickDownBuy(x, y);
@@ -199,6 +228,9 @@ public class PlayerGestureDetector implements OnTouchListener {
 			} else if(control.currentPause.equals("buypremium"))
 			{
 				clickDownBuyPremium(x, y);
+			} else if(control.currentPause.equals("chooseLevel"))
+			{
+				clickDownChooseLevel(x, y);
 			} else if(control.currentPause.equals("buyskins"))
 			{
 				clickDownBuySkins(x, y);
@@ -257,13 +289,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 		if(control.pointOnSquare(x, y, 66, 231, 214, 276)&&control.activity.canBuyGame(control.buyingItem))
 		{
 			control.activity.buyGame(control.buyingItem);
-			if(lastScreenWorship)
-			{
-				control.currentPause="worship";
-			} else
-			{
-				control.currentPause="blessing";
-			}
+			control.currentPause=lastScreen;
 			control.invalidate();
 		} else if(control.pointOnSquare(x, y, 109, 21, 162, 51))
 		{
@@ -271,15 +297,105 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 		} else if(pressedBack(x, y))
         {
-			if(lastScreenWorship)
-			{
-				control.currentPause="worship";
-			} else
-			{
-				control.currentPause="blessing";
-			}
+			control.currentPause=lastScreen;
 			control.invalidate();
         }
+	}
+	/**
+	 * checks clicks when in the buy specific gold item screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
+	protected void clickDownBuyAll(float x, float y)
+	{
+		lastScreen = "buyall";
+		boolean hit = true;
+		if(control.pointOnSquare(x, y, 20, 60, 230, 170))
+		{
+			control.currentPause = "blessing";
+		} else if(control.pointOnSquare(x, y, 20, 190, 230, 300))
+		{
+			control.currentPause = "worship";
+		} else if(control.pointOnSquare(x, y, 250, 60, 460, 170))
+		{
+			control.currentPause = "buypremium";
+		} else if(control.pointOnSquare(x, y, 250, 190, 460, 300))
+		{
+			control.currentPause = "buyskins";
+		} else if(pressedBack(x, y))
+        {
+			control.gamePaused = false;
+        } else if(control.pointOnSquare(x, y, 109, 21, 162, 51))
+		{
+			control.currentPause="buycash";
+			control.invalidate();
+		} else
+        {
+        	hit = false;
+        }
+		if(hit)
+		{
+			control.invalidate();
+		}
+	}
+	protected void clickDownChooseLevel(float x, float y)
+	{
+		//TODO
+		if(control.pointOnSquare(x, y, 420, 0, 480, 320))
+		{
+			startDragLevelSlider = true;
+		} else if(pressedBack(x, y))
+        {
+			control.gamePaused = false;
+			control.invalidate();
+        } else if(control.pointOnSquare(x, y, 20, 20, 420, 300))
+		{
+        	for(int i = 1; i < 9; i++)
+    		{
+    			int yVal = (80*i)-60-(int)((double)360/250*(chooseLevelSliderY-35));
+    			if(yVal<300&&yVal>-60)
+    			{
+    				if(control.pointOnSquare(x, y, 80, yVal+40, 160, yVal+75))
+    				{
+    					if(i==1)
+    					{
+	    					control.currentPause = "startfight";
+	    					control.startingLevel = 0;
+	    					control.currentTutorial = 1;
+	    					control.invalidate();
+    					} else
+    					{
+    						if(control.activity.levelBeaten >= (2*i)-2)
+        					{
+        						control.currentPause = "startfight";
+        						control.startingLevel = (2*i)-2;
+        						control.invalidate();
+        					} else
+        					{
+        						control.startWarning("Level Locked");
+        					}
+    					}
+    				}
+    				if(control.pointOnSquare(x, y, 280, yVal+40, 360, yVal+75))
+    				{
+    					if(control.activity.levelBeaten >= (2*i)-1)
+    					{
+    						control.gamePaused = true;
+    						control.currentPause = "startfight";
+    						control.startingLevel = (2*i)-1;
+    						control.invalidate();
+    						player.x += 15;
+    					} else
+    					{
+    						control.startWarning("Level Locked");
+    					}
+    				}
+    			}
+    		}
+	        startDragLevels = true;
+	        startDragLevelsYSave = (int)visualY(y);
+	        startDragLevelsSlideYSave = chooseLevelSliderY;
+		}
 	}
 	/**
 	 * checks clicks when in the buy cash screen
@@ -302,13 +418,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.activity.buyRealCurrency5000();
 		} else if(pressedBack(x, y))
         {
-			if(lastScreenWorship)
-			{
-				control.currentPause="worship";
-			} else
-			{
-				control.currentPause="blessing";
-			}
+			control.currentPause=lastScreen;
 			control.invalidate();
         }
 	}
@@ -361,7 +471,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 	 */
 	protected void clickDownWorship(float x, float y)
 	{
-		lastScreenWorship = true;
+		lastScreen = "worship";
 		boolean hit = true;
 		if(control.pointOnCircle(x, y, 138, 99, 20))
 		{
@@ -432,7 +542,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 		} else if(pressedBack(x, y))
         {
-			control.gamePaused = false;
+			control.currentPause="buyall";
         } else
         {
         	hit = false;
@@ -471,77 +581,78 @@ public class PlayerGestureDetector implements OnTouchListener {
 	 */
 	protected void clickDownBuyPremium(float x, float y)
 	{
+		lastScreen = "buypremium";
 		boolean hit = true;
-		if(control.pointOnCircle(x, y, 138, 99, 20))
+		if(control.pointOnCircle(x, y, 149, 99, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Apollo";
-		} else if(control.pointOnCircle(x, y, 299, 99, 20))
+			control.buyingItem = "1000g";
+		} else if(control.pointOnCircle(x, y, 305, 99, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Posiedon";
-		} else if(control.pointOnCircle(x, y, 430, 99, 20))
+			control.buyingItem = "8000g";
+		} else if(control.pointOnCircle(x, y, 458, 99, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Zues";
-		} else if(control.pointOnCircle(x, y, 135, 174, 20))
+			control.buyingItem = "40000g";
+		} else if(control.pointOnCircle(x, y, 151, 174, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Hades";
-		} else if(control.pointOnCircle(x, y, 279, 174, 20))
+			control.buyingItem = "Iron Golem";
+		} else if(control.pointOnCircle(x, y, 310, 174, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Ares";
-		} else if(control.pointOnCircle(x, y, 445, 174, 20))
+			control.buyingItem = "Gold Golem";
+		} else if(control.pointOnCircle(x, y, 444, 174, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Athena";
-		} else if(control.pointOnCircle(x, y, 142, 249, 20))
+			control.buyingItem = "Reserve";
+		} else if(control.pointOnCircle(x, y, 139, 249, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Hermes";
-		} else if(control.pointOnCircle(x, y, 312, 249, 20))
+			control.buyingItem = "Excess";
+		} else if(control.pointOnCircle(x, y, 306, 249, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Hephaestus";
-		} else if(control.pointOnCircle(x, y, 430, 249, 20))
+			control.buyingItem = "Replentish";
+		} else if(control.pointOnCircle(x, y, 448, 249, 20))
 		{
 			control.currentPause = "buyitemcash";
-			control.buyingItem = "Worship Hera";
+			control.buyingItem = "Trailing";
 		} else if(control.pointOnSquare(x, y, 30, 119, 150, 154))
 		{
-			control.activity.buyReal("Worship Apollo");
+			control.activity.buyReal("1000g");
 		} else if(control.pointOnSquare(x, y, 180, 119, 300, 154))
 		{
-			control.activity.buyReal("Worship Posiedon");
+			control.activity.buyReal("8000g");
 		} else if(control.pointOnSquare(x, y, 330, 119, 450, 154))
 		{
-			control.activity.buyReal("Worship Zues");
+			control.activity.buyReal("40000g");
 		} else if(control.pointOnSquare(x, y, 30, 194, 150, 229))
 		{
-			control.activity.buyReal("Worship Hades");
+			control.activity.buyReal("Iron Golem");
 		} else if(control.pointOnSquare(x, y, 180, 194, 300, 229))
 		{
-			control.activity.buyReal("Worship Ares");
+			control.activity.buyReal("Gold Golem");
 		} else if(control.pointOnSquare(x, y, 330, 194, 450, 229))
 		{
-			control.activity.buyReal("Worship Athena");
+			control.activity.buyReal("Reserve");
 		} else if(control.pointOnSquare(x, y, 30, 268, 150, 303))
 		{
-			control.activity.buyReal("Worship Hermes");
+			control.activity.buyReal("Excess");
 		} else if(control.pointOnSquare(x, y, 180, 268, 300, 303))
 		{
-			control.activity.buyReal("Worship Hephaestus");
+			control.activity.buyReal("Replentish");
 		} else if(control.pointOnSquare(x, y, 330, 268, 450, 303))
 		{
-			control.activity.buyReal("Worship Hera");
+			control.activity.buyReal("Trailing");
 		} else if(control.pointOnSquare(x, y, 109, 21, 162, 51))
 		{
 			control.currentPause="buycash";
 			control.invalidate();
 		} else if(pressedBack(x, y))
         {
-			control.gamePaused = false;
+			control.currentPause="buyall";
         } else
         {
         	hit = false;
@@ -558,7 +669,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 	 */
 	protected void clickDownBuySkins(float x, float y)
 	{
-		//TODO
+		lastScreen = "buyskins";
 		boolean hit = true;
 		if(control.pointOnSquare(x, y, 0, 40, 160, 133))
 		{
@@ -647,7 +758,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 		} else if(pressedBack(x, y))
         {
-			control.gamePaused = false;
+			control.currentPause="buyall";
         } else
         {
         	hit = false;
@@ -664,7 +775,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 	 */
 	protected void clickDownBlessing(float x, float y)
 	{
-		lastScreenWorship = false;
+		lastScreen = "blessing";
 		boolean hit = true;
 		if(control.pointOnCircle(x, y, 201, 100, 20))
 		{
@@ -714,7 +825,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 		} else if(pressedBack(x, y))
         {
-			control.gamePaused = false;
+			control.currentPause="buyall";
         } else
         {
         	hit = false;
@@ -735,7 +846,8 @@ public class PlayerGestureDetector implements OnTouchListener {
 	    {
 			if(control.levelNum == 10)
 			{
-				control.gamePaused = false;
+				control.currentPause = "chooseLevel";
+				control.invalidate();
 			} else
 			{
 				control.activity.startMenu();
@@ -897,6 +1009,20 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.activity.playEffect("pageflip");
 			control.invalidate();
 		}
+		if(control.pointOnSquare(x, y, 270, 257, 290, 277))
+		{
+			control.activity.highGraphics = true;
+			control.paint.setFilterBitmap(true);
+			control.activity.playEffect("pageflip");
+			control.invalidate();
+		}
+		if(control.pointOnSquare(x, y, 168, 257, 188, 277))
+		{
+			control.activity.highGraphics = false;
+			control.paint.setFilterBitmap(false);
+			control.activity.playEffect("pageflip");
+			control.invalidate();
+		}
 		if(pressedBack(x, y))
 	    {
 	    	control.currentPause = "paused";
@@ -971,11 +1097,11 @@ public class PlayerGestureDetector implements OnTouchListener {
         	{
         		control.startWarning("Already Worshipping");
         	}
-        } else if(control.pointOnCircle(x, y, 250, 110, 35) && control.activity.pFire>0)
+        } else if(control.pointOnCircle(x, y, 250, 110, 35) && control.activity.pGolem>0)
         {
 	        player.getPowerUp(11);
 	        control.activity.pGolem--;
-        } else if(control.pointOnCircle(x, y, 250, 210, 35) && control.activity.pFire>0)
+        } else if(control.pointOnCircle(x, y, 250, 210, 35) && control.activity.pHammer>0)
         {
 	        player.getPowerUp(12);
 	        control.activity.pHammer--;
@@ -1002,36 +1128,26 @@ public class PlayerGestureDetector implements OnTouchListener {
 			double x = screenX(setX);
 			double y = screenY(setY);
 			hitButton = true;
-			if(getDistance(x, y, 56, 189)<15)
+			if(getDistance(x, y, 58, 242)<15)
 	        {
 	        	control.gamePaused = true;
-				control.currentPause = "worship";
-				control.invalidate();
-	        } else if(getDistance(x, y, 58, 242)<15)
-	        {
-	        	control.gamePaused = true;
-				control.currentPause = "blessing";
+				control.currentPause = "buyall";
 				control.invalidate();
 	        } else if(getDistance(x, y, 103, 273)<15)
 	        {
 	        	control.gamePaused = true;
 				control.currentPause = "chooseGod";
 				control.invalidate();
-	        } else if(getDistance(x, y, 164, 262)<15)
-	        {
-	        	control.gamePaused = true;
-				control.currentPause = "buyskins";
-				control.invalidate();
 	        } else
 	        {
 	        	hitButton = false;
 	        }
 		}
-		if(control.pointOnSquare(setX, setY, 400, 12, 470, 210)&&!control.activity.stickOnRight)
+		if(control.pointOnSquare(setX, setY, 390, 0, 480, 320)&&!control.activity.stickOnRight)
         {
 			hitButton=true;
         }
-		if(control.pointOnSquare(setX, setY, 10, 12, 70, 210)&&control.activity.stickOnRight)
+		if(control.pointOnSquare(setX, setY, 0, 0, 90, 320)&&control.activity.stickOnRight)
         {
 			hitButton=true;
         }
@@ -1174,7 +1290,6 @@ public class PlayerGestureDetector implements OnTouchListener {
         			touchingShootID = ID;
         			player.touchShootY = screenY(y)-player.y;
             		player.touchShootX = screenX(x)-player.x;
-            		//TODO
             	} else
             	{
             		if(control.activity.shootTapDirectional)

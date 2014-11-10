@@ -29,12 +29,10 @@ public class Wall_Circle extends Wall
 		oCR = OCR;
 		oCRatio = OCRatio;
 		control = creator;
-		control.setOCircAll(control.getCurrentCircleAll(), OCX, OCY, OCR, OCRatio);
-		control.incrementCurrentCircleAll();
+		control.setOCircAll(OCX, OCY, OCR, OCRatio);
 		if(tall)
 		{
-			control.setOCirc(control.getCurrentCircle(), OCX, OCY, OCR, OCRatio);
-			control.incrementCurrentCircle();
+			control.setOCirc(OCX, OCY, OCR, OCRatio);
 		}
 		oCR += humanWidth;
 		oCRS = Math.pow(oCR, 2);

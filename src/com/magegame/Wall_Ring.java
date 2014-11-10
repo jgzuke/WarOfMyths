@@ -22,16 +22,18 @@ public class Wall_Ring extends Wall
 	 * @param OCRIn inner radius
 	 * @param OCROut outer radius
 	 */
-	public Wall_Ring(Controller creator, int OCX, int OCY, int OCRIn, int OCROut)
+	public Wall_Ring(Controller creator, int OCX, int OCY, int OCRIn, int OCROut, boolean tall)
 	{
 		oCX = OCX;
 		oCY = OCY;
 		oCRIn = OCRIn;
 		oCROut = OCROut;
 		control = creator;
-		control.setORing(control.getCurrentRing(), OCX, OCY, oCRIn, oCROut);
-		control.incrementCurrentRing();
-		
+		control.setORingAll(OCX, OCY, oCRIn, oCROut);
+		if(tall)
+		{
+			control.setORing(OCX, OCY, oCRIn, oCROut);
+		}
 		oCRIn -= humanWidth;
 		oCROut += humanWidth;
 		oCRSIn = Math.pow(oCRIn, 2);

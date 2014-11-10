@@ -6,8 +6,6 @@
  */
 package com.magegame;
 
-import android.util.Log;
-
 public final class Enemy_Mage extends Enemy
 {
 	private double projectileVelocity;
@@ -27,9 +25,6 @@ public final class Enemy_Mage extends Enemy
 	private double areaProtectedRads;
 	private int areaProtectedRotation;
 	private int areaProtectedCount;
-	private double teleportAwayChooseDistance;
-	private double teleportAwayChooseX;
-	private double teleportAwayChooseY;
 	/**
 	 * sets weight, worth, position, image, and health
 	 * @param creator control object
@@ -47,7 +42,8 @@ public final class Enemy_Mage extends Enemy
 		y = setY;
 		lastPlayerX = x;
 		lastPlayerY = y;
-		hp = (int)(2500);//  * control.getDifficultyLevelMultiplier());
+		hp = 1500;
+		baseHp();
 		setHpMax(hp);
 		worth = 6;
 		weight = 0.8;

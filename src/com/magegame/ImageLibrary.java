@@ -6,37 +6,36 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 public final class ImageLibrary
 {
 	protected boolean pikemanLoaded = false;
-	protected boolean swordsmanLoaded = false;
-	protected boolean axemanLoaded = false;
+	protected boolean shieldLoaded = false;
 	protected boolean archerLoaded = false;
 	protected boolean rogueLoaded = false;
+	protected boolean mageLoaded = false;
 	protected Bitmap[] player_Image = new Bitmap[51];
 	protected Bitmap[] mage_Image = new Bitmap[51];
 	protected Bitmap[] rogue_Image = new Bitmap[65];
 	protected Bitmap[] pikeman_Image = new Bitmap[107]; 
-	protected Bitmap[] swordsman_Image = new Bitmap[79];
-	protected Bitmap[] axeman_Image = new Bitmap[79]; 
+	protected Bitmap[] shield_Image = new Bitmap[79];
 	protected Bitmap[] archer_Image = new Bitmap[116];
+	protected Bitmap structure_Spawn;
 	protected Bitmap[] effects = new Bitmap[4];
 	protected Bitmap target_Image;
-	protected Bitmap next;
+	protected Bitmap isPlayer;
+	protected int isPlayerWidth;
 	protected Bitmap haskey;
 	protected Bitmap exitFightPortal;
+	protected Bitmap backButton;
 	protected Bitmap[] powerBall_ImagePlayer = new Bitmap[5];
 	protected Bitmap powerBallAOE_ImagePlayer;
 	protected Bitmap[] powerBall_ImageEnemy = new Bitmap[5];
 	protected Bitmap powerBallAOE_ImageEnemy;
-	protected Bitmap[] teleport_Image = new Bitmap[15];
 	protected Bitmap[] powerUps = new Bitmap[9];
 	protected Bitmap[] powerUpBigs = new Bitmap[4];
 	protected Bitmap[] coins = new Bitmap[2];
 	protected Bitmap[] trans = new Bitmap[10];
 	protected Bitmap arrow;
-	protected Bitmap levelLocked;
 	protected Bitmap currentLevel;
 	protected Bitmap currentLevelTop;
 	protected Bitmap directionsTutorial;
@@ -47,6 +46,7 @@ public final class ImageLibrary
 	private Controller control;
 	protected BitmapFactory.Options opts;
 	protected Bitmap transattack;
+	protected int scrollPosition = 0;
 	/**
 	 * loads in images and optimizes settings for loading
 	 * @param contextSet start activity for getting resources etc
@@ -71,25 +71,35 @@ public final class ImageLibrary
 	{
 		switch(control.activity.currentSkin)
 		{
-			case 0: player_Image = loadArray1D(31, "human_playerzack", 32, 36);
+			case 0: player_Image = loadArray1D(31, "human_playerzack", 35, 40);
+					isPlayerWidth = 26;
 				break;
-			case 1: player_Image = loadArray1D(31, "human_playergolden", 32, 36);
+			case 1: player_Image = loadArray1D(31, "human_playergolden", 35, 40);
+					isPlayerWidth = 26;
 				break;
-			case 2: player_Image = loadArray1D(31, "human_playerleather", 32, 36);
+			case 2: player_Image = loadArray1D(31, "human_playerleather", 35, 40);
+					isPlayerWidth = 26;
 				break;
-			case 3: player_Image = loadArray1D(31, "human_playerbarbarian", 32, 36);
+			case 3: player_Image = loadArray1D(31, "human_playerbarbarian", 35, 40);
+					isPlayerWidth = 26;
 				break;
-			case 4: player_Image = loadArray1D(31, "human_playercleric", 32, 36);
+			case 4: player_Image = loadArray1D(31, "human_playercleric", 35, 40);
+					isPlayerWidth = 26;
 				break;
 			case 5: player_Image = loadArray1D(31, "human_playerent", 80, 76);
+					isPlayerWidth = 43;
 				break;
 			case 6: player_Image = loadArray1D(31, "human_playergargoyle", 60, 69);
+					isPlayerWidth = 38;
 				break;
-			case 7: player_Image = loadArray1D(31, "human_playerdragon", 32, 36);
+			case 7: player_Image = loadArray1D(31, "human_playerdragon", 35, 40);
+					isPlayerWidth = 26;
 				break;
-			default: player_Image = loadArray1D(31, "human_playerzack", 32, 36);
+			default: player_Image = loadArray1D(31, "human_playerzack", 35, 40);
+					isPlayerWidth = 26;
 				break;
 		}
+		isPlayer = loadImage("isplayer", 2*isPlayerWidth, 2*isPlayerWidth);
 	}
 	/**
 	 * load transformation background
@@ -125,24 +135,22 @@ public final class ImageLibrary
 	protected void loadAllImages()
 	{
 		exitFightPortal = loadImage("exitfightportal", 60, 60);
-		levelLocked = loadImage("menu_levellocked", 30, 30);
+		backButton = loadImage("exitfight", 40, 40);
 		mage_Image = loadArray1D(31, "human_mage", 30, 30);
 		loadPlayerImage();
 		powerUps = loadArray1D(10, "powerup", 30, 30);
 		powerUpBigs = loadArray1D(5, "powerupbig", 70, 70);
 		coins = loadArray1D(2, "menu_coin", 30, 30);
 		target_Image = loadImage("human_target", 48, 53);
-		teleport_Image = loadArray1D(9, "teleport", 60, 21);
 		// TODO change to black ball
 		powerBallAOE_ImageEnemy = loadImage("powerballaoe0005", 80, 80);
 		powerBall_ImageEnemy = loadArray1D(5, "powerball0005_", 42, 18);
-		next = loadImage("menu_nexttutorial", 80, 40);
 		effects = loadArray1D(4, "effect", 60, 60);
 		haskey = loadImage("haskey", 40, 40);
-		arrow = loadImage("arrow", 17, 10);
+		arrow = loadImage("arrow", 30, 10);
 		loadLevel(control.levelNum, control.levelWidth, control.levelHeight);
 		//loadSpriteImages();
-		changeArrayLoaded("swordsman", true);
+		changeArrayLoaded("shield", "human_swordsman");
 	}
 	/**
 	 * loads level image layers and background image
@@ -166,10 +174,6 @@ public final class ImageLibrary
 		}
 		currentLevel = loadImage("level"+correctDigits(levelNum, 4), width, height);
 		currentLevelTop = loadImage("leveltop"+correctDigits(levelNum, 4), width, height);
-		if(levelNum == 20)
-		{
-			directionsTutorial = loadImage("menu_tutorial0001", 217, 235);
-		}
 		if(levelNum == 10||levelNum == 20||levelNum == 21||levelNum == 22)
 		{
 			toTile = loadImage("level_tile0001", 90, 90);
@@ -178,13 +182,41 @@ public final class ImageLibrary
 		{
 			toTile = loadImage("level_tile0002", 90, 90);
 		}
-		if(levelNum == 30||levelNum == 40||levelNum == 80)
+		if(levelNum == 30||levelNum == 40)
 		{
 			toTile = loadImage("level_tile0003", 90, 90);
 		}
-		if(levelNum == 50||levelNum == 60||levelNum == 70||levelNum == 90||levelNum == 91)
+		if(levelNum == 60||levelNum == 70||levelNum == 90||levelNum == 91||levelNum == 100||levelNum == 101)
 		{
 			toTile = loadImage("level_tile0004", 90, 90);
+		}
+		if(levelNum == 110)
+		{
+			toTile = loadImage("level_tile0005", 90, 90);
+		}
+		if(levelNum == 120)
+		{
+			toTile = loadImage("level_tile0006", 90, 90);
+		}
+		if(levelNum == 130)
+		{
+			toTile = loadImage("level_tile0007", 90, 90);
+		}
+		if(levelNum == 140||levelNum == 80)
+		{
+			toTile = loadImage("level_tile0008", 90, 90);
+		}
+		if(levelNum == 150||levelNum == 160)
+		{
+			toTile = loadImage("level_tile0009", 90, 90);
+		}
+		if(levelNum == 151)
+		{
+			toTile = loadImage("level_tile0010", 90, 90);
+		}
+		if(levelNum == 50)
+		{
+			toTile = loadImage("level_tile0011", 90, 90);
 		}
 	}
 	/**
@@ -205,42 +237,59 @@ public final class ImageLibrary
 				switch(control.levelNum)
 				{
 				case 10:
-					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("shield", "human_swordsman");
 					break;
 				case 30:
-					changeArrayLoaded("swordsman", true);
-					changeArrayLoaded("archer", true);
+					changeArrayLoaded("shield", "human_swordsman");
+					changeArrayLoaded("archer", "human_archer");
 					break;
 				case 40:
-					changeArrayLoaded("axeman", true);
-					changeArrayLoaded("pikeman", true);
+					changeArrayLoaded("archer", "human_archer");
+					changeArrayLoaded("pikeman", "human_pikeman");
 					break;
 				case 50:
-					changeArrayLoaded("swordsman", true);
-					changeArrayLoaded("pikeman", true);
+					changeArrayLoaded("shield", "human_swordsman");
+					changeArrayLoaded("pikeman", "human_pikeman");
 					break;
 				case 60:
-					changeArrayLoaded("swordsman", true);
-					changeArrayLoaded("pikeman", true);
-					changeArrayLoaded("rogue", true);
+					changeArrayLoaded("shield", "human_swordsman");
+					changeArrayLoaded("pikeman", "human_pikeman");
+					changeArrayLoaded("rogue", "human_rogue");
 					break;
 				case 70:
-					changeArrayLoaded("swordsman", true);
-					changeArrayLoaded("archer", true);
+					changeArrayLoaded("shield", "human_swordsman");
+					changeArrayLoaded("archer", "human_archer");
 					break;
 				case 80:
-					changeArrayLoaded("pikeman", true);
-					changeArrayLoaded("archer", true);
+					changeArrayLoaded("pikeman", "human_pikeman");
+					changeArrayLoaded("archer", "human_archer");
 					break;
 				case 90:
-					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("shield", "human_swordsman");
+					changeArrayLoaded("archer", "human_archer");
+					break;
+				case 100:
+					changeArrayLoaded("shield", "human_swordsman");
+					changeArrayLoaded("archer", "human_archer");
+					break;
+				case 110:
+					changeArrayLoaded("pikeman", "human_pikeman");
+					changeArrayLoaded("archer", "human_archer");
+					changeArrayLoaded("rogue", "human_rogue");
+					break;
+				case 120:
+					changeArrayLoaded("pikeman", "human_pikeman");
+					changeArrayLoaded("archer", "human_archer");
+					break;
+				case 130:
+					changeArrayLoaded("archer", "human_archer");
+					changeArrayLoaded("shield", "human_axeman");
 					break;
 				default:
-					changeArrayLoaded("swordsman", true);
-					changeArrayLoaded("archer", true);
-					changeArrayLoaded("pikeman", true);
-					changeArrayLoaded("rogue", true);
-					changeArrayLoaded("axeman", true);
+					changeArrayLoaded("shield", "human_swordsman");
+					changeArrayLoaded("archer", "human_archer");
+					changeArrayLoaded("pikeman", "human_pikeman");
+					changeArrayLoaded("rogue", "human_rogue");
 					break;
 				}
 		}
@@ -265,13 +314,11 @@ public final class ImageLibrary
 		recycleArray(5, powerUpBigs);
 		recycleArray(10, powerUps);
 		recycleArray(4, effects);
-		levelLocked.recycle();
-		levelLocked = null;
-		changeArrayLoaded("archer", false);
-		changeArrayLoaded("pikeman", false);
-		changeArrayLoaded("axeman", false);
-		changeArrayLoaded("swordsman", false);
-		changeArrayLoaded("rogue", false);
+		changeArrayLoaded("archer");
+		changeArrayLoaded("pikeman");
+		changeArrayLoaded("shield");
+		changeArrayLoaded("rogue");
+		changeArrayLoaded("mage");
 	}
 	/**
 	 * recycles desired array of images
@@ -294,38 +341,8 @@ public final class ImageLibrary
 	 * @param toChange Which human to either load or recycle
 	 * @param loading Whether to load or not
 	 */
-	protected void changeArrayLoaded(String toChange, boolean loading)
+	protected void changeArrayLoaded(String toChange)
 	{
-		if(loading)
-		{
-			if(toChange.equals("archer") && !archerLoaded)
-			{
-				archer_Image = loadArray1D(49, "human_archer", 80, 50);
-				archerLoaded = true;
-			}
-			else if(toChange.equals("pikeman") && !pikemanLoaded)
-			{
-				pikeman_Image = loadArray1D(62, "human_pikeman", 110, 40);
-				pikemanLoaded = true;
-			}
-			else if(toChange.equals("axeman") && !axemanLoaded)
-			{
-				axeman_Image = loadArray1D(55, "human_axeman", 80, 60);
-				axemanLoaded = true;
-			}
-			else if(toChange.equals("swordsman") && !swordsmanLoaded)
-			{
-				swordsman_Image = loadArray1D(55, "human_swordsman", 110, 70);
-				swordsmanLoaded = true;
-			}
-			else if(toChange.equals("rogue") && !rogueLoaded)
-			{
-				rogue_Image = loadArray1D(65, "human_rogue", 60, 40);
-				rogueLoaded = true;
-			}
-		}
-		else
-		{
 			if(toChange.equals("archer") && archerLoaded)
 			{
 				for(int i = 0; i < archer_Image.length; i++)
@@ -344,23 +361,23 @@ public final class ImageLibrary
 				}
 				pikemanLoaded = false;
 			}
-			else if(toChange.equals("axeman") && axemanLoaded)
+			else if(toChange.equals("axeman") && shieldLoaded)
 			{
-				for(int i = 0; i < axeman_Image.length; i++)
+				for(int i = 0; i < shield_Image.length; i++)
 				{
-					axeman_Image[i].recycle();
-					axeman_Image[i] = null;
+					shield_Image[i].recycle();
+					shield_Image[i] = null;
 				}
-				axemanLoaded = false;
+				shieldLoaded = false;
 			}
-			else if(toChange.equals("swordsman") && swordsmanLoaded)
+			else if(toChange.equals("swordsman") && shieldLoaded)
 			{
-				for(int i = 0; i < swordsman_Image.length; i++)
+				for(int i = 0; i < shield_Image.length; i++)
 				{
-					swordsman_Image[i].recycle();
-					swordsman_Image[i] = null;
+					shield_Image[i].recycle();
+					shield_Image[i] = null;
 				}
-				swordsmanLoaded = false;
+				shieldLoaded = false;
 			}
 			else if(toChange.equals("rogue") && rogueLoaded)
 			{
@@ -371,7 +388,81 @@ public final class ImageLibrary
 				}
 				rogueLoaded = false;
 			}
-		}
+			else if(toChange.equals("mage") && mageLoaded)
+			{
+				for(int i = 0; i < mage_Image.length; i++)
+				{
+					mage_Image[i].recycle();
+					mage_Image[i] = null;
+				}
+				mageLoaded = false;
+			}
+	}
+	/**
+	 * Loads or recycles a human animation array
+	 * @param toChange Which human to either load or recycle
+	 * @param loading Whether to load or not
+	 */
+	protected void changeArrayLoaded(String toChange, String nameToLoad)
+	{
+			if(toChange.equals("archer"))
+			{
+				archer_Image = loadArray1D(49, nameToLoad, 80, 50);
+				archerLoaded = true;
+			}
+			else if(toChange.equals("pikeman"))
+			{
+				pikeman_Image = loadArray1D(62, nameToLoad, 110, 40);
+				pikemanLoaded = true;
+			}
+			else if(toChange.equals("shield"))
+			{
+				shield_Image = loadArray1D(55, nameToLoad, 110, 70);
+				shieldLoaded = true;
+			}
+			else if(toChange.equals("rogue"))
+			{
+				rogue_Image = loadArray1D(65, nameToLoad, 60, 40);
+				rogueLoaded = true;
+			}
+			else if(toChange.equals("mage"))
+			{
+				mage_Image = loadArray1D(31, nameToLoad, 30, 30);
+				mageLoaded = true;
+			}
+	}
+	/**
+	 * Loads or recycles a human animation array
+	 * @param toChange Which human to either load or recycle
+	 * @param loading Whether to load or not
+	 */
+	protected void changeArrayLoaded(String toChange, String nameToLoad, int width, int height)
+	{
+			if(toChange.equals("archer"))
+			{
+				archer_Image = loadArray1D(49, nameToLoad, width, height);
+				archerLoaded = true;
+			}
+			else if(toChange.equals("pikeman"))
+			{
+				pikeman_Image = loadArray1D(62, nameToLoad, width, height);
+				pikemanLoaded = true;
+			}
+			else if(toChange.equals("shield"))
+			{
+				shield_Image = loadArray1D(55, nameToLoad, width, height);
+				shieldLoaded = true;
+			}
+			else if(toChange.equals("rogue"))
+			{
+				rogue_Image = loadArray1D(65, nameToLoad, width, height);
+				rogueLoaded = true;
+			}
+			else if(toChange.equals("mage"))
+			{
+				mage_Image = loadArray1D(31, nameToLoad, width, height);
+				mageLoaded = true;
+			}
 	}
 	/**
 	 * Loads and resizes array of images
@@ -410,7 +501,6 @@ public final class ImageLibrary
 	 */
 	protected Bitmap loadImage(String imageName, int width, int height)
 	{
-		Log.e("game", imageName);
 		int imageNumber = res.getIdentifier(imageName, "drawable", packageName);
 		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), width, height, false);
 	}

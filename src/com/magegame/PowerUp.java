@@ -4,8 +4,7 @@
 package com.magegame;
 public final class PowerUp extends DrawnSprite
 {
-	private int ID;
-	private int startInt = 1;
+	protected int ID;
 	/**
 	 * sets image, dimensions, and position
 	 * @param creator control object
@@ -42,10 +41,17 @@ public final class PowerUp extends DrawnSprite
 	{
 		double xDif = x - control.player.x;
 		double yDif = y - control.player.y;
-		if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 625)
+		double dist = Math.pow(xDif, 2) + Math.pow(yDif, 2);
+		if(dist < 625)
 		{			
 			control.player.getPowerUp(ID);
 			deleted = true;
+		}		
+		if(dist < 30000)
+		{
+			double rads = Math.atan2(yDif, xDif);
+			x -= Math.cos(rads)*4000/dist;
+			y -= Math.sin(rads)*4000/dist;
 		}
 	}
 }

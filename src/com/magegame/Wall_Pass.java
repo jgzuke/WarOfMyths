@@ -9,7 +9,6 @@ public class Wall_Pass extends Wall
 	private int oRX2;
 	private int oRY1;
 	private int oRY2;
-	private boolean hitPlayer;
 	/**
 	 * sets variables and stores some in control object array
 	 * @param creator control object
@@ -24,8 +23,7 @@ public class Wall_Pass extends Wall
 		oRY1 = ORY;
 		oRX2 = ORX+wallWidth;
 		oRY2 = ORY+wallHeight;
-		creator.setOPassage(creator.getCurrentPassage(), oRX1, oRX2, oRY1, oRY2);
-		creator.incrementCurrentPassage();
+		creator.setOPassage(oRX1, oRX2, oRY1, oRY2);
 	}
 	@Override
 	protected void frameCall() {

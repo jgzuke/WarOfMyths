@@ -11,8 +11,11 @@ public class Wall_Rectangle extends Wall
 	protected int oRX2;
 	protected int oRY1;
 	protected int oRY2;
+	protected int oRX1Player;
+	protected int oRX2Player;
+	protected int oRY1Player;
+	protected int oRY2Player;
 	private boolean hitPlayer;
-	private double r2d = 180/Math.PI;
 	/**
 	 * sets variables and stores some in control object array
 	 * @param creator control object
@@ -34,16 +37,18 @@ public class Wall_Rectangle extends Wall
 		x = (oRX1 + oRX2) / 2;
 		y = (oRY1 + oRY2) / 2;
 		control = creator;
-		control.setORectAll(control.getCurrentRectangleAll(), oRX1, oRX2, oRY1, oRY2);
-		control.incrementCurrentRectangleAll();
+		control.setORectAll(oRX1, oRX2, oRY1, oRY2);
 		if(tall)
 		{
-			control.setORect(control.getCurrentRectangle(), oRX1, oRX2, oRY1, oRY2);
-			control.incrementCurrentRectangle();
+			control.setORect(oRX1, oRX2, oRY1, oRY2);
 		}
+		oRX1Player = oRX1-humanWidth;
+		oRX2Player = oRX2+humanWidth;
+		oRY1Player = oRY1-humanWidth;
+		oRY2Player = oRY2+humanWidth;
 		oRX1 -= humanWidth;
-		oRY1 -= humanWidth;
 		oRX2 += humanWidth;
+		oRY1 -= humanWidth;
 		oRY2 += humanWidth;
 	}
 	/**
@@ -54,43 +59,43 @@ public class Wall_Rectangle extends Wall
 	{
         	if(hitPlayer)
         	{
-				if(control.player.x > oRX1 && control.player.x < oRX2 && control.player.y > oRY1 && control.player.y < oRY2)
+				if(control.player.x > oRX1Player && control.player.x < oRX2Player && control.player.y > oRY1Player && control.player.y < oRY2Player)
 				{
 						double holdX;
 						double holdY;
 						if(control.player.x > x)
 						{
-							holdX = Math.abs(control.player.x - oRX2);
+							holdX = Math.abs(control.player.x - oRX2Player);
 						} else
 						{
-							holdX = Math.abs(control.player.x - oRX1);
+							holdX = Math.abs(control.player.x - oRX1Player);
 						}
 						if(control.player.y > y)
 						{
-							holdY = Math.abs(control.player.y - oRY2);
+							holdY = Math.abs(control.player.y - oRY2Player);
 						} else
 						{
-							holdY = Math.abs(control.player.y - oRY1);
+							holdY = Math.abs(control.player.y - oRY1Player);
 						}
 						if((holdX) < (holdY))
 						{
 							if(control.player.x > x)
 							{
-								control.player.x = oRX2;
+								control.player.x = oRX2Player;
 							}
 							else
 							{
-								control.player.x = oRX1;
+								control.player.x = oRX1Player;
 							}
 						} else
 						{
 							if(control.player.y > y)
 							{
-								control.player.y = oRY2;
+								control.player.y = oRY2Player;
 							}
 							else
 							{
-								control.player.y = oRY1;
+								control.player.y = oRY1Player;
 							}
 						}
 				}
@@ -129,6 +134,14 @@ public class Wall_Rectangle extends Wall
 							{
 								control.enemies[i].x = oRX1;
 							}
+							if(control.enemies[i].y > y)
+							{
+								control.enemies[i].y+=2;
+							}
+							else
+							{
+								control.enemies[i].y-=2;
+							}
 						}
 						else
 						{
@@ -139,6 +152,14 @@ public class Wall_Rectangle extends Wall
 							else
 							{
 								control.enemies[i].y = oRY1;
+							}
+							if(control.enemies[i].x > x)
+							{
+								control.enemies[i].x+=2;
+							}
+							else
+							{
+								control.enemies[i].x-=2;
 							}
 						}
 					}

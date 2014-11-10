@@ -4,8 +4,6 @@
  */
 package com.magegame;
 
-import android.util.Log;
-
 abstract public class Enemy extends Human
 {
 	protected boolean rogue = false;
@@ -13,6 +11,7 @@ abstract public class Enemy extends Human
 	protected int worth = 3;
 	protected double lastPlayerX;
 	protected double lastPlayerY;
+	protected boolean sick = false;
 	protected boolean checkedPlayerLast = true;
 	protected double danger[][] = new double[4][30];
 	private double levelX[] = new double[30];
@@ -43,7 +42,8 @@ abstract public class Enemy extends Human
 		danger[1] = levelY;
 		danger[2] = levelXForward;
 		danger[3] = levelYForward;
-		speedCur = 1.5 + (Math.pow(control.getDifficultyLevelMultiplier(), 0.7)*2.5);
+		speedCur = 1.5 + (Math.pow(control.getDifficultyLevelMultiplier(), 0.4)*2.6);
+		speedCur *= 1.2;
 	}
 	/**
 	 * clears desired array
@@ -64,6 +64,11 @@ abstract public class Enemy extends Human
 	Override
 	protected void frameCall()
 	{
+		if(sick)
+		{
+			hp -= 20;
+			getHit(0);
+		}
 		pXVelocity = control.player.x-pXSpot;
 		pYVelocity = control.player.y-pYSpot;
 		pXSpot = control.player.x;
@@ -128,7 +133,7 @@ abstract public class Enemy extends Human
 		}
 	}
 	/**
-	 * Takes a sent amount of damage, modifies based on sheilds etc.
+	 * Takes a sent amount of damage, modifies based on shields etc.
 	 * if health below 0 kills enemy
 	 * @param damage amount of damage to take
 	 */
@@ -136,41 +141,48 @@ abstract public class Enemy extends Human
 	{
 		if(!deleted)
 		{
-			damage /= 1.5;
+			damage /= 1.2;
 			if(control.player.powerUpTimer>0 && control.player.powerID == 4)
 			{
 				damage *= 1.5*Math.pow((double)control.activity.wApollo/10, 0.7);
 			}
 			super.getHit(damage);
+			control.player.abilityTimer_burst += damage*control.activity.bReplentish/30;
+			control.player.abilityTimer_roll += damage*control.activity.bReplentish/50;
+			control.player.abilityTimerTransformed_pound += damage*control.activity.bReplentish/50;
+			control.player.abilityTimer_powerBall += damage*control.activity.bReplentish/100;
 			control.player.sp += damage*0.00003;
 			if(deleted)
 			{
 				control.player.sp += 0.15;
-				if(keyHolder)
-				{
-					control.createKey(x, y);
-				} else
-				{
-					if(control.getRandomDouble()>0.7)
-					{
-						control.createPowerUp(x, y);
-					}
-				}
 				control.createPowerBallEnemyAOE(x, y, 140, false);
-				for(int i = 0; i < worth; i ++)
+				if(!sick)
 				{
-					double rads = control.getRandomDouble()*6.28;
-					if(worth-i>20)
+					if(keyHolder)
 					{
-						control.createCoin20(x+Math.cos(rads)*17, y+Math.sin(rads)*17);
-						i+=19;
-					} else if(worth-i>5)
-					{
-						control.createCoin5(x+Math.cos(rads)*17, y+Math.sin(rads)*17);
-						i+=4;
+						control.createKey(x, y);
 					} else
 					{
-						control.createCoin1(x+Math.cos(rads)*17, y+Math.sin(rads)*17);
+						if(control.getRandomDouble()>0.7)
+						{
+							control.createPowerUp(x, y);
+						}
+					}
+					for(int i = 0; i < worth; i ++)
+					{
+						double rads = control.getRandomDouble()*6.28;
+						if(worth-i>20)
+						{
+							control.createCoin20(x+Math.cos(rads)*12, y+Math.sin(rads)*12);
+							i+=19;
+						} else if(worth-i>5)
+						{
+							control.createCoin5(x+Math.cos(rads)*12, y+Math.sin(rads)*12);
+							i+=4;
+						} else
+						{
+							control.createCoin1(x+Math.cos(rads)*12, y+Math.sin(rads)*12);
+						}
 					}
 				}
 				control.activity.playEffect("burst");
@@ -581,6 +593,9 @@ abstract public class Enemy extends Human
 			setRunTimer(10);
 		}
 		playing = true;
+	}
+	protected void baseHp() {
+		hp *= Math.pow(control.getDifficultyLevelMultiplier(), ((double)hp/10000));
 	}
 	/**
 	 * adds 1 to levelCurrentPosition

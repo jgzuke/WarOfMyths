@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 
 import com.magegame.R;
 import com.magegame.util.IabHelper;
@@ -18,42 +17,40 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Bundle;
-import android.os.Handler;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.hardware.Sensor;
-import android.hardware.SensorManager;
 import android.util.Log;
 import android.view.Menu;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.ViewSwitcher;
 public class StartActivity extends Activity
 {
 	protected Controller control;
 	protected double screenDimensionMultiplier;
 	protected int screenMinX;
 	protected int screenMinY;
-	protected int gameCurrency = 20000;
-	protected int realCurrency = 20000;
-	protected byte wApollo = 8;
-	protected byte wPoseidon = 8;
-	protected byte wZues = 8;
-	protected byte wHades = 8;
-	protected byte wHephaestus = 8;
-	protected byte wAres = 8;
-	protected byte wAthena = 8;
-	protected byte wHermes = 8;
-	protected byte wHera = 8;
+	protected int gameCurrency = 2000;
+	protected int realCurrency = 2000;
+	protected byte uApollo = 7;
+	protected byte uPoseidon = 7;
+	protected byte uZues = 7;
+	protected byte uHades = 7;
+	protected byte uHephaestus = 7;
+	protected byte uAres = 7;
+	protected byte uAthena = 7;
+	protected byte uHermes = 7;
+	protected byte uHera = 7;
+	protected double wApollo = 7;
+	protected double wPoseidon = 7;
+	protected double wZues = 7;
+	protected double wHades = 7;
+	protected double wHephaestus = 7;
+	protected double wAres = 7;
+	protected double wAthena = 7;
+	protected double wHermes = 7;
+	protected double wHera = 7;
 	protected byte pGolem = 1;
 	protected byte pHammer = 1;
 	protected byte pHeal = 1;
@@ -62,6 +59,10 @@ public class StartActivity extends Activity
 	protected byte pEarth = 1;
 	protected byte pAir = 1;
 	protected byte pFire = 1;
+	protected byte bReserve = 0;
+	protected byte bExcess = 0;
+	protected byte bReplentish = 0;
+	protected byte bTracking = 0;
 	protected boolean stickOnRight = false;
 	protected boolean shootTapScreen = false;
 	protected boolean shootTapDirectional = true;
@@ -73,8 +74,9 @@ public class StartActivity extends Activity
 	protected boolean ownSkin5 = false;
 	protected boolean ownSkin6 = false;
 	protected boolean ownSkin7 = false;
+	protected boolean highGraphics = true;
 	protected byte currentSkin = 0;
-	protected byte levelBeaten = 7;
+	protected byte levelBeaten = 18;
 	protected boolean gameRunning = true;
 	private FileOutputStream fileWrite;
 	private FileInputStream fileRead;
@@ -84,7 +86,7 @@ public class StartActivity extends Activity
 	private SoundPool spool;
 	private int[] soundPoolMap = new int[15];
 	protected AudioManager audioManager;
-	protected byte playerType = 0;
+	protected byte playerType = 1;
 	protected double volumeMusic = 127;
 	protected double volumeEffect = 127;
 	private String TAG = "game";
@@ -117,6 +119,7 @@ public class StartActivity extends Activity
 		{
 			readSaveData();
 		}
+		startMusic();
 		control = new Controller(this, this);
 		setContentView(control);
 		if(firstTime)
@@ -149,7 +152,6 @@ public class StartActivity extends Activity
 				mHelper.queryInventoryAsync(mGotInventoryListener);
 			}
 		});
-		startMusic();
 	}
 	/**
 	 * sets screen variables as well as audio settings
@@ -223,12 +225,13 @@ public class StartActivity extends Activity
 	protected void winFight()
 	{
 		control.startWarning("Won Round ("+Integer.toString((int)control.moneyMade)+"g)");
-		if(control.levelNum < 90)
+		if(control.levelNum < 180)
 		{
 			if((int)(control.levelNum / 10) - 2 == levelBeaten)
 			{
 				levelBeaten++;
-				realCurrency += 25;
+				realCurrency += control.moneyMultiplier*3;
+				control.startWarning("Victory ("+Integer.toString((int)control.moneyMade)+"g/"+Integer.toString((int)control.moneyMultiplier*3)+"p)");
 			}
 			control.startingLevel =(int)(control.levelNum/10)-1;
 			if(control.difficultyLevel == 10)
@@ -282,6 +285,15 @@ public class StartActivity extends Activity
 		{
 			control.player.getPowerUp(2);
 		}
+	}
+	/**
+	 * resets volume
+	 */
+	protected void resetVolume()
+	{
+		float systemVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+		systemVolume = (float)(systemVolume * volumeMusic / 127);
+		backMusic.setVolume(systemVolume, systemVolume);
 	}
 	/**
 	 * sets dimensions of screen
@@ -454,10 +466,11 @@ public class StartActivity extends Activity
 		int ID = getItemID(toBuy);
 		int cost = 0;
 		boolean afforded = false;
+		double power = 3.4;
 		switch(ID)
 		{
 		case 1:
-			cost = (int)(Math.pow(wApollo, 2.8)/3.15);
+			cost = (int)(Math.pow(wApollo, power)/2.49);
 			if(currency >= cost)
 			{
 				if(buying) wApollo++;
@@ -466,7 +479,7 @@ public class StartActivity extends Activity
 			}
 			break;
 		case 2:
-			cost = (int)(Math.pow(wPoseidon, 2.8)/3.15);
+			cost = (int)(Math.pow(wPoseidon, power)/2.49);
 			if(currency >= cost)
 			{
 				if(buying) wPoseidon++;
@@ -475,7 +488,7 @@ public class StartActivity extends Activity
 			}
 			break;
 		case 3:
-			cost = (int)(Math.pow(wZues, 2.8)/3.15);
+			cost = (int)(Math.pow(wZues, power)/2.49);
 			if(currency >= cost)
 			{
 				if(buying) wZues++;
@@ -484,7 +497,7 @@ public class StartActivity extends Activity
 			}
 			break;
 		case 4:
-			cost = (int)(Math.pow(wHades, 2.8)/3.15);
+			cost = (int)(Math.pow(wHades, power)/2.49);
 			if(currency >= cost)
 			{
 				if(buying) wHades++;
@@ -493,7 +506,7 @@ public class StartActivity extends Activity
 			}
 			break;
 		case 5:
-			cost = (int)(Math.pow(wHephaestus, 2.8)/1.123);
+			cost = (int)(Math.pow(wHephaestus, power)/1.8675);
 			if(currency >= cost)
 			{
 				if(buying) wHephaestus++;
@@ -501,7 +514,7 @@ public class StartActivity extends Activity
 			}
 			break;
 		case 6:
-			cost = (int)(Math.pow(wAres, 2.8)/1.123);
+			cost = (int)(Math.pow(wAres, power)/1.8675);
 			if(currency >= cost)
 			{
 				if(buying) wAres++;
@@ -509,7 +522,7 @@ public class StartActivity extends Activity
 			}
 			break;
 		case 7:
-			cost = (int)(Math.pow(wAthena, 2.8)/1.123);
+			cost = (int)(Math.pow(wAthena, power)/1.8675);
 			if(currency >= cost)
 			{
 				if(buying) wAthena++;
@@ -517,7 +530,7 @@ public class StartActivity extends Activity
 			}
 			break;
 		case 8:
-			cost = (int)(Math.pow(wHermes, 2.8)/1.123);
+			cost = (int)(Math.pow(wHermes, power)/1.8675);
 			if(currency >= cost)
 			{
 				if(buying) wHermes++;
@@ -525,7 +538,7 @@ public class StartActivity extends Activity
 			}
 			break;
 		case 15:
-			cost = (int)(Math.pow(wHera, 2.8)/1.123);
+			cost = (int)(Math.pow(wHera, power)/1.8675);
 			if(currency >= cost)
 			{
 				if(buying) wHera++;
@@ -534,7 +547,7 @@ public class StartActivity extends Activity
 			break;
 		case 9:
 			cost = 200;
-			if(currency >= cost)
+			if(currency >= cost&&pHeal<10)
 			{
 				if(buying) pHeal++;
 				afforded = true;
@@ -542,7 +555,7 @@ public class StartActivity extends Activity
 			break;
 		case 10:
 			cost = 200;
-			if(currency >= cost)
+			if(currency >= cost&&pCool<10)
 			{
 				if(buying) pCool++;
 				afforded = true;
@@ -550,7 +563,7 @@ public class StartActivity extends Activity
 			break;
 		case 11:
 			cost = 200;
-			if(currency >= cost)
+			if(currency >= cost&&pWater<10)
 			{
 				if(buying) pWater++;
 				afforded = true;
@@ -558,7 +571,7 @@ public class StartActivity extends Activity
 			break;
 		case 12:
 			cost = 200;
-			if(currency >= cost)
+			if(currency >= cost&&pEarth<10)
 			{
 				if(buying) pEarth++;
 				afforded = true;
@@ -566,7 +579,7 @@ public class StartActivity extends Activity
 			break;
 		case 13:
 			cost = 200;
-			if(currency >= cost)
+			if(currency >= cost&&pAir<10)
 			{
 				if(buying) pAir++;
 				afforded = true;
@@ -574,7 +587,7 @@ public class StartActivity extends Activity
 			break;
 		case 14:
 			cost = 200;
-			if(currency >= cost)
+			if(currency >= cost&&pFire<10)
 			{
 				if(buying) pFire++;
 				afforded = true;
@@ -678,7 +691,79 @@ public class StartActivity extends Activity
 				}
 			}
 			break;
-		}	
+		case 23:
+			cost = 100;
+			if(currency >= cost)
+			{
+				if(buying) gameCurrency += 1000;
+				afforded = true;
+			}
+			break;
+		case 24:
+			cost = 600;
+			if(currency >= cost)
+			{
+				if(buying) gameCurrency += 8000;
+				afforded = true;
+			}
+			break;
+		case 25:
+			cost = 2500;
+			if(currency >= cost)
+			{
+				if(buying) gameCurrency += 40000;
+				afforded = true;
+			}
+			break;
+		case 26:
+			cost = 25;
+			if(currency >= cost&&pHammer<5)
+			{
+				if(buying) pHammer++;
+				afforded = true;
+			}
+			break;
+		case 27:
+			cost = 25;
+			if(currency >= cost&&pGolem<5)
+			{
+				if(buying) pGolem++;
+				afforded = true;
+			}
+			break;
+		case 28:
+			cost = 30*(int)(Math.pow(bReserve, 2)+1);
+			if(currency >= cost)
+			{
+				if(buying) bReserve++;
+				afforded = true;
+			}
+			break;
+		case 29:
+			cost = 30*(int)(Math.pow(bExcess, 2)+1);
+			if(currency >= cost)
+			{
+				if(buying) bExcess++;
+				afforded = true;
+			}
+			break;
+		case 30:
+			cost = 30*(int)(Math.pow(bReplentish, 2)+1);
+			if(currency >= cost)
+			{
+				if(buying) bReplentish++;
+				afforded = true;
+			}
+			break;
+		case 31:
+			cost = 30*(int)(Math.pow(bTracking, 2)+1);
+			if(currency >= cost)
+			{
+				if(buying) bTracking++;
+				afforded = true;
+			}
+			break;
+		}
 		if(!afforded)
 		{
 			cost = 0;
@@ -774,6 +859,33 @@ public class StartActivity extends Activity
 		} else if(toBuy.equals("skin7"))
 		{
 			ID = 22;
+		} else if(toBuy.equals("1000g"))
+		{
+			ID = 23;
+		} else if(toBuy.equals("8000g"))
+		{
+			ID = 24;
+		} else if(toBuy.equals("40000g"))
+		{
+			ID = 25;
+		} else if(toBuy.equals("Iron Golem"))
+		{
+			ID = 26;
+		} else if(toBuy.equals("Gold Golem"))
+		{
+			ID = 27;
+		} else if(toBuy.equals("Reserve"))
+		{
+			ID = 28;
+		} else if(toBuy.equals("Excess"))
+		{
+			ID = 29;
+		} else if(toBuy.equals("Replentish"))
+		{
+			ID = 30;
+		} else if(toBuy.equals("Trailing"))
+		{
+			ID = 31;
 		}
 		return ID;
 	}
@@ -827,7 +939,7 @@ public class StartActivity extends Activity
 		}
 		else if(toBuy.equals("Ambrosia"))
 		{
-			describe[0] = "Heals half of players max Hp, ";
+			describe[0] = "Heals 2000 of players Hp, ";
 			describe[1] = "stopping at full";
 		}
 		else if(toBuy.equals("Cooldown"))
@@ -859,6 +971,51 @@ public class StartActivity extends Activity
 		{
 			describe[0] = "Increases rate of drop of";
 			describe[1] = "blessings during battles";
+		}
+		else if(toBuy.equals("1000g"))
+		{
+			describe[0] = "One thousand gold to spend";
+			describe[1] = "on upgrades etc.";
+		}
+		else if(toBuy.equals("8000g"))
+		{
+			describe[0] = "Eight thousand gold to";
+			describe[1] = "spend on upgrades etc.";
+		}
+		else if(toBuy.equals("40000g"))
+		{
+			describe[0] = "Forty thousand gold";
+			describe[1] = "to spendon upgrades etc.";
+		}
+		else if(toBuy.equals("Iron Golem"))
+		{
+			describe[0] = "Temporarily transforms player";
+			describe[1] = "into a large iron golem";
+		}
+		else if(toBuy.equals("Gold Golem"))
+		{
+			describe[0] = "Temporarily transforms player";
+			describe[1] = "into a large golden golem";
+		}
+		else if(toBuy.equals("Reserve"))
+		{
+			describe[0] = "Increases the maximum number of";
+			describe[1] = "shots the player can store";
+		}
+		else if(toBuy.equals("Excess"))
+		{
+			describe[0] = "Increases profit from completing";
+			describe[1] = "levels or killing enemies";
+		}
+		else if(toBuy.equals("Replentish"))
+		{
+			describe[0] = "Damaging enemies lowers cooldowns";
+			describe[1] = "for spells etc.";
+		}
+		else if(toBuy.equals("Trailing"))
+		{
+			describe[0] = "Players shots trail enemies better,";
+			describe[1] = "making them more likely to hit";
 		}
 		return describe;
 	}
@@ -911,14 +1068,14 @@ public class StartActivity extends Activity
 		if(shootTapDirectional) savedData[3] = 0;
 		if(holdShoot) savedData[29] = 1;
 		savedData[4] = levelBeaten;
-		savedData[5] = (byte)(wApollo);
-		savedData[6] = (byte)(wPoseidon);
-		savedData[7] = (byte)(wZues);
-		savedData[8] = (byte)(wHades);
-		savedData[9] = (byte)(wHephaestus);
-		savedData[10] = (byte)(wAres);
-		savedData[11] = (byte)(wAthena);
-		savedData[12] = (byte)(wHermes);
+		savedData[5] = uApollo;
+		savedData[6] = uPoseidon;
+		savedData[7] = uZues;
+		savedData[8] = uHades;
+		savedData[9] = uHephaestus;
+		savedData[10] = uAres;
+		savedData[11] = uAthena;
+		savedData[12] = uHermes;
 		savedData[13] = pHeal;
 		savedData[14] = pCool;
 		savedData[15] = pWater;
@@ -973,6 +1130,12 @@ public class StartActivity extends Activity
 		if(ownSkin6) savedData[35] = 1;
 		if(ownSkin7) savedData[36] = 1;
 		savedData[37] = currentSkin;
+		savedData[40] = bReserve;
+		savedData[41] = bExcess;
+		savedData[42] = bReplentish;
+		savedData[43] = bTracking;
+		savedData[44] = 1;
+		if(highGraphics) savedData[44] = 0;
 	}
 	/**
 	 * read data once it has been put into savedData array
@@ -984,14 +1147,14 @@ public class StartActivity extends Activity
 		shootTapDirectional = savedData[3] == 0;
 		holdShoot = savedData[29] == 1;
 		levelBeaten = savedData[4];
-		wApollo = savedData[5];
-		wPoseidon = savedData[6];
-		wZues = savedData[7];
-		wHades = savedData[8];
-		wHephaestus = savedData[9];
-		wAres = savedData[10];
-		wAthena = savedData[11];
-		wHermes = savedData[12];
+		uApollo = savedData[5];
+		uPoseidon = savedData[6];
+		uZues = savedData[7];
+		uHades = savedData[8];
+		uHephaestus = savedData[9];
+		uAres = savedData[10];
+		uAthena = savedData[11];
+		uHermes = savedData[12];
 		pHeal = savedData[13];
 		pCool = savedData[14];
 		pWater = savedData[15];
@@ -1014,6 +1177,12 @@ public class StartActivity extends Activity
 		ownSkin6 = savedData[35] == 1;
 		ownSkin7 = savedData[36] == 1;
 		currentSkin = savedData[37];
+		bReserve = savedData[40];
+		bExcess = savedData[41];
+		bReplentish = savedData[42];
+		bTracking = savedData[43];
+		savedData[44] = 1;
+		highGraphics = savedData[44] == 0;
 	}
 	/**
 	 * reads saved data

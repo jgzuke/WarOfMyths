@@ -5,7 +5,7 @@ package com.magegame;
 abstract public class Human extends DrawnSprite
 {
 	protected int hp;
-	private int hpMax;
+	protected int hpMax;
 	protected double r2d = 180 / Math.PI;
 	protected double rads;
 	protected double speedCur;
