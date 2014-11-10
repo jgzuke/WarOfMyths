@@ -2141,34 +2141,20 @@ public final class Controller extends View
 	}
 	protected void drawChooseLevel(Canvas g)
 	{
-		drawBehindPause(g);
+		//drawBehindPause(g);
 		//TODO
-		if(tempPicture == null)
+		for(int i = 0; i < 5; i++)
 		{
-			tempPicture = imageLibrary.loadImage("menu_chooselevelback", 480, 320);
-			tempPictureLock = imageLibrary.loadImage("menu_levellocked", 50, 70);
-		}
-		for(int i = 1; i < 9; i++)
-		{
-			int yVal = (80*i)-60-(int)((double)360/250*(detect.chooseLevelSliderY-35));
-			if(yVal<300&&yVal>-60)
+			for(int j = 0; j < 4; j++)
 			{
-				drawBitmap(imageLibrary.loadImage("menu_chooselevel000"+Integer.toString(i), 400, 80), 20, yVal, g);
-			}
-			if(activity.levelBeaten < (2*i)-2)
-			{
-				drawBitmap(tempPictureLock, 95, yVal+5, g);
-			}
-			if(activity.levelBeaten < (2*i)-1)
-			{
-				drawBitmap(tempPictureLock, 295, yVal+5, g);
+				int xVal = detect.chooseLevelX+(i*150);
+				int yVal = detect.chooseLevelY+(j*150);
+				if(yVal<480&&yVal>-150&&xVal<320&&xVal>-150)
+				{
+					drawBitmap(imageLibrary.loadImage("menu_fullmap"+imageLibrary.correctDigits(4, i+(5*j)), 150, 150), xVal, yVal, g);
+				}
 			}
 		}
-		drawBitmap(tempPicture, 0, 0, g);
-		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(Color.BLACK);
-		paint.setAlpha(100);
-		drawRect(420, detect.chooseLevelSliderY-17, 460, detect.chooseLevelSliderY+17, g);
 	}
 	/**
 	 * draw buy worship screen

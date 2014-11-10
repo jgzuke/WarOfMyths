@@ -21,10 +21,10 @@ public class PlayerGestureDetector implements OnTouchListener {
 	private boolean startDragMusic = false;
 	private boolean startDragEffect = false;
 	private boolean startDragLevels = false;
+	private int startDragLevelsXSave = 0;
 	private int startDragLevelsYSave = 0;
-	private int startDragLevelsSlideYSave = 0;
-	private boolean startDragLevelSlider = false;
-	protected int chooseLevelSliderY = 35;
+	protected int chooseLevelX = 0;
+	protected int chooseLevelY = 450;
 	private int touchingShootID = 0;
 	/**
 	 * sets screen dimensions and checks current option settings
@@ -127,17 +127,14 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            {
 		            	if(startDragLevels)
 		            	{
-		            		chooseLevelSliderY = startDragLevelsSlideYSave;
-		            		chooseLevelSliderY += startDragLevelsYSave-(int)visualY(e.getY(e.findPointerIndex(trackingId)));
-		            		if(chooseLevelSliderY<35) chooseLevelSliderY=35;
-		            		if(chooseLevelSliderY>285) chooseLevelSliderY=285;
-		            		control.invalidate();
-		            	}
-		            	if(startDragLevelSlider)
-		            	{
-		            		chooseLevelSliderY = (int)visualY(e.getY(e.findPointerIndex(trackingId)));
-		            		if(chooseLevelSliderY<35) chooseLevelSliderY=35;
-		            		if(chooseLevelSliderY>285) chooseLevelSliderY=285;
+		            		chooseLevelY = startDragLevelsYSave;
+		            		chooseLevelY += startDragLevelsYSave-(int)visualY(e.getY(e.findPointerIndex(trackingId)));
+		            		chooseLevelX = startDragLevelsYSave;
+		            		chooseLevelX += startDragLevelsYSave-(int)visualY(e.getY(e.findPointerIndex(trackingId)));
+		            		if(chooseLevelY<0) chooseLevelY=0;
+		            		if(chooseLevelY>450) chooseLevelY=450;
+		            		if(chooseLevelX<0) chooseLevelX=0;
+		            		if(chooseLevelX>600) chooseLevelX=600;
 		            		control.invalidate();
 		            	}
 		            }
@@ -152,7 +149,6 @@ public class PlayerGestureDetector implements OnTouchListener {
 		        	startDragMusic = false;
 		        	startDragEffect = false;
 		        	startDragLevels = false;
-		        	startDragLevelSlider = false;
 		        break;
 		        case MotionEvent.ACTION_POINTER_UP:
 		        	if(e.getPointerId(e.getActionIndex()) == trackingId)
@@ -165,7 +161,6 @@ public class PlayerGestureDetector implements OnTouchListener {
 		        		startDragMusic = false;
 			        	startDragEffect = false;
 			        	startDragLevels = false;
-			        	startDragLevelSlider = false;
 		        	}
 		        	if(e.getPointerId(e.getActionIndex()) == touchingShootID)
 		        	{
@@ -345,60 +340,17 @@ public class PlayerGestureDetector implements OnTouchListener {
 	protected void clickDownChooseLevel(float x, float y)
 	{
 		//TODO
-		if(control.pointOnSquare(x, y, 420, 0, 480, 320))
-		{
-			startDragLevelSlider = true;
-		} else if(pressedBack(x, y))
+		if(pressedBack(x, y))
         {
 			control.gamePaused = false;
 			control.invalidate();
         } else if(control.pointOnSquare(x, y, 20, 20, 420, 300))
 		{
-        	for(int i = 1; i < 9; i++)
-    		{
-    			int yVal = (80*i)-60-(int)((double)360/250*(chooseLevelSliderY-35));
-    			if(yVal<300&&yVal>-60)
-    			{
-    				if(control.pointOnSquare(x, y, 80, yVal+40, 160, yVal+75))
-    				{
-    					if(i==1)
-    					{
-	    					control.currentPause = "startfight";
-	    					control.startingLevel = 0;
-	    					control.currentTutorial = 1;
-	    					control.invalidate();
-    					} else
-    					{
-    						if(control.activity.levelBeaten >= (2*i)-2)
-        					{
-        						control.currentPause = "startfight";
-        						control.startingLevel = (2*i)-2;
-        						control.invalidate();
-        					} else
-        					{
-        						control.startWarning("Level Locked");
-        					}
-    					}
-    				}
-    				if(control.pointOnSquare(x, y, 280, yVal+40, 360, yVal+75))
-    				{
-    					if(control.activity.levelBeaten >= (2*i)-1)
-    					{
-    						control.gamePaused = true;
-    						control.currentPause = "startfight";
-    						control.startingLevel = (2*i)-1;
-    						control.invalidate();
-    						player.x += 15;
-    					} else
-    					{
-    						control.startWarning("Level Locked");
-    					}
-    				}
-    			}
-    		}
+    		int xVal = (int)visualY(x)+chooseLevelX;
+    		int yVal = (int)visualX(y)+chooseLevelY;
 	        startDragLevels = true;
 	        startDragLevelsYSave = (int)visualY(y);
-	        startDragLevelsSlideYSave = chooseLevelSliderY;
+	        startDragLevelsYSave = (int)visualX(x);
 		}
 	}
 	/**
