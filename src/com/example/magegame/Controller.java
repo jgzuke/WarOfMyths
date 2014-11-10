@@ -107,18 +107,18 @@ public final class Controller extends AllViews
 	private int[] oCircY;
 	private int[] oCircRadius;
 	private double[] oCircRatio;
-	private int[] oRectX1Short;
-	private int[] oRectX2Short;
-	private int[] oRectY1Short;
-	private int[] oRectY2Short;
-	private int[] oCircXShort;
-	private int[] oCircYShort;
-	private int[] oCircRadiusShort;
-	private double[] oCircRatioShort;
+	private int[] oRectX1All;
+	private int[] oRectX2All;
+	private int[] oRectY1All;
+	private int[] oRectY2All;
+	private int[] oCircXAll;
+	private int[] oCircYAll;
+	private int[] oCircRadiusAll;
+	private double[] oCircRatioAll;
 	private int currentCircle = 0;
 	private int currentRectangle = 0;
-	private int currentCircleShort = 0;
-	private int currentRectangleShort = 0;
+	private int currentCircleAll = 0;
+	private int currentRectangleAll = 0;
 	private int currentRing = 0;
 	private int currentPassage = 0;
 	private Bitmap background;
@@ -193,8 +193,8 @@ public final class Controller extends AllViews
 		gameEnded = false;
 		currentCircle = 0;
 		currentRectangle = 0;
-		currentCircleShort = 0;
-		currentRectangleShort = 0;
+		currentCircleAll = 0;
+		currentRectangleAll = 0;
 		currentRing = 0;
 		currentPassage = 0;
 		imageLibrary.currentLevelTop = null;
@@ -275,19 +275,19 @@ public final class Controller extends AllViews
 		oCircRadius = new int[length];
 		oCircRatio =  new double[length];
 	}
-	protected void createWallRectangleValueArraysShort(int length)
+	protected void createWallRectangleValueArraysAll(int length)
 	{
-		oRectX1Short = new int[length];
-		oRectX2Short = new int[length];
-		oRectY1Short = new int[length];
-		oRectY2Short = new int[length];
+		oRectX1All = new int[length];
+		oRectX2All = new int[length];
+		oRectY1All = new int[length];
+		oRectY2All = new int[length];
 	}
-	protected void createWallCircleValueArraysShort(int length)
+	protected void createWallCircleValueArraysAll(int length)
 	{
-		oCircXShort = new int[length];
-		oCircYShort = new int[length];
-		oCircRadiusShort = new int[length];
-		oCircRatioShort =  new double[length];
+		oCircXAll = new int[length];
+		oCircYAll = new int[length];
+		oCircRadiusAll = new int[length];
+		oCircRatioAll =  new double[length];
 	}
 	protected void createWallRingValueArrays(int length)
 	{
@@ -310,8 +310,8 @@ public final class Controller extends AllViews
 			imageLibrary.changeArrayLoaded("swordsman", true);
 			createWallRectangleValueArrays(23);
 			createWallCircleValueArrays(20);
-			createWallRectangleValueArraysShort(26);
-			createWallCircleValueArraysShort(28);
+			createWallRectangleValueArraysAll(26);
+			createWallCircleValueArraysAll(28);
 			levelWidth = 500;
 			levelHeight = 650;
 			player.x = 250;
@@ -389,8 +389,8 @@ public final class Controller extends AllViews
 			imageLibrary.changeArrayLoaded("swordsman", true);
 			createWallRectangleValueArrays(3);
 			createWallCircleValueArrays(0);
-			createWallRectangleValueArraysShort(3);
-			createWallCircleValueArraysShort(0);
+			createWallRectangleValueArraysAll(3);
+			createWallCircleValueArraysAll(0);
 			levelWidth = 500;
 			levelHeight = 300;
 			player.x = 250;
@@ -405,8 +405,8 @@ public final class Controller extends AllViews
 			imageLibrary.changeArrayLoaded("archer", true);
 			createWallRectangleValueArrays(5);
 			createWallCircleValueArrays(3);
-			createWallRectangleValueArraysShort(7);
-			createWallCircleValueArraysShort(3);
+			createWallRectangleValueArraysAll(7);
+			createWallCircleValueArraysAll(3);
 			levelWidth = 500;
 			levelHeight = 300;
 			player.x = 476;
@@ -434,8 +434,8 @@ public final class Controller extends AllViews
 			imageLibrary.changeArrayLoaded("pikeman", true);
 			createWallRectangleValueArrays(0);
 			createWallCircleValueArrays(7);
-			createWallRectangleValueArraysShort(2);
-			createWallCircleValueArraysShort(7);
+			createWallRectangleValueArraysAll(2);
+			createWallCircleValueArraysAll(7);
 			levelWidth = 400;
 			levelHeight = 400;
 			player.x = 370;
@@ -462,8 +462,8 @@ public final class Controller extends AllViews
 			imageLibrary.changeArrayLoaded("pikeman", true);
 			createWallRectangleValueArrays(2);
 			createWallCircleValueArrays(0);
-			createWallRectangleValueArraysShort(9);
-			createWallCircleValueArraysShort(1);
+			createWallRectangleValueArraysAll(9);
+			createWallCircleValueArraysAll(1);
 			levelWidth = 500;
 			levelHeight = 300;
 			player.x = 452;
@@ -492,8 +492,8 @@ public final class Controller extends AllViews
 			imageLibrary.changeArrayLoaded("rogue", true);
 			createWallRectangleValueArrays(17);
 			createWallCircleValueArrays(0);
-			createWallRectangleValueArraysShort(25);
-			createWallCircleValueArraysShort(1);
+			createWallRectangleValueArraysAll(25);
+			createWallCircleValueArraysAll(1);
 			levelWidth = 450;
 			levelHeight = 650;
 			player.x = 452;
@@ -543,8 +543,8 @@ public final class Controller extends AllViews
 			imageLibrary.changeArrayLoaded("swordsman", true);
 			imageLibrary.changeArrayLoaded("archer", true);
 			createWallRectangleValueArrays(8);
-			createWallRectangleValueArraysShort(10);
-			createWallCircleValueArraysShort(9);
+			createWallRectangleValueArraysAll(10);
+			createWallCircleValueArraysAll(9);
 			levelWidth = 400;
 			levelHeight = 600;
 			player.x = 350;
@@ -584,7 +584,7 @@ public final class Controller extends AllViews
 		{
 			imageLibrary.changeArrayLoaded("swordsman", true);
 			createWallRectangleValueArrays(4);
-			createWallRectangleValueArraysShort(4);
+			createWallRectangleValueArraysAll(4);
 			createWallRingValueArrays(1);
 			createWallPassageValueArrays(2);
 			levelWidth = 400;
@@ -1487,7 +1487,7 @@ public final class Controller extends AllViews
 	 */
 	
 	
-	protected boolean checkObstructionsPoint(float x1, float y1, float x2, float y2)
+	protected boolean checkObstructionsPointTall(float x1, float y1, float x2, float y2)
 	{	
 		boolean hitBack = false;
 		float m1 = (y2-y1)/(x2-x1);
@@ -1607,8 +1607,7 @@ public final class Controller extends AllViews
 			}
 		return hitBack;
 	}
-	
-	protected boolean checkObstructionsPointShort(float x1, float y1, float x2, float y2)
+	protected boolean checkObstructionsPointAll(float x1, float y1, float x2, float y2)
 	{	
 		boolean hitBack = false;
 		float m1 = (y2-y1)/(x2-x1);
@@ -1625,17 +1624,17 @@ public final class Controller extends AllViews
 		{
 			hitBack = true;
 		}
-		for(int i = 0; i < currentCircleShort; i++)
+		for(int i = 0; i < currentCircleAll; i++)
 		{
 			if(!hitBack)
 			{
 				circM = -(1/m1);
-				circB = oCircYShort[i]-(circM*oCircXShort[i]);
+				circB = oCircYAll[i]-(circM*oCircXAll[i]);
 				tempX = (circB-b1)/(m1-circM);
 				if(x1 < tempX && tempX < x2)
 				{
 					tempY = (circM * tempX)+ circB;
-					if(Math.sqrt(Math.pow(tempX-oCircXShort[i],2)+Math.pow((tempY-oCircYShort[i])/oCircRatioShort[i],2))<oCircRadiusShort[i])
+					if(Math.sqrt(Math.pow(tempX-oCircXAll[i],2)+Math.pow((tempY-oCircYAll[i])/oCircRatioAll[i],2))<oCircRadiusAll[i])
 					{
 						if(!checkHitBackPass(tempX, tempY))
 						{
@@ -1657,17 +1656,17 @@ public final class Controller extends AllViews
 			y1 = y2;
 			y2 = tempY;
 		}
-			for(int i = 0; i < currentRectangleShort; i++)
+			for(int i = 0; i < currentRectangleAll; i++)
 			{
 				if(!hitBack)
 				{
 					//Right and left Checks
-					if(x1 < oRectX1Short[i] && oRectX1Short[i] < x2)
+					if(x1 < oRectX1All[i] && oRectX1All[i] < x2)
 					{
-						tempY = (m1*oRectX1Short[i])+b1;
-						if(oRectY1Short[i] < tempY && tempY < oRectY2Short[i])
+						tempY = (m1*oRectX1All[i])+b1;
+						if(oRectY1All[i] < tempY && tempY < oRectY2All[i])
 						{
-							if(!checkHitBackPass(oRectX1Short[i], tempY))
+							if(!checkHitBackPass(oRectX1All[i], tempY))
 							{
 								hitBack = true;
 							}
@@ -1675,12 +1674,12 @@ public final class Controller extends AllViews
 					}
 					if(!hitBack)
 					{
-						if(x1 < oRectX2Short[i] && oRectX2Short[i] < x2)
+						if(x1 < oRectX2All[i] && oRectX2All[i] < x2)
 						{
-							tempY = (m1*oRectX2Short[i])+b1;
-							if(oRectY1Short[i] < tempY && tempY < oRectY2Short[i])
+							tempY = (m1*oRectX2All[i])+b1;
+							if(oRectY1All[i] < tempY && tempY < oRectY2All[i])
 							{
-								if(!checkHitBackPass(oRectX2Short[i], tempY))
+								if(!checkHitBackPass(oRectX2All[i], tempY))
 								{
 									hitBack = true;
 								}
@@ -1690,12 +1689,12 @@ public final class Controller extends AllViews
 					//Top and Bottom checks
 					if(!hitBack)
 					{
-						if(y1 < oRectY1Short[i] && oRectY1Short[i] < y2)
+						if(y1 < oRectY1All[i] && oRectY1All[i] < y2)
 						{
-							tempX = (oRectY1Short[i]-b1)/m1;
-							if(oRectX1Short[i] < tempX && tempX < oRectX2Short[i])
+							tempX = (oRectY1All[i]-b1)/m1;
+							if(oRectX1All[i] < tempX && tempX < oRectX2All[i])
 							{
-								if(!checkHitBackPass(tempX, oRectY1Short[i]))
+								if(!checkHitBackPass(tempX, oRectY1All[i]))
 								{
 									hitBack = true;
 								}
@@ -1704,12 +1703,12 @@ public final class Controller extends AllViews
 					}
 					if(!hitBack)
 					{
-						if(y1 < oRectY2Short[i] && oRectY2Short[i] < y2)
+						if(y1 < oRectY2All[i] && oRectY2All[i] < y2)
 						{
-							tempX = (oRectY2Short[i]-b1)/m1;
-							if(oRectX1Short[i] < tempX && tempX < oRectX2Short[i])
+							tempX = (oRectY2All[i]-b1)/m1;
+							if(oRectX1All[i] < tempX && tempX < oRectX2All[i])
 							{
-								if(!checkHitBackPass(tempX, oRectY2Short[i]))
+								if(!checkHitBackPass(tempX, oRectY2All[i]))
 								{
 									hitBack = true;
 								}
@@ -1720,17 +1719,17 @@ public final class Controller extends AllViews
 			}
 		return hitBack;
 	}
-	protected boolean checkObstructions(double x1, double y1, double rads, int distance)
+	protected boolean checkObstructionsTall(double x1, double y1, double rads, int distance)
 	{
 		double x2 = x1 + (Math.cos(rads) * distance);
 		double y2 = y1 + (Math.sin(rads) * distance);
-		return checkObstructionsPoint((float)x1, (float)y1, (float)x2, (float)y2);
+		return checkObstructionsPointTall((float)x1, (float)y1, (float)x2, (float)y2);
 	}
-	protected boolean checkObstructionsShort(double x1, double y1, double rads, int distance)
+	protected boolean checkObstructionsAll(double x1, double y1, double rads, int distance)
 	{
 		double x2 = x1 + (Math.cos(rads) * distance);
 		double y2 = y1 + (Math.sin(rads) * distance);
-		return checkObstructionsPointShort((float)x1, (float)y1, (float)x2, (float)y2);
+		return checkObstructionsPointAll((float)x1, (float)y1, (float)x2, (float)y2);
 	}
 	
 	protected boolean checkHitBack(double X, double Y)
@@ -1904,16 +1903,16 @@ public final class Controller extends AllViews
 	protected int getCurrentRectangle() {
 		return currentRectangle;
 	}
-	protected int getCurrentCircleShort() {
-		return currentCircleShort;
+	protected int getCurrentCircleAll() {
+		return currentCircleAll;
 	}
-	protected int getCurrentRectangleShort() {
-		return currentRectangleShort;
+	protected int getCurrentRectangleAll() {
+		return currentRectangleAll;
 	}
-	protected int getCurrentCurrentRing() {
+	protected int getCurrentRing() {
 		return currentRing;
 	}
-	protected int getCurrentCurrentPassage() {
+	protected int getCurrentPassage() {
 		return currentPassage;
 	}
 	protected boolean getGameEnded() {
@@ -1927,13 +1926,13 @@ public final class Controller extends AllViews
 	{
 		currentCircle ++;
 	}
-	protected void incrementCurrentRectangleShort()
+	protected void incrementCurrentRectangleAll()
 	{
-		currentRectangleShort ++;
+		currentRectangleAll ++;
 	}
-	protected void incrementCurrentCircleShort()
+	protected void incrementCurrentCircleAll()
 	{
-		currentCircleShort ++;
+		currentCircleAll ++;
 	}
 	protected void incrementCurrentRing()
 	{
@@ -1943,14 +1942,14 @@ public final class Controller extends AllViews
 	{
 		currentPassage ++;
 	}
-	protected void setORectX1Short(int i, int oRectX1) {
-		this.oRectX1Short[i] = oRectX1;
+	protected void setORectX1All(int i, int oRectX1) {
+		this.oRectX1All[i] = oRectX1;
 	}
-	protected void setORectX2Short(int i, int oRectX2) {
-		this.oRectX2Short[i] = oRectX2;
+	protected void setORectX2All(int i, int oRectX2) {
+		this.oRectX2All[i] = oRectX2;
 	}
-	protected void setORectY1Short(int i, int oRectY1) {
-		this.oRectY1Short[i] = oRectY1;
+	protected void setORectY1All(int i, int oRectY1) {
+		this.oRectY1All[i] = oRectY1;
 	}
 	protected void setOPassageY2(int i, int oRectY2) {
 		this.oPassageY2[i] = oRectY2;
@@ -1964,20 +1963,20 @@ public final class Controller extends AllViews
 	protected void setOPassageY1(int i, int oRectY1) {
 		this.oPassageY1[i] = oRectY1;
 	}
-	protected void setORectY2Short(int i, int oRectY2) {
-		this.oRectY2Short[i] = oRectY2;
+	protected void setORectY2All(int i, int oRectY2) {
+		this.oRectY2All[i] = oRectY2;
 	}
-	protected void setOCircXShort(int i, int oCircX) {
-		this.oCircXShort[i] = oCircX;
+	protected void setOCircXAll(int i, int oCircX) {
+		this.oCircXAll[i] = oCircX;
 	}
-	protected void setOCircYShort(int i, int oCircY) {
-		this.oCircYShort[i] = oCircY;
+	protected void setOCircYAll(int i, int oCircY) {
+		this.oCircYAll[i] = oCircY;
 	}
-	protected void setOCircRadiusShort(int i, int oCircRadius) {
-		this.oCircRadiusShort[i] = oCircRadius;
+	protected void setOCircRadiusAll(int i, int oCircRadius) {
+		this.oCircRadiusAll[i] = oCircRadius;
 	}
-	protected void setOCircRatioShort(int i, double oCircRatio) {
-		this.oCircRatioShort[i] = oCircRatio;
+	protected void setOCircRatioAll(int i, double oCircRatio) {
+		this.oCircRatioAll[i] = oCircRatio;
 	}
 	
 	protected void setORingX(int i, int oCircX) {

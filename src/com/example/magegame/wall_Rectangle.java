@@ -21,11 +21,11 @@ public class Wall_Rectangle extends Wall
 		x = (oRX1 + oRX2) / 2;
 		y = (oRY1 + oRY2) / 2;
 		mainController = creator;
-		mainController.setORectX1Short(mainController.getCurrentRectangleShort(), oRX1);
-		mainController.setORectX2Short(mainController.getCurrentRectangleShort(), oRX2);
-		mainController.setORectY1Short(mainController.getCurrentRectangleShort(), oRY1);
-		mainController.setORectY2Short(mainController.getCurrentRectangleShort(), oRY2);
-		mainController.incrementCurrentRectangleShort();
+		mainController.setORectX1All(mainController.getCurrentRectangleAll(), oRX1);
+		mainController.setORectX2All(mainController.getCurrentRectangleAll(), oRX2);
+		mainController.setORectY1All(mainController.getCurrentRectangleAll(), oRY1);
+		mainController.setORectY2All(mainController.getCurrentRectangleAll(), oRY2);
+		mainController.incrementCurrentRectangleAll();
 		if(tall)
 		{
 			mainController.setORectX1(mainController.getCurrentRectangle(), oRX1);

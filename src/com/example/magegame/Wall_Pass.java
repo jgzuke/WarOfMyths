@@ -13,10 +13,10 @@ public class Wall_Pass extends Wall
 		oRY1 = ORY;
 		oRX2 = ORX+wallWidth;
 		oRY2 = ORY+wallHeight;
-		creator.setOPassageX1(creator.getCurrentCurrentPassage(), oRX1);
-		creator.setOPassageX2(creator.getCurrentCurrentPassage(), oRX2);
-		creator.setOPassageY1(creator.getCurrentCurrentPassage(), oRY1);
-		creator.setOPassageY2(creator.getCurrentCurrentPassage(), oRY2);
+		creator.setOPassageX1(creator.getCurrentPassage(), oRX1);
+		creator.setOPassageX2(creator.getCurrentPassage(), oRX2);
+		creator.setOPassageY1(creator.getCurrentPassage(), oRY1);
+		creator.setOPassageY2(creator.getCurrentPassage(), oRY2);
 		creator.incrementCurrentPassage();
 	}
 	@Override

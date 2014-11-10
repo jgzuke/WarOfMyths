@@ -300,7 +300,7 @@ public final class Enemy_Mage extends Enemy
 		while(areaProtectedRotation < 360)
 		{
 			areaProtectedRads = areaProtectedRotation / r2d;
-			if(mainController.checkObstructionsShort(X, Y, areaProtectedRads, 50))
+			if(mainController.checkObstructionsAll(X, Y, areaProtectedRads, 50))
 			{
 				areaProtectedCount++;
 			}
@@ -320,7 +320,7 @@ public final class Enemy_Mage extends Enemy
 	{
 		rads = Math.atan2(-(mainController.player.y - y), -(mainController.player.x - x));
 		rotation = rads * r2d;
-		if(!mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
+		if(!mainController.checkObstructionsAll(x, y, areaProtectedRads, 42))
 		{
 			roll();
 		}
@@ -333,7 +333,7 @@ public final class Enemy_Mage extends Enemy
 				rollPathChooseCounter += 10;
 				rotation = rollPathChooseRotationStore + rollPathChooseCounter;
 				rads = rotation / r2d;
-				if(!mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
+				if(!mainController.checkObstructionsAll(x, y, areaProtectedRads, 42))
 				{
 					roll();
 					rollPathChooseCounter = 180;
@@ -342,7 +342,7 @@ public final class Enemy_Mage extends Enemy
 				{
 					rotation = rollPathChooseRotationStore - rollPathChooseCounter;
 					rads = rotation / r2d;
-					if(!mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
+					if(!mainController.checkObstructionsAll(x, y, areaProtectedRads, 42))
 					{
 						roll();
 						rollPathChooseCounter = 180;
@@ -369,10 +369,10 @@ public final class Enemy_Mage extends Enemy
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 		rotation = rads * r2d;
 		rads = (rotation + 90) / r2d;
-		if(mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
+		if(mainController.checkObstructionsAll(x, y, areaProtectedRads, 42))
 		{
 			rads = (rotation - 90) / r2d;
-			if(mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
+			if(mainController.checkObstructionsAll(x, y, areaProtectedRads, 42))
 			{
 				rolledSideways = false;
 			}
@@ -385,7 +385,7 @@ public final class Enemy_Mage extends Enemy
 		} else
 		{
 			rads = (rotation - 90) / r2d;
-			if(mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
+			if(mainController.checkObstructionsAll(x, y, areaProtectedRads, 42))
 			{
 				rotation += 90;
 				rads = rotation / r2d;

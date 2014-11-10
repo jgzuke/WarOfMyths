@@ -67,10 +67,10 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		rotation = rads * r2d;
 		rads = (rotation + 90) / r2d;
 		double areaProtectedRads;
-		if(mainController.checkObstructionsShort(x, y, rads, 42))
+		if(mainController.checkObstructionsAll(x, y, rads, 42))
 		{
 			rads = (rotation - 90) / r2d;
-			if(mainController.checkObstructionsShort(x, y, rads, 42))
+			if(mainController.checkObstructionsAll(x, y, rads, 42))
 			{
 				rolledSideways = false;
 			}
@@ -83,7 +83,7 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		} else
 		{
 			rads = (rotation - 90) / r2d;
-			if(mainController.checkObstructionsShort(x, y, rads, 42))
+			if(mainController.checkObstructionsAll(x, y, rads, 42))
 			{
 				rotation += 90;
 				rads = rotation / r2d;

@@ -18,10 +18,10 @@ public class Wall_Ring extends Wall
 		oCRIn = OCRIn;
 		oCROut = OCROut;
 		mainController = creator;
-		mainController.setORingX(mainController.getCurrentCircleShort(), OCX);
-		mainController.setORingY(mainController.getCurrentCircleShort(), OCY);
-		mainController.setORingInner(mainController.getCurrentCircleShort(), oCRIn);
-		mainController.setORingOuter(mainController.getCurrentCircleShort(), oCROut);
+		mainController.setORingX(mainController.getCurrentRing(), OCX);
+		mainController.setORingY(mainController.getCurrentRing(), OCY);
+		mainController.setORingInner(mainController.getCurrentRing(), oCRIn);
+		mainController.setORingOuter(mainController.getCurrentRing(), oCROut);
 		mainController.incrementCurrentRing();
 		
 		oCRIn -= humanWidth;

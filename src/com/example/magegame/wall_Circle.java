@@ -17,11 +17,11 @@ public class Wall_Circle extends Wall
 		oCR = OCR;
 		oCRatio = OCRatio;
 		mainController = creator;
-		mainController.setOCircXShort(mainController.getCurrentCircleShort(), OCX);
-		mainController.setOCircYShort(mainController.getCurrentCircleShort(), OCY);
-		mainController.setOCircRadiusShort(mainController.getCurrentCircleShort(), OCR);
-		mainController.setOCircRatioShort(mainController.getCurrentCircleShort(), OCRatio);
-		mainController.incrementCurrentCircleShort();
+		mainController.setOCircXAll(mainController.getCurrentCircleAll(), OCX);
+		mainController.setOCircYAll(mainController.getCurrentCircleAll(), OCY);
+		mainController.setOCircRadiusAll(mainController.getCurrentCircleAll(), OCR);
+		mainController.setOCircRatioAll(mainController.getCurrentCircleAll(), OCRatio);
+		mainController.incrementCurrentCircleAll();
 		if(tall)
 		{
 			mainController.setOCircX(mainController.getCurrentCircle(), OCX);
