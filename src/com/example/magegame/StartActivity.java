@@ -28,8 +28,8 @@ public class StartActivity extends Activity
 	protected double screenDimensionMultiplier;
 	protected int screenMinX;
 	protected int screenMinY;
-	protected int gameCurrency=500;
-	protected int realCurrency=500;
+	protected int gameCurrency=5;
+	protected int realCurrency=5;
 	protected byte wApollo = 10;
 	protected byte wPoseidon = 10;
 	protected byte wZues = 10;
@@ -47,17 +47,19 @@ public class StartActivity extends Activity
 	protected boolean stickOnRight = false;
 	protected boolean shootTapScreen = false;
 	protected boolean shootTapDirectional = true;
-	protected byte levelBeaten = 3;
+	protected byte levelBeaten = 0;
 	protected boolean gameRunning = true;
 	private FileOutputStream fileWrite;
 	private FileInputStream fileRead;
-	private int savePoints = 25;
+	private int savePoints = 26;
 	protected byte[] savedData = new byte[savePoints];
-	private MediaPlayer backMusic;
+	protected MediaPlayer backMusic;
 	private SoundPool spool;
 	private int[] soundPoolMap = new int[13];
-	private AudioManager audioManager;
-	private float volume;
+	protected AudioManager audioManager;
+	protected byte playerType = 0;
+	protected double volumeMusic = 127;
+	protected double volumeEffect = 127;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +82,7 @@ public class StartActivity extends Activity
         startMusic();
     	if(firstTime)
     	{
-    		startFight(1);
+    		startFight(2);
     	}
     	control.changePlayOptions();
     }
@@ -91,7 +93,6 @@ public class StartActivity extends Activity
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		spool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-		volume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     	soundPoolMap[0] = spool.load(this, R.raw.shoot_burn, 1);
     	soundPoolMap[1] = spool.load(this, R.raw.shoot_electric, 1);
     	soundPoolMap[2] = spool.load(this, R.raw.shoot_water, 1);
@@ -106,7 +107,7 @@ public class StartActivity extends Activity
     	soundPoolMap[11] = spool.load(this, R.raw.enemy_arrowrelease, 1);
     	soundPoolMap[12] = spool.load(this, R.raw.effect_pageflip, 1);
     }
-    protected void startMenu(boolean wonRound)
+    protected void startMenu()
     {
     	control.drainHp = false;
     	control.lowerHp = false;
@@ -114,21 +115,33 @@ public class StartActivity extends Activity
     	control.enemyRegen = false;
     	control.changeDifficulty(10);
     	control.imageLibrary.directionsTutorial = control.imageLibrary.loadImage("menu_directions", 235, 140);
-    	if(wonRound)
-    	{
-    		gameCurrency += control.winnings;
-        	if(control.levelNum >= levelBeaten)
-        	{
-        		levelBeaten++;
-        	}
-    	}
-    	control.startFighting(0);
+    	control.startFighting(10);
     	control.gamePaused = false;
+    }
+    protected void loseFight()
+    {
+    	control.gamePaused = true;
+    	control.currentPause = "lost";
+    	control.invalidate();
+    }
+    protected void winFight()
+    {
+        if((int)(control.levelNum/10)-2 == levelBeaten)
+       	{
+        	levelBeaten++;
+       	}
+        control.gamePaused = true;
+    	control.currentPause = "won";
+    	control.invalidate();
     }
     protected void startFight(int levelSet)
     {
-    	control.startFighting(levelSet);
+    	control.startFighting(levelSet*10);
     	control.gamePaused = false;
+    	if(levelSet==2)
+    	{
+    		control.player.getPowerUp(2);
+    	}
     }
 	protected void setScreenDimensions()
 	{
@@ -170,22 +183,27 @@ public class StartActivity extends Activity
             }
         });
         backMusic.setLooping(true);
+        float systemVolume= audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+		systemVolume = (float) (systemVolume*volumeMusic/127);
+		backMusic.setVolume(systemVolume, systemVolume);
 	}
 	protected void playEffect(String toPlay)
 	{
-		if(toPlay.equals("burn"))spool.play(soundPoolMap[0], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("electric"))spool.play(soundPoolMap[1], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("water"))spool.play(soundPoolMap[2], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("earth"))spool.play(soundPoolMap[3], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("burst"))spool.play(soundPoolMap[4], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("shoot"))spool.play(soundPoolMap[5], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("teleport"))spool.play(soundPoolMap[6], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("sword1"))spool.play(soundPoolMap[7], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("sword2"))spool.play(soundPoolMap[8], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("swordmiss"))spool.play(soundPoolMap[9], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("arrowhit"))spool.play(soundPoolMap[10], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("arrowrelease"))spool.play(soundPoolMap[11], volume, volume, 1, 0, 1f);
-		if(toPlay.equals("pageflip"))spool.play(soundPoolMap[12], volume, volume, 1, 0, 1f);
+		float newV= audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+		newV = (float)(newV*volumeEffect/127);
+		if(toPlay.equals("burn"))spool.play(soundPoolMap[0], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("electric"))spool.play(soundPoolMap[1], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("water"))spool.play(soundPoolMap[2], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("earth"))spool.play(soundPoolMap[3], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("burst"))spool.play(soundPoolMap[4], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("shoot"))spool.play(soundPoolMap[5], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("teleport"))spool.play(soundPoolMap[6], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("sword1"))spool.play(soundPoolMap[7], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("sword2"))spool.play(soundPoolMap[8], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("swordmiss"))spool.play(soundPoolMap[9], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("arrowhit"))spool.play(soundPoolMap[10], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("arrowrelease"))spool.play(soundPoolMap[11], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("pageflip"))spool.play(soundPoolMap[12], newV, newV, 1, 0, 1f);
 	}
 	protected void stopMusic()
 	{
@@ -208,15 +226,11 @@ public class StartActivity extends Activity
     }
     protected boolean canBuyGame(String toBuy)
     {
-    	boolean buyable = true;
-    	if(buy(toBuy, gameCurrency, false)==0)buyable=false;
-    	return buyable;
+    	return !(buy(toBuy, gameCurrency, false)==0);
     }
     protected boolean canBuyReal(String toBuy)
     {
-    	boolean buyable = true;
-    	if(buy(toBuy, realCurrency, false)==0)buyable=false;
-    	return buyable;
+    	return !(buy(toBuy, realCurrency, false)==0);
     }
 	protected int buy(String toBuy, int currency, boolean buying)
     {
@@ -226,7 +240,7 @@ public class StartActivity extends Activity
     	switch (ID)
     	{
     	case 1:
-    		cost = Math.pow(wApollo, 2.5)*9/316;
+    		cost = Math.pow(wApollo, 2.5)*6/15.8;
     		if(currency>=cost)
     		{
     			if(buying)wApollo ++;
@@ -234,7 +248,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 2:
-    		cost = Math.pow(wPoseidon, 2.5)*9/316;
+    		cost = Math.pow(wPoseidon, 2.5)*6/15.8;
     		if(currency>=cost)
     		{
     			if(buying)wPoseidon ++;
@@ -242,7 +256,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 3:
-    		cost = Math.pow(wZues, 2.5)*9/316;
+    		cost = Math.pow(wZues, 2.5)*6/15.8;
     		if(currency>=cost)
     		{
     			if(buying)wZues ++;
@@ -250,7 +264,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 4:
-    		cost = Math.pow(wHades, 2.5)*9/316;
+    		cost = Math.pow(wHades, 2.5)*6/15.8;
     		if(currency>=cost)
     		{
     			if(buying)wHades ++;
@@ -258,7 +272,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 5:
-    		cost = Math.pow(wHephaestus, 2.5)*9/316;
+    		cost = Math.pow(wHephaestus, 2.5)*10/15.8;
     		if(currency>=cost)
     		{
     			if(buying)wHephaestus ++;
@@ -266,7 +280,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 6:
-    		cost = Math.pow(wAres, 2.5)*9/316;
+    		cost = Math.pow(wAres, 2.5)*10/15.8;
     		if(currency>=cost)
     		{
     			if(buying)wAres ++;
@@ -274,7 +288,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 7:
-    		cost = Math.pow(wAthena, 2.5)*9/316;
+    		cost = Math.pow(wAthena, 2.5)*10/15.8;
     		if(currency>=cost)
     		{
     			if(buying)wAthena ++;
@@ -282,7 +296,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 8:
-    		cost = Math.pow(wHermes, 2.5)*9/316;
+    		cost = Math.pow(wHermes, 2.5)*10/15.8;
     		if(currency>=cost)
     		{
     			if(buying)wHermes ++;
@@ -290,7 +304,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 9:
-    		cost = 10;
+    		cost = 200;
     		if(currency>=cost)
     		{
     			if(buying)pHeal ++;
@@ -298,7 +312,7 @@ public class StartActivity extends Activity
     		}
     		break;
     	case 10:
-    		cost = 10;
+    		cost = 200;
     		if(currency>=cost)
     		{
     			if(buying)pCool ++;
@@ -306,7 +320,7 @@ public class StartActivity extends Activity
     		}
     		break;
 		case 11:
-			cost = 10;
+			cost = 200;
     		if(currency>=cost)
     		{
     			if(buying)pWater ++;
@@ -314,7 +328,7 @@ public class StartActivity extends Activity
     		}
 			break;
 		case 12:
-			cost = 10;
+			cost = 200;
     		if(currency>=cost)
     		{
     			if(buying)pEarth ++;
@@ -322,7 +336,7 @@ public class StartActivity extends Activity
     		}
 			break;
 		case 13:
-			cost = 10;
+			cost = 200;
     		if(currency>=cost)
     		{
     			if(buying)pAir ++;
@@ -330,7 +344,7 @@ public class StartActivity extends Activity
     		}
 			break;
 		case 14:
-			cost = 10;
+			cost = 200;
     		if(currency>=cost)
     		{
     			if(buying)pFire ++;
@@ -507,6 +521,15 @@ public class StartActivity extends Activity
         savedData[16] = pEarth;
         savedData[17] = pAir;
         savedData[18] = pFire;
+        if(control!=null)
+        {
+        	savedData[23] = (byte)control.playerType;
+        } else
+        {
+        	savedData[23] = playerType;
+        }
+        savedData[24] = (byte)((int)volumeMusic);
+        savedData[25] = (byte)((int)volumeEffect);
         String temp = correctDigits(Integer.toBinaryString(gameCurrency), 14);
         String tempLow = temp.substring(7);
         String tempHigh = temp.substring(0, 7);
@@ -542,8 +565,11 @@ public class StartActivity extends Activity
     	pEarth = savedData[16];
     	pAir = savedData[17];
     	pFire = savedData[18];
+    	playerType = savedData[23];
     	gameCurrency = savedData[20]+(128*savedData[19]);
     	realCurrency = savedData[22]+(128*savedData[21]);
+    	volumeMusic = savedData[24];
+        volumeEffect = savedData[25];
     }
    @Override
     public void onResume() {

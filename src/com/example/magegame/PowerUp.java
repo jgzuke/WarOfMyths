@@ -6,18 +6,24 @@ public final class PowerUp extends DrawnSprite
 {
 	private int ID;
 	private int startInt = 1;
-	public PowerUp(Controller creator, double X, double Y)
+	public PowerUp(Controller creator, double X, double Y, int Type)
 	{
 		width = 30;
 		height = 30;
 		mainController = creator;
 		x = X;
 		y = Y;
-		ID = mainController.getRandomInt(6)+1;
-		int type = mainController.playerType;
-		while((ID==3&&type==1)||(ID==4&&type==3)||(ID==5&&type==2)||(ID==6&&type==0))
+		int playerType = mainController.playerType;
+		if(Type == 0)
 		{
 			ID = mainController.getRandomInt(6)+1;
+			while((ID==3&&playerType==1)||(ID==4&&playerType==3)||(ID==5&&playerType==2)||(ID==6&&playerType==0))
+			{
+				ID = mainController.getRandomInt(6)+1;
+			}
+		} else
+		{
+			ID=Type;
 		}
 		visualImage = mainController.imageLibrary.powerUps[ID-1];
 	}@

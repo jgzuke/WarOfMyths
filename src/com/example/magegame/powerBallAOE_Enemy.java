@@ -14,25 +14,33 @@ public final class PowerBallAOE_Enemy extends PowerBallAOE
 		{
 			xDif = x - mainController.player.x;
 			yDif = y - mainController.player.y;
-			if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone)
+			if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone+15)
 			{			
 				mainController.player.getHit(60);
 			}
 		}
 	}
 	@ Override
-	protected void explode()
+	protected void explode(int power)
 	{
-		int power = 120;
-		double pV = 2+(mainController.getDifficultyLevelMultiplier()*5);
-		double oV = 0.7*pV;
-		mainController.createPowerBallEnemy(0,   pV,  0,  power, x+(2*pV), y);
-		mainController.createPowerBallEnemy(45,  oV,  oV, power, x+(2*oV), y+(2*oV));
-		mainController.createPowerBallEnemy(90,  0,   pV, power, x, y+(2*pV));
-		mainController.createPowerBallEnemy(135,-oV,  oV, power, x-(2*oV), y+(2*oV));
-		mainController.createPowerBallEnemy(180,-pV,  0,  power, x-(2*pV), y);
-		mainController.createPowerBallEnemy(225, -oV,-oV, power, x-(2*oV), y-(2*oV));
-		mainController.createPowerBallEnemy(270, 0,  -pV, power, x, y-(2*pV));
-		mainController.createPowerBallEnemy(315, oV, -oV, power, x+(2*oV), y-(2*oV));
+		mainController.activity.playEffect("electric");
+		for(int i = 0; i<6; i++)
+		{
+			mainController.createPowerBallEnemyAOE(x-15+mainController.getRandomInt(30), y-15+mainController.getRandomInt(30), power);
+		}
+		/*int power = 130;
+		double veloc = 2+(mainController.getDifficultyLevelMultiplier()*5);
+		double radians;
+		double xMove;
+		double yMove;
+		rotation-=20;
+		for(int i = 0; i < 4; i++)
+		{
+			rotation+=5;
+			radians=rotation/r2d;
+			xMove = Math.cos(radians)*veloc;
+			yMove = Math.sin(radians)*veloc;
+			mainController.createPowerBallEnemy(rotation,xMove,yMove,power, x+(2*xMove), y+(2*yMove));
+		}*/
 	}
 }

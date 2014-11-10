@@ -14,6 +14,8 @@ public class PlayerGestureDetector implements OnTouchListener {
 	private double xTouch;
 	private double yTouch;
 	private int buttonShiftX;
+	private boolean startDragMusic = false;
+	private boolean startDragEffect = false;
 	public PlayerGestureDetector(Controller mainSet)
 	{
 		main = mainSet;
@@ -48,15 +50,60 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            {
 		            	player.touchX = visualX(e.getX(trackingId))-(427-buttonShiftX);
 		            	player.touchY = visualY(e.getY(trackingId))-267;
+		            	if(Math.abs(player.touchX)<10)
+		            	{
+		            		player.touchX=0;
+		            	}
+		            	if(Math.abs(player.touchY)<10)
+		            	{
+		            		player.touchY=0;
+		            	}
+		            }
+		            if(main.gamePaused&&main.currentPause.equals("options"))
+		            {
+		            	if(startDragMusic)
+		            	{
+		            		double rawVolume = visualX(e.getX(trackingId))-264;
+		        			if(rawVolume<0) rawVolume = 0;
+		            		if(rawVolume>127) rawVolume = 127;
+		            		double volume = Math.pow(rawVolume, 3)/16129;
+		            		if(volume<0) volume = 0;
+		            		if(volume>127) volume = 127;
+		            		main.activity.volumeMusic = volume;
+		            		main.invalidate();
+		            	}
+		            	if(startDragEffect)
+		            	{
+		            		double rawVolume = visualX(e.getX(trackingId))-264;
+		        			if(rawVolume<0) rawVolume = 0;
+		            		if(rawVolume>127) rawVolume = 127;
+		            		double volume = Math.pow(rawVolume, 3)/16129;
+		            		if(volume<0) volume = 0;
+		            		if(volume>127) volume = 127;
+		            		main.activity.volumeEffect = volume;
+		            		main.invalidate();
+		            	}
 		            }
 		        break;
 		        case MotionEvent.ACTION_UP:
 		        	player.touching = false;
+		        	if(startDragMusic||startDragEffect)
+		        	{
+		        		main.activity.playEffect("pageflip");
+		        	}
+		        	startDragMusic = false;
+		        	startDragEffect = false;
 		        break;
 		        case MotionEvent.ACTION_POINTER_UP:
 		        	if(e.getPointerId(e.getActionIndex()) == trackingId)
 		        	{
 		        		player.touching = false;
+		        		if(startDragMusic||startDragEffect)
+			        	{
+			        		main.activity.playEffect("pageflip");
+			        	}
+		        		startDragMusic = false;
+			        	startDragEffect = false;
 		        	}
 		        break;
 		        case MotionEvent.ACTION_POINTER_DOWN:
@@ -74,23 +121,38 @@ public class PlayerGestureDetector implements OnTouchListener {
 				clickDownPaused(x, y);
 			} else if(main.currentPause.equals("options"))
 			{
-				clickDownOptions(x, y);
+				clickDownOptions(x, y, ID);
 			} else if(main.currentPause.equals("startfight"))
 			{
 				clickDownStartFight(x, y);
 			} else if(main.currentPause.equals("buy"))
 			{
 				clickDownBuy(x, y);
+			} else if(main.currentPause.equals("won"))
+			{
+				clickDownWon(x, y);
+			} else if(main.currentPause.equals("lost"))
+			{
+				clickDownLost(x, y);
+			} else if(main.currentPause.equals("chooseGod"))
+			{
+				clickDownChooseGod(x, y);
 			}
 		} else
 		{
-			if(main.levelNum == 0)
+			if(main.levelNum == 10)
 			{
 				if(!clickDownNotPausedMenu(x, y))
 				{
 					clickDownNotPaused(x, y, ID, firstPointer);
 				}
-			} else if(main.levelNum == 1)
+			} else if(main.levelNum == 11)
+			{
+				if(!clickDownNotPausedTemple(x, y))
+				{
+					clickDownNotPaused(x, y, ID, firstPointer);
+				}
+			} else if(main.levelNum == 20)
 			{
 				if(!clickDownNotPausedTutorial(x, y))
 				{
@@ -101,6 +163,18 @@ public class PlayerGestureDetector implements OnTouchListener {
 				clickDownNotPaused(x, y, ID, firstPointer);
 			}
 		}
+	}
+	protected boolean pressedBack(float x, float y)
+	{
+		boolean pressed = false;
+		if(main.pointOnSquare(x, y, 430, 0, 480, 50)&&main.activity.stickOnRight)
+        {
+			pressed = true;
+        } else if(main.pointOnSquare(x, y, 0, 0, 50, 50)&&!main.activity.stickOnRight)
+        {
+        	pressed = true;
+        }
+		return pressed;
 	}
 	protected void clickDownBuy(float x, float y)
 	{
@@ -114,23 +188,61 @@ public class PlayerGestureDetector implements OnTouchListener {
 			main.activity.buyReal(main.buyingItem);
 			main.activity.playEffect("pageflip");
 			main.gamePaused = false;
-		} else if(main.pointOnSquare(x, y, 430, 0, 480, 50))
+		} else if(pressedBack(x, y))
+        {
+        	main.gamePaused = false;
+        }
+	}
+	protected void clickDownWon(float x, float y)
+	{
+		if(main.pointOnSquare(x, y, 66, 231, 214, 276))
 		{
-			main.gamePaused = false;
-		}
+			main.startingLevel =(int)(main.levelNum/10)-1;
+			main.gamePaused = true;
+			main.currentPause = "startfight";
+			main.invalidate();
+		} else if(main.pointOnSquare(x, y, 266, 231, 414, 276))
+		{
+			main.activity.startMenu();
+		} else if(pressedBack(x, y))
+        {
+			main.activity.startMenu();
+        }
+	}
+	protected void clickDownLost(float x, float y)
+	{
+		if(main.pointOnSquare(x, y, 66, 231, 214, 276))
+		{
+			main.startingLevel = (int)(main.levelNum/10)-2;
+			main.gamePaused = true;
+			main.currentPause = "startfight";
+			main.invalidate();
+		} else if(main.pointOnSquare(x, y, 266, 231, 414, 276))
+		{
+			main.activity.startMenu();
+		} else if(pressedBack(x, y))
+        {
+			main.activity.startMenu();
+        }
 	}
 	protected void clickDownStartFight(float x, float y)
 	{
-		if(main.pointOnSquare(x, y, 430, 0, 480, 50))
-		{
-			main.gamePaused = false;
-		}
+		if(pressedBack(x, y))
+	    {
+			if(main.levelNum == 10)
+			{
+				main.gamePaused = false;
+			} else
+			{
+				main.activity.startMenu();
+			}
+	    }
 		if(main.pointOnSquare(x, y, 180, 171, 300, 219))
 		{
-			main.activity.startFight(main.startingLevel);
+			main.activity.startFight(main.startingLevel+2);
 			main.invalidate();
 		}
-		if(main.startingLevel != 1)
+		if(main.startingLevel != 0)
 		{
 			if(main.pointOnSquare(x, y, 30, 104, 130, 144))
 			{			
@@ -167,8 +279,60 @@ public class PlayerGestureDetector implements OnTouchListener {
 			}
 		}
 	}
-	protected void clickDownOptions(float x, float y)
+	protected void clickDownChooseGod(float x, float y)
 	{
+		if(pressedBack(x, y))
+	    {
+			main.gamePaused = false;
+	    }
+			if(main.pointOnSquare(x, y, 16, 192, 116, 292))
+			{
+				main.changePlayerType(2);
+				main.invalidate();
+			} else if(main.pointOnSquare(x, y, 132, 192, 232, 292))
+			{
+				main.changePlayerType(1);
+				main.invalidate();
+			} else if(main.pointOnSquare(x, y, 248, 192, 348, 292))
+			{
+				main.changePlayerType(3);
+				main.invalidate();
+			} else if(main.pointOnSquare(x, y, 364, 192, 464, 292))
+			{
+				main.changePlayerType(0);
+				main.invalidate();
+			}
+	}
+	protected void clickDownOptions(float x, float y, int ID)
+	{
+		if(main.pointOnSquare(x, y, 264, 90, 392, 116))
+		{
+			trackingId = ID;
+			startDragMusic = true;
+			double rawVolume = visualX(x)-264;
+			if(rawVolume<0) rawVolume = 0;
+    		if(rawVolume>127) rawVolume = 127;
+    		double volume = Math.pow(rawVolume, 2)/127;
+    		if(volume<0) volume = 0;
+    		if(volume>127) volume = 127;
+    		main.activity.volumeMusic = volume;
+    		main.activity.playEffect("pageflip");
+			main.invalidate();
+		}
+		if(main.pointOnSquare(x, y, 264, 117, 392, 143))
+		{
+			trackingId = ID;
+			startDragEffect = true;
+			double rawVolume = visualX(x)-264;
+			if(rawVolume<0) rawVolume = 0;
+    		if(rawVolume>127) rawVolume = 127;
+    		double volume = Math.pow(rawVolume, 2)/127;
+    		if(volume<0) volume = 0;
+    		if(volume>127) volume = 127;
+    		main.activity.volumeEffect = volume;
+    		main.activity.playEffect("pageflip");
+			main.invalidate();
+		}
 		if(main.pointOnSquare(x, y, 249, 174, 269, 194))
 		{
 			main.activity.shootTapScreen = false;
@@ -205,21 +369,21 @@ public class PlayerGestureDetector implements OnTouchListener {
 			main.activity.playEffect("pageflip");
 			main.changePlayOptions();
 		}
-		if(main.pointOnSquare(x, y, 430, 0, 480, 50))
-		{
-			main.currentPause = "paused";
+		if(pressedBack(x, y))
+	    {
+	    	main.currentPause = "paused";
 			main.invalidate();
-		}
+	    }
 	}
 	protected void clickDownPaused(float x, float y)
 	{
 		boolean clicked = true;
-		if(main.pointOnSquare(x, y, 430, 0, 480, 50))
+		if(pressedBack(x, y))
+	    {
+	    	main.gamePaused = false;
+	    } else if(main.pointOnSquare(x, y, 262, 95, 414, 157))
         {
-			main.gamePaused = false;
-        } else if(main.pointOnSquare(x, y, 262, 95, 414, 157))
-        {
-        	main.activity.startMenu(false);
+        	main.activity.startMenu();
         } else if(main.pointOnSquare(x, y, 245, 181, 414, 243))
         {
         	main.currentPause = "options";
@@ -286,92 +450,114 @@ public class PlayerGestureDetector implements OnTouchListener {
 		boolean hitButton = false;
 		if(main.pointOnScreen(setX, setY))
 		{
-			hitButton = true;
 			double x = screenX(setX);
 			double y = screenY(setY);
-			if(getDistance(x, y, 20, 625)<15)
-	        {
-		        main.gamePaused = true;
-				main.currentPause = "buy";
-				main.buyingItem = "Worship Posiedon";
-				main.invalidate();
-	        } else if(getDistance(x, y, 475, 625)<15)
-	        {
-				main.gamePaused = true;
-				main.currentPause = "buy";
-				main.buyingItem = "Worship Zues";
-				main.invalidate();
-	        } else if(getDistance(x, y, 20, 420)<15)
-	        {
-	        	main.gamePaused = true;
-				main.currentPause = "buy";
-				main.buyingItem = "Worship Apollo";
-				main.invalidate();
-	        } else if(getDistance(x, y, 475, 420)<15)
-	        {
-	        	main.gamePaused = true;
-				main.currentPause = "buy";
-				main.buyingItem = "Worship Hades";
-				main.invalidate();
-	        } else if(getDistance(x, y, 174, 420)<15)
-	        {
-	        	main.gamePaused = true;
-				main.currentPause = "buy";
-				main.buyingItem = "Worship Hephaestus";
-				main.invalidate();
-	        } else if(getDistance(x, y, 326, 630)<15)
-	        {
-	        	main.gamePaused = true;
-				main.currentPause = "buy";
-				main.buyingItem = "Worship Ares";
-				main.invalidate();
-	        } else if(getDistance(x, y, 174, 630)<15)
-	        {
-	        	main.gamePaused = true;
-				main.currentPause = "buy";
-				main.buyingItem = "Worship Athena";
-				main.invalidate();
-	        } else if(getDistance(x, y, 326, 420)<15)
-	        {
-	        	main.gamePaused = true;
-				main.currentPause = "buy";
-				main.buyingItem = "Worship Hermes";
-				main.invalidate();
-	        } else if(getDistance(x, y, 99, 377)<15)
+		}
+		if(main.pointOnSquare(setX, setY, 400, 12, 470, 210)&&!main.activity.stickOnRight)
+        {
+			hitButton=true;
+        }
+		if(main.pointOnSquare(setX, setY, 10, 12, 70, 210)&&main.activity.stickOnRight)
+        {
+			hitButton=true;
+        }
+		return hitButton;
+	}
+	protected boolean clickDownNotPausedTemple(float setX, float setY)
+	{		
+		boolean hitButton = false;
+		if(main.pointOnScreen(setX, setY))
+		{
+			double x = screenX(setX);
+			double y = screenY(setY);
+			if(getDistance(x, y, 293, 174)<15)
 	        {
 	        	main.gamePaused = true;
 				main.currentPause = "buy";
 				main.buyingItem = "Ambrosia";
 				main.invalidate();
-	        } else if(getDistance(x, y, 15, 322)<15)
+	        } else if(getDistance(x, y, 323, 53)<15)
 	        {
 	        	main.gamePaused = true;
 				main.currentPause = "buy";
 				main.buyingItem = "Cooldown";
 				main.invalidate();
-	        } else if(getDistance(x, y, 127, 334)<15)
+	        } else if(getDistance(x, y, 341, 151)<15)
 	        {
 	        	main.gamePaused = true;
 				main.currentPause = "buy";
 				main.buyingItem = "Posiedon's Shell";
 				main.invalidate();
-	        } else if(getDistance(x, y, 16, 263)<15)
+	        } else if(getDistance(x, y, 22, 101)<15)
 	        {
 	        	main.gamePaused = true;
 				main.currentPause = "buy";
 				main.buyingItem = "Hades' Helm";
 				main.invalidate();
-	        } else if(getDistance(x, y, 126, 234)<15)
+	        } else if(getDistance(x, y, 133, 72)<15)
 	        {
 	        	main.gamePaused = true;
 				main.currentPause = "buy";
 				main.buyingItem = "Zues's Armor";
 				main.invalidate();
-	        } else if(getDistance(x, y, 53, 376)<15)
+	        } else if(getDistance(x, y, 382, 79)<15)
 	        {
 	        	main.gamePaused = true;
 				main.currentPause = "buy";
 				main.buyingItem = "Apollo's Flame";
+				main.invalidate();
+	        } else if(getDistance(x, y, 201, 223)<15)
+	        {
+	        	main.gamePaused = true;
+				main.currentPause = "chooseGod";
+				main.invalidate();
+	        } else if(getDistance(x, y, 174, 279)<15)
+	        {
+		        main.gamePaused = true;
+				main.currentPause = "buy";
+				main.buyingItem = "Worship Posiedon";
+				main.invalidate();
+	        } else if(getDistance(x, y, 227, 279)<15)
+	        {
+				main.gamePaused = true;
+				main.currentPause = "buy";
+				main.buyingItem = "Worship Zues";
+				main.invalidate();
+	        } else if(getDistance(x, y, 123, 273)<15)
+	        {
+	        	main.gamePaused = true;
+				main.currentPause = "buy";
+				main.buyingItem = "Worship Apollo";
+				main.invalidate();
+	        } else if(getDistance(x, y, 277, 273)<15)
+	        {
+	        	main.gamePaused = true;
+				main.currentPause = "buy";
+				main.buyingItem = "Worship Hades";
+				main.invalidate();
+	        } else if(getDistance(x, y, 37, 222)<15)
+	        {
+	        	main.gamePaused = true;
+				main.currentPause = "buy";
+				main.buyingItem = "Worship Hephaestus";
+				main.invalidate();
+	        } else if(getDistance(x, y, 77, 253)<15)
+	        {
+	        	main.gamePaused = true;
+				main.currentPause = "buy";
+				main.buyingItem = "Worship Ares";
+				main.invalidate();
+	        } else if(getDistance(x, y, 324, 253)<15)
+	        {
+	        	main.gamePaused = true;
+				main.currentPause = "buy";
+				main.buyingItem = "Worship Athena";
+				main.invalidate();
+	        } else if(getDistance(x, y, 366, 222)<15)
+	        {
+	        	main.gamePaused = true;
+				main.currentPause = "buy";
+				main.buyingItem = "Worship Hermes";
 				main.invalidate();
 	        } else
 	        {
@@ -385,11 +571,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 		boolean hitButton = false;
 		if(main.pointOnScreen(setX, setY))
 		{
-			hitButton = true;
 			double x = visualX(setX);
 			double y = visualY(setY);
 			if(main.pointOnSquare(setX, setY, 200, 280, 280, 320))
 	        {
+				hitButton = true;
 				main.activity.playEffect("pageflip");
 				main.currentTutorial ++;
 				if(main.currentTutorial == 2)
@@ -413,19 +599,18 @@ public class PlayerGestureDetector implements OnTouchListener {
 					main.enemies[2] = null;
 					main.enemies[3] = null;
 				}
-				if(main.currentTutorial == 7)
+				if(main.currentTutorial >9)
 				{
 					if(main.activity.levelBeaten == 0)
 		        	{
 						main.activity.levelBeaten++;
 		        	}
-					main.activity.startMenu(false);
+					main.activity.startFight(3);
+				} else
+				{
+					main.imageLibrary.directionsTutorial = main.imageLibrary.loadImage("menu_tutorial000"+Integer.toString(main.currentTutorial), 217, 235);
 				}
-				main.imageLibrary.directionsTutorial = main.imageLibrary.loadImage("menu_tutorial000"+Integer.toString(main.currentTutorial), 217, 235);
 				main.invalidate();
-	        } else
-	        {
-	        	hitButton = false;
 	        }
 		}
 		return hitButton;

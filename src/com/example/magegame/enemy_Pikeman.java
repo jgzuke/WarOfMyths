@@ -127,4 +127,9 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 			}
 		}
 	}
+	@Override
+	protected int getType()
+	{
+		return 2;
+	}
 }

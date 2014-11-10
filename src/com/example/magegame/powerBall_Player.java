@@ -81,14 +81,7 @@ public final class PowerBall_Player extends PowerBall
 	}
 	public void explode()
 	{
-		if(mainController.player.humanType == 0)
-		{
-			mainController.createPowerBallPlayerAOE(x, y, (int)(power * mainController.player.spMod*mainController.activity.wAres/10));
-		}
-		else
-		{
-			mainController.createPowerBallPlayerAOE(x, y, power*mainController.activity.wAres/10);
-		}
+		mainController.createPowerBallPlayerAOE(x, y, power);
 		deleted = true;
 	}
 }

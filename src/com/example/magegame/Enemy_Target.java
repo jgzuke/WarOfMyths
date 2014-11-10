@@ -33,32 +33,21 @@ public final class Enemy_Target extends Enemy_Muggle
 	}
 
 	@Override
-	protected void attacking() {
-		// TODO Auto-generated method stub
-		
-	}
+	protected void attacking() {}
 
 	@Override
-	protected void frameReactionsDangerLOS() {
-		// TODO Auto-generated method stub
-		
-	}
+	protected void frameReactionsDangerLOS() {}
 
 	@Override
-	protected void frameReactionsDangerNoLOS() {
-		// TODO Auto-generated method stub
-		
-	}
+	protected void frameReactionsDangerNoLOS() {}
 
 	@Override
-	protected void frameReactionsNoDangerLOS() {
-		// TODO Auto-generated method stub
-		
-	}
+	protected void frameReactionsNoDangerLOS() {}
 
 	@Override
-	protected void frameReactionsNoDangerNoLOS() {
-		// TODO Auto-generated method stub
-		
+	protected void frameReactionsNoDangerNoLOS() {}
+	@Override
+	protected int getType() {
+		return 0;
 	}
 }

@@ -30,7 +30,7 @@ public final class PowerBall_Enemy extends PowerBall
 			deleted = true;
 			mainController.activity.playEffect("electric");
 		}
-		if(mainController.player.getRollTimer() < 1 && !deleted)
+		if(mainController.player.currentFrame < 22 && !deleted)
 		{
 			xDif = x - mainController.player.x;
 			yDif = y - mainController.player.y;

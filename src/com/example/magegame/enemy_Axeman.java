@@ -21,4 +21,9 @@ public final class Enemy_Axeman extends Enemy_Shield
 		super.frameCall();
 		visualImage = mainController.imageLibrary.axeman_Image[currentFrame];
 	}
+	@Override
+	protected int getType()
+	{
+		return 3;
+	}
 }

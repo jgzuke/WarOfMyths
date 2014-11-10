@@ -1,12 +1,10 @@
 /*
- * Main enemy ai, cooldowns stats etc
+, * Main enemy ai, cooldowns stats etc
  * @param reactionTimeRating how many frames the enemy takes to react to certain scenarios
  * @param playerAreaProtected whether or not the player is in a mostly enclosed area
  * @param enemyAreaProtected whether or not the main enemy is in a mostly enclosed area
  */
 package com.example.magegame;
-
-import android.util.Log;
 
 public final class Enemy_Archer extends Enemy_Muggle
 {
@@ -99,7 +97,7 @@ public final class Enemy_Archer extends Enemy_Muggle
 	 */
 	protected void shoot()
 	{
-			projectileVelocity = 2+(mainController.getDifficultyLevelMultiplier()*5);
+			projectileVelocity = 10*(0.4+mainController.getDifficultyLevelMultiplier());
 			double timeToHit = (checkDistance(x, y, mainController.player.x, mainController.player.y))/projectileVelocity;
 			timeToHit *= (mainController.getRandomDouble()*0.7)+0.4;
 			double newPX;
@@ -133,5 +131,10 @@ public final class Enemy_Archer extends Enemy_Muggle
 		{
 			shoot();
 		}
+	}
+	@Override
+	protected int getType()
+	{
+		return 5;
 	}
 }

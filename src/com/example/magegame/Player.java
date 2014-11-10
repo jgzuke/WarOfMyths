@@ -21,7 +21,7 @@ public final class Player extends Human
 	private double ySave = 0;
 	protected boolean teleporting = false;
 	private boolean usedDionysusWine = false;
-	protected int projectileSpeed = 10;
+	protected int projectileSpeed = 13;
 	protected double touchX;
 	protected boolean touching;
 	protected int powerUpTimer = 0;
@@ -81,7 +81,7 @@ public final class Player extends Human
 			super.getHit(5);
 			if(deleted)
 			{
-				mainController.activity.startMenu(false);
+				mainController.activity.loseFight();
 			}
 		}
 		powerUpTimer--;
@@ -93,10 +93,10 @@ public final class Player extends Human
 		spMod = 1+(sp*spChangeForType);
 		if(humanType==2)
 		{
-			speedCur = 4*Math.pow(spMod, 0.5)*Math.pow(mainController.activity.wHermes/10, 0.5);
+			speedCur = 4.5*Math.pow(spMod, 0.5)*Math.pow(mainController.activity.wHermes/10, 0.5);
 		} else
 		{
-			speedCur = 4*Math.pow(mainController.activity.wHermes/10, 0.5);
+			speedCur = 4.5*Math.pow(mainController.activity.wHermes/10, 0.5);
 		}
 		if(powerUpTimer>0 && powerID == 3)
 		{
@@ -129,7 +129,7 @@ public final class Player extends Human
 		{
 			abilityTimer_burst += cooldown;
 		}
-		if(abilityTimer_powerBall < 40)
+		if(abilityTimer_powerBall < 90)
 		{
 			abilityTimer_powerBall += cooldown*3;
 		}
@@ -221,11 +221,19 @@ public final class Player extends Human
 		{
 			if(teleporting == false && rollTimer < 0)
 			{
+				double speed;
+				if(humanType==2)
+				{
+					speed = 4*Math.pow(spMod, 0.5)*Math.pow(mainController.activity.wHermes/10, 0.5);
+				} else
+				{
+					speed = 4*Math.pow(mainController.activity.wHermes/10, 0.5);
+				}
 				rollTimer = 11;
 				playing = true;
 				currentFrame = 21;
-				xMoveRoll = Math.cos(rads) * 8;
-				yMoveRoll = Math.sin(rads) * 8;
+				xMoveRoll = Math.cos(rads) * Math.pow(speed, 0.5)*4;
+				yMoveRoll = Math.sin(rads) * Math.pow(speed, 0.5)*4;
 				abilityTimer_roll -= 50;
 			}
 		} else
@@ -240,8 +248,34 @@ public final class Player extends Human
 			if(rollTimer < 0)
 			{
 				//mainController.teleportStart(x, y);
-				x += Math.cos(rads)*50;
-				y += Math.sin(rads)*50;
+				double newX = x + Math.cos(rads)*50;
+				double newY = y + Math.sin(rads)*50;
+				double centreX = newX;
+				double centreY = newY;
+				if(!mainController.checkHitBack(newX, newY))
+				{
+					x = newX;
+					y = newY;
+				} else if(!mainController.checkHitBack(newX+20, newY))
+				{
+					x = newX+20;
+					y = newY;
+				} else if(!mainController.checkHitBack(newX, newY+20))
+				{
+					x = newX;
+					y = newY+20;
+				} else if(!mainController.checkHitBack(newX-20, newY))
+				{
+					x = newX-20;
+					y = newY;
+				} else if(!mainController.checkHitBack(newX, newY-20))
+				{
+					x = newX;
+					y = newY-20;
+				} else
+				{
+					abilityTimer_teleport+=250;
+				}
 				//mainController.teleportFinish(x, y);
 				abilityTimer_teleport -= 250;
 				mainController.createTeleport(x - Math.cos(rads)*25, y - Math.sin(rads)*25, rotation);
@@ -273,9 +307,28 @@ public final class Player extends Human
 		{
 			if(teleporting == false && rollTimer < 0)
 			{
-					mainController.createPowerBallPlayerBurst(x, y, 130);
-					abilityTimer_burst -= 400;
-					mainController.activity.playEffect("burst");
+				for(int i = 0; i<6; i++)
+				{
+					mainController.createPowerBallPlayerAOE(x-20+mainController.getRandomInt(40), y-20+mainController.getRandomInt(40), 130);
+				}
+				mainController.createPowerBallPlayerBurst(x, y, 0);
+				abilityTimer_burst -= 400;
+				mainController.activity.playEffect("burst");
+				mainController.activity.playEffect("burst");
+				mainController.activity.playEffect("burst");
+				if(mainController.playerType==0)
+				{
+					mainController.activity.playEffect("burn");
+				} else if(mainController.playerType==1)
+				{
+					mainController.activity.playEffect("water");
+				} else if(mainController.playerType==2)
+				{
+					mainController.activity.playEffect("electric");
+				} else
+				{
+					mainController.activity.playEffect("earth");
+				}
 			}
 		} else
 		{
@@ -294,10 +347,10 @@ public final class Player extends Human
 	@Override
 	protected void getHit(int damage)
 	{
-		damage *= 0.7;
+		damage *= 0.6;
 		if(powerUpTimer>0 && powerID == 2)
 		{
-			damage *= (0.7/mainController.activity.wHephaestus/10);
+			damage *= (0.7/mainController.activity.wHephaestus*10);
 		}
 			damage *= damageMultiplier;
 			if(humanType == 3)
@@ -322,7 +375,7 @@ public final class Player extends Human
 					deleted = false;
 				} else
 				{*/
-					mainController.activity.startMenu(false);
+					mainController.activity.loseFight();
 				//}
 			}
 	}
@@ -354,6 +407,13 @@ public final class Player extends Human
 		case 6:
 			powerUpTimer=300;
 			powerID=4;
+			break;
+		case 7:
+			mainController.moneyMade += mainController.moneyMultiplier;
+			mainController.activity.gameCurrency += mainController.moneyMultiplier;
+			break;
+		case 8:
+			mainController.hasKey = true;
 			break;
 		}
 	}

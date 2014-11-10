@@ -44,7 +44,7 @@ public final class Enemy_Rogue extends Enemy_Muggle
 	@	Override
 	protected void getHit(int damage)
 	{
-		if(currentFrame > 50&& currentFrame<53)
+		if(currentFrame > 46 && currentFrame<53)
 		{
 			 damage *= 6;
 			 currentFrame = 0;
@@ -263,5 +263,10 @@ public final class Enemy_Rogue extends Enemy_Muggle
 				mainController.activity.playEffect("swordmiss");
 			}
 		}
+	}
+	@Override
+	protected int getType()
+	{
+		return 4;
 	}
 }

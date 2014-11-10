@@ -10,6 +10,7 @@ abstract public class Enemy extends Human
 {
 	protected boolean rogue = false;
 	private int runTimer = 0;
+	protected int worth = 4;
 	protected double lastPlayerX;
 	protected double lastPlayerY;
 	protected boolean checkedPlayerLast = true;
@@ -18,12 +19,13 @@ abstract public class Enemy extends Human
 	private double levelY[] = new double[30];
 	private double levelXForward[] = new double[30];
 	private double levelYForward[] = new double[30];
-	private int levelCurrentPosition = 0;
-	private int pathedToHitLength = 0;
+	protected int levelCurrentPosition = 0;
+	protected int pathedToHitLength = 0;
 	protected boolean LOS;
 	private int checkLOSTimer = 1;
 	protected double distanceFound;
 	private int dangerCheckCounter;
+	protected boolean keyHolder = false;
 	private double pathedToHit[] = new double[30];
 	public Enemy()
 	{
@@ -55,13 +57,11 @@ abstract public class Enemy extends Human
 		checkLOSTimer--;		
                 runTimer--;		
 		super.frameCall();
-		levelCurrentPosition = 0;
 		clearArray(levelX, 30);
 		clearArray(levelY, 30);
 		clearArray(levelXForward, 30);
 		clearArray(levelYForward, 30);
 		clearArray(pathedToHit, 30);
-		pathedToHitLength = 0;
 		setImageDimensions();
 		double xdif = x - mainController.player.x;
 		double ydif = y - mainController.player.y;
@@ -101,6 +101,7 @@ abstract public class Enemy extends Human
 	{
 		if(!deleted)
 		{
+			damage*=1.5;
 			if(mainController.player.powerUpTimer>0 && mainController.player.powerID == 4)
 			{
 				damage *= 1.5*mainController.activity.wApollo/10;
@@ -110,11 +111,22 @@ abstract public class Enemy extends Human
 			if(deleted)
 			{
 				mainController.player.sp += 0.15;
-				if(mainController.getRandomDouble()>0.5)
+				if(keyHolder)
 				{
-					mainController.createPowerUp(x, y);
+					mainController.createKey(x, y);
+				} else
+				{
+					if(mainController.getRandomDouble()>0.5)
+					{
+						mainController.createPowerUp(x, y);
+					}
 				}
-				mainController.createPowerBallEnemyBurst(x, y, 130);
+				mainController.createPowerBallEnemyAOE(x, y, 220);
+				for(int i = 0; i < worth; i ++)
+				{
+					double rads = mainController.getRandomDouble()*6.28;
+					mainController.createCoin(x+Math.cos(rads)*17, y+Math.sin(rads)*17);
+				}
 				mainController.activity.playEffect("burst");
 			}
 		}
@@ -126,7 +138,8 @@ abstract public class Enemy extends Human
 	{
 		rads = Math.atan2(-(mainController.player.y - y), -(mainController.player.x - x));
 		rotation = rads * r2d;
-		if(mainController.checkObstructionsAll(x, y, rads, 40))
+		int distance = (int)checkDistance(x, y, mainController.getPlayerX(), mainController.getPlayerY());
+		if(mainController.checkObstructionsAll(x, y, rads, distance))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -213,6 +226,7 @@ abstract public class Enemy extends Human
 	abstract protected void frameReactionsDangerLOS();
 	abstract protected void frameReactionsDangerNoLOS();
 	abstract protected void frameReactionsNoDangerLOS();
+	abstract protected int getType();
 	abstract protected void stun(int time);
 	abstract protected int getRollTimer();
 	protected void setRunTimer(int runTimer) {

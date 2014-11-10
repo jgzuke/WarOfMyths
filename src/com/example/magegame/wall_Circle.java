@@ -3,9 +3,9 @@ public class Wall_Circle extends Wall
 {
 	private double xdif;
 	private double ydif;
-	private int oCX;
-	private int oCY;
-	private int oCR;
+	protected int oCX;
+	protected int oCY;
+	protected int oCR;
 	private double oCRatio;
 	private double oCRS;
 	private double rads;
@@ -60,6 +60,23 @@ public class Wall_Circle extends Wall
 					{
 						mainController.enemies[i].x = oCX - (Math.cos(rads) * oCR);
 						mainController.enemies[i].y = oCY - (Math.sin(rads) * oCR);
+					}
+				}
+			}
+		}
+		for(int i = 0; i < mainController.guards.length; i++)
+		{
+			if(mainController.guards[i] != null)
+			{
+				xdif = oCX - mainController.guards[i].x;
+				ydif = oCY - mainController.guards[i].y;
+				rads = Math.atan2(ydif, xdif);
+				if(Math.pow(xdif, 2) + Math.pow(ydif/oCRatio, 2) < oCRS)
+				{
+					if(!mainController.checkHitBackPass(mainController.guards[i].x, mainController.guards[i].y))
+					{
+						mainController.guards[i].x = oCX - (Math.cos(rads) * oCR);
+						mainController.guards[i].y = oCY - (Math.sin(rads) * oCR);
 					}
 				}
 			}

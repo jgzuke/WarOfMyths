@@ -3,10 +3,10 @@ public class Wall_Ring extends Wall
 {
 	private double xdif;
 	private double ydif;
-	private int oCX;
-	private int oCY;
+	protected int oCX;
+	protected int oCY;
 	private int oCRIn;
-	private int oCROut;
+	protected int oCROut;
 	private double oCRSIn;
 	private double oCRSOut;
 	private double oCRSAve;
@@ -76,6 +76,33 @@ public class Wall_Ring extends Wall
 						{
 							mainController.enemies[i].x = oCX - (Math.cos(rads) * oCROut);
 							mainController.enemies[i].y = oCY - (Math.sin(rads) * oCROut);
+						}
+					}
+				}
+			}
+		}
+		for(int i = 0; i < mainController.guards.length; i++)
+		{
+			if(mainController.guards[i] != null)
+			{
+				curX = mainController.guards[i].x;
+				curY = mainController.guards[i].y;
+				xdif = oCX - curX;
+				ydif = oCY - curY;
+				rads = Math.atan2(ydif, xdif);
+				dist = Math.pow(xdif, 2) + Math.pow(ydif, 2);
+				if(dist < oCRSOut&&dist>oCRSIn)
+				{
+					if(!mainController.checkHitBackPass(curX, curY))
+					{
+						if(dist<oCRSAve)
+						{
+							mainController.guards[i].x = oCX - (Math.cos(rads) * oCRIn);
+							mainController.guards[i].y = oCY - (Math.sin(rads) * oCRIn);
+						} else
+						{
+							mainController.guards[i].x = oCX - (Math.cos(rads) * oCROut);
+							mainController.guards[i].y = oCY - (Math.sin(rads) * oCROut);
 						}
 					}
 				}

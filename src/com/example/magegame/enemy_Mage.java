@@ -71,7 +71,7 @@ public final class Enemy_Mage extends Enemy
 		}
 		if(abilityTimer_powerBall < 40)
 		{
-			abilityTimer_powerBall += 3*Math.pow(mainController.getDifficultyLevelMultiplier(), 0.5);
+			abilityTimer_powerBall += 2*Math.pow(mainController.getDifficultyLevelMultiplier(), 0.5);
 		}
 		if(currentFrame == 30)
 		{
@@ -241,7 +241,7 @@ public final class Enemy_Mage extends Enemy
 	protected void frameReactionsNoDangerLOS()
 	{
 		double playerDistance = checkDistance(x, y, mainController.player.x, mainController.player.y);
-		if(playerDistance < 30)
+		if(playerDistance < 40)
 		{
 			if(abilityTimer_burst > 400)
 			{
@@ -255,7 +255,7 @@ public final class Enemy_Mage extends Enemy
 			}
 		} else
 		{
-			if(playerDistance < 80)
+			if(playerDistance < 110)
 			{
 				if(abilityTimer_burst > 400)
 				{
@@ -264,10 +264,6 @@ public final class Enemy_Mage extends Enemy
 				} else if(abilityTimer_powerBall > 30)
 				{
 					releasePowerBall();
-				} else
-				{
-					setReactTimer();
-					reaction = "Roll Away";
 				}
 			} else 
 			{
@@ -419,9 +415,18 @@ public final class Enemy_Mage extends Enemy
 	}
 	private void burst()
 	{
+		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
+		rotation = rads * r2d;
+		for(int i = 0; i<6; i++)
+		{
+			mainController.createPowerBallEnemyAOE(x-20+mainController.getRandomInt(40), y-20+mainController.getRandomInt(40), 130);
+		}
+		mainController.createPowerBallEnemyBurst(x, y, 0);
 		abilityTimer_burst = 0;
-		mainController.createPowerBallEnemyBurst(x, y, 130);
 		mainController.activity.playEffect("burst");
+		mainController.activity.playEffect("burst");
+		mainController.activity.playEffect("burst");
+		mainController.activity.playEffect("electric");
 	}
 	/*
 	 * Releases stored powerBall towards player
@@ -450,6 +455,7 @@ public final class Enemy_Mage extends Enemy
 			double xDif = newPX-x;
 			double yDif = newPY-y;
 			rads = Math.atan2(yDif, xDif);
+			rads += 0.2*(0.5-mainController.getRandomDouble())/Math.pow(mainController.getDifficultyLevelMultiplier(), 2);
 			rotation = rads * r2d;
 			mainController.createPowerBallEnemy(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
 			abilityTimer_powerBall -= 30;
@@ -522,5 +528,10 @@ public final class Enemy_Mage extends Enemy
 	protected int getRollTimer()
 	{
 		return rollTimer;
+	}
+	@Override
+	protected int getType()
+	{
+		return 6;
 	}
 }

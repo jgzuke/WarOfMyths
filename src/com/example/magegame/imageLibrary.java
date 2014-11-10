@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 public final class ImageLibrary
 {
 	protected boolean pikemanLoaded = false;
@@ -23,19 +24,23 @@ public final class ImageLibrary
 	protected Bitmap[] effects = new Bitmap[4];
 	protected Bitmap target_Image;
 	protected Bitmap next;
+	protected Bitmap haskey;
+	protected Bitmap exitFightPortal;
 	protected Bitmap[] powerBall_ImagePlayer = new Bitmap[5];
 	protected Bitmap powerBallAOE_ImagePlayer;
 	protected Bitmap[] powerBall_ImageEnemy = new Bitmap[5];
 	protected Bitmap powerBallAOE_ImageEnemy;
 	protected Bitmap[] teleport_Image = new Bitmap[15];
 	protected Bitmap[] warnings = new Bitmap[2];
-	protected Bitmap[] powerUps = new Bitmap[6];
+	protected Bitmap[] powerUps = new Bitmap[8];
 	protected Bitmap[] powerUpBigs = new Bitmap[4];
 	protected Bitmap[] coins = new Bitmap[2];
 	protected Bitmap arrow;
+	protected Bitmap levelLocked;
 	protected Bitmap currentLevel;
 	protected Bitmap currentLevelTop;
 	protected Bitmap directionsTutorial;
+	protected Bitmap toTile;
 	private String getting;
 	protected Resources res;
 	protected String packageName;
@@ -58,12 +63,14 @@ public final class ImageLibrary
 	}
 	protected void loadAllImages()
 	{
+		exitFightPortal = loadImage("exitfightportal", 60, 60);
+		levelLocked = loadImage("menu_levellocked", 30, 30);
 		mage_Image = loadArray1D(31, "human_mage", 30, 30);
 		warnings[0] = loadImage("warn0001", 147, 27);
 		warnings[1] = loadImage("warn0002", 205, 27);
-		player_Image = loadArray1D(31, "human_player", 30, 30);
-		powerUps = loadArray1D(6, "powerup", 30, 30);
-		powerUpBigs = loadArray1D(4, "powerupbig", 50, 50);
+		player_Image = loadArray1D(31, "human_zack", 30, 30);
+		powerUps = loadArray1D(8, "powerup", 30, 30);
+		powerUpBigs = loadArray1D(5, "powerupbig", 50, 50);
 		coins = loadArray1D(2, "menu_coin", 30, 30);
 		target_Image = loadImage("human_target", 46, 50);
 		teleport_Image = loadArray1D(9, "teleport", 60, 21);
@@ -72,6 +79,7 @@ public final class ImageLibrary
 		powerBall_ImageEnemy = loadArray1D(5, "powerball0005_", 42, 18);
 		next = loadImage("menu_nexttutorial", 80, 40);
 		effects = loadArray1D(4, "effect", 60, 60);
+		haskey = loadImage("haskey", 40, 40);
 		arrow = loadImage("arrow", 17, 10);
 		loadLevel(control.levelNum, control.levelWidth, control.levelHeight);
 		//loadSpriteImages();
@@ -79,11 +87,39 @@ public final class ImageLibrary
 	}
 	protected void loadLevel(int levelNum, int width, int height)
 	{
-		currentLevel = loadImage("level"+correctDigits(levelNum + 1, 4), width, height);
-		currentLevelTop = loadImage("leveltop"+correctDigits(levelNum + 1, 4), width, height);
-		if(levelNum == 1)
+		if(currentLevel!= null)
+		{
+			currentLevel.recycle();
+		}
+		if(currentLevelTop!= null)
+		{
+			currentLevelTop.recycle();
+		}
+		if(toTile!= null)
+		{
+			toTile.recycle();
+		}
+		currentLevel = loadImage("level"+correctDigits(levelNum, 4), width, height);
+		currentLevelTop = loadImage("leveltop"+correctDigits(levelNum, 4), width, height);
+		if(levelNum == 20)
 		{
 			directionsTutorial = loadImage("menu_tutorial0001", 217, 235);
+		}
+		if(levelNum == 10||levelNum == 20)
+		{
+			toTile = loadImage("level_tile0001", 90, 90);
+		}
+		if(levelNum == 11)
+		{
+			toTile = loadImage("level_tile0002", 90, 90);
+		}
+		if(levelNum == 30||levelNum == 40||levelNum == 80)
+		{
+			toTile = loadImage("level_tile0003", 90, 90);
+		}
+		if(levelNum == 50||levelNum == 60||levelNum == 70||levelNum == 90||levelNum == 91)
+		{
+			toTile = loadImage("level_tile0004", 90, 90);
 		}
 	}
 	protected void loadPlayerPowerBall()
@@ -97,24 +133,43 @@ public final class ImageLibrary
 		{
 				switch(control.levelNum)
 				{
-				case 0:
+				case 10:
 					changeArrayLoaded("swordsman", true);
-					changeArrayLoaded("rogue", true);
 					break;
-				case 2:
+				case 30:
 					changeArrayLoaded("swordsman", true);
 					changeArrayLoaded("archer", true);
 					break;
-				case 3:
+				case 40:
 					changeArrayLoaded("axeman", true);
 					changeArrayLoaded("pikeman", true);
 					break;
-				case 4:
+				case 50:
 					changeArrayLoaded("swordsman", true);
 					changeArrayLoaded("pikeman", true);
 					break;
-				case 5:
+				case 60:
 					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("pikeman", true);
+					changeArrayLoaded("rogue", true);
+					break;
+				case 70:
+					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("archer", true);
+					break;
+				case 80:
+					changeArrayLoaded("pikeman", true);
+					changeArrayLoaded("archer", true);
+					break;
+				case 90:
+					changeArrayLoaded("swordsman", true);
+					break;
+				default:
+					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("archer", true);
+					changeArrayLoaded("pikeman", true);
+					changeArrayLoaded("rogue", true);
+					changeArrayLoaded("axeman", true);
 					break;
 				}
 		}
@@ -134,9 +189,11 @@ public final class ImageLibrary
 		recycleArray(31, mage_Image);
 		recycleArray(31, player_Image);
 		recycleArray(2, warnings);
-		recycleArray(4, powerUpBigs);
-		recycleArray(6, powerUps);
+		recycleArray(5, powerUpBigs);
+		recycleArray(8, powerUps);
 		recycleArray(4, effects);
+		levelLocked.recycle();
+		levelLocked = null;
 		changeArrayLoaded("archer", false);
 		changeArrayLoaded("pikeman", false);
 		changeArrayLoaded("axeman", false);
@@ -275,6 +332,7 @@ public final class ImageLibrary
 	 */
 	protected Bitmap loadImage(String imageName, int width, int height)
 	{
+		Log.e("game", imageName);
 		int imageNumber = res.getIdentifier(imageName, "drawable", packageName);
 		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), width, height, false);
 	}

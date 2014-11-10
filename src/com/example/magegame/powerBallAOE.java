@@ -1,6 +1,7 @@
 package com.example.magegame;
 abstract public class PowerBallAOE extends DrawnSprite
 {
+	protected double r2d = 180 / Math.PI;
 	protected boolean normal;
 	protected double widthDone = 0;
 	protected double xDif = 0;
@@ -20,10 +21,7 @@ abstract public class PowerBallAOE extends DrawnSprite
 		alpha = (byte) 254;
 		if(!normal)
 		{
-			timeToDeath = 8;
-			width = 20+(timeToDeath*10);
-			height = 20+(timeToDeath*10);
-			alpha = (byte)(6);
+			timeToDeath = 10;
 		} else
 		{
 			timeToDeath = (int) (Math.pow(Power, 0.65) / 3.5)+5;
@@ -34,26 +32,25 @@ abstract public class PowerBallAOE extends DrawnSprite
 	protected void frameCall()
 	{
 		timeToDeath--;
-		if(timeToDeath == 5)
+		if(timeToDeath == 6)
 		{
-			damaging = true;
+			damaging = false;
 			if(!normal)
 			{
-				explode();
-				deleted = true;
+				explode(110);
 			}
 		}
-		if(normal)
+		if(timeToDeath == 3)
 		{
-			width += 10;
-			height += 10;
-			alpha -= alphaDown;
-		} else
-		{
-			width -= 10;
-			height -= 10;
-			alpha += alphaDown;
+			damaging = false;
+			if(!normal)
+			{
+				explode(90);
+			}
 		}
+		width += 10;
+		height += 10;
+		alpha -= alphaDown;
 		if(timeToDeath == 0)
 		{
 			deleted = true;
@@ -63,7 +60,7 @@ abstract public class PowerBallAOE extends DrawnSprite
 	protected byte getAlpha() {
 		return alpha;
 	}
-	abstract protected void explode();
+	abstract protected void explode(int power);
 	@ Override
 	protected double getWidth() {
 		return width*1.5;

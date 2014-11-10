@@ -4,10 +4,10 @@ public class Wall_Rectangle extends Wall
 {
 	private int x;
 	private int y;
-	private int oRX1;
-	private int oRX2;
-	private int oRY1;
-	private int oRY2;
+	protected int oRX1;
+	protected int oRX2;
+	protected int oRY1;
+	protected int oRY2;
 	private boolean hitPlayer;
 	private double r2d = 180/Math.PI;
 	public Wall_Rectangle(Controller creator, int ORX, int ORY, int wallWidth, int wallHeight, boolean HitPlayer, boolean Tall)
@@ -46,8 +46,6 @@ public class Wall_Rectangle extends Wall
         	{
 				if(mainController.player.x > oRX1 && mainController.player.x < oRX2 && mainController.player.y > oRY1 && mainController.player.y < oRY2)
 				{
-					if(!mainController.checkHitBackPass(mainController.player.x, mainController.player.y))
-					{
 						double holdX;
 						double holdY;
 						if(mainController.player.x > x)
@@ -85,7 +83,6 @@ public class Wall_Rectangle extends Wall
 								mainController.player.y = oRY1;
 							}
 						}
-					}
 				}
         	}
 		for(int i = 0; i < mainController.enemies.length; i++)
@@ -132,6 +129,56 @@ public class Wall_Rectangle extends Wall
 							else
 							{
 								mainController.enemies[i].y = oRY1;
+							}
+						}
+					}
+				}
+			}
+		}
+		for(int i = 0; i < mainController.guards.length; i++)
+		{
+			if(mainController.guards[i] != null)
+			{
+				if(mainController.guards[i].x > oRX1 && mainController.guards[i].x < oRX2 && mainController.guards[i].y > oRY1 && mainController.guards[i].y < oRY2)
+				{
+					if(!mainController.checkHitBackPass(mainController.guards[i].x, mainController.guards[i].y))
+					{
+						double holdX;
+						double holdY;
+						if(mainController.guards[i].x > x)
+						{
+							holdX = Math.abs(mainController.guards[i].x - oRX2);
+						} else
+						{
+							holdX = Math.abs(mainController.guards[i].x - oRX1);
+						}
+						if(mainController.guards[i].y > y)
+						{
+							holdY = Math.abs(mainController.guards[i].y - oRY2);
+						} else
+						{
+							holdY = Math.abs(mainController.guards[i].y - oRY1);
+						}
+						if((holdX) < (holdY))
+						{
+							if(mainController.guards[i].x > x)
+							{
+								mainController.guards[i].x = oRX2;
+							}
+							else
+							{
+								mainController.guards[i].x = oRX1;
+							}
+						}
+						else
+						{
+							if(mainController.guards[i].y > y)
+							{
+								mainController.guards[i].y = oRY2;
+							}
+							else
+							{
+								mainController.guards[i].y = oRY1;
 							}
 						}
 					}
