@@ -21,7 +21,7 @@ abstract public class Enemy_Muggle extends Enemy
 		rotation = 0;
 		lastPlayerX = x;
 		lastPlayerY = y;
-		speedCur = 2.5 + (mainController.getRandomDouble()*2);
+		speedCur = 3 + (mainController.getRandomDouble()*1);
 	}
 	/*
 	 * Calls correct ai method, sets correct los and in danger states

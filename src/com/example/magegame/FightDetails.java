@@ -46,7 +46,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.util.Log;
 public final class FightDetails extends AllViews
 {
 	private Resources res;
@@ -71,14 +70,12 @@ public final class FightDetails extends AllViews
 	@ Override
 	public void onDraw(Canvas g)
 	{
-			Log.e("game", "maneDrawn");
 			g.translate(screenMinX, screenMinY);
 			g.scale((float) screenDimensionMultiplier, (float) screenDimensionMultiplier);
 			drawBitmap(loadImage("menu_"+currentScreen), 0, 0, g);
 	}
 	private Bitmap loadImage(String imageName)
 	{
-		Log.e("**********", imageName);
 		int imageNumber = res.getIdentifier(imageName, "drawable", packageName);
 		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), 480, 320, false);
 	}

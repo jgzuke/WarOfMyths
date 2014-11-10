@@ -54,7 +54,6 @@ public final class Controller extends AllViews
 {
 	protected Enemy_Muggle[] enemies = new Enemy_Muggle[30];
 	private PowerBall[] powerBalls = new PowerBall[30];
-	private SpGraphic[] spGraphic = new SpGraphic[30];
 	private PowerBallAOE[] powerBallAOEs = new PowerBallAOE[30];
 	private Graphic_Teleport[] graphic_Teleport = new Graphic_Teleport[30];
 	private Wall_Rectangle[] walls = new Wall_Rectangle[30];
@@ -68,12 +67,9 @@ public final class Controller extends AllViews
 	protected Player player;
 	protected Enemy_Mage enemy;
 	protected Context context;
-	protected SpControl spGraphicEnemy;
-	protected SpControl spGraphicPlayer;
 	protected ImageLibrary imageLibrary;
 	private Random randomGenerator;
 	private int playerColour;
-	private int enemyColour;
 	private int difficultyLevel;
 	private double difficultyLevelMultiplier;
 	private int enemyType;
@@ -108,19 +104,13 @@ public final class Controller extends AllViews
 		randomGenerator = new Random();
 		detect = new PlayerGestureDetector(this);
 		setOnTouchListener(detect);
-		spGraphicEnemy = new SpControl(this, false);
-		spGraphicPlayer = new SpControl(this, true);
 		imageLibrary.changeArrayLoaded("swordsman", true);
-		for(int i = 0; i < 4; i++)
-		{
-			enemies[i] = new Enemy_Swordsman(this, teleportSpots[0][i], teleportSpots[1][i]);
-		}
+		imageLibrary.changeArrayLoaded("pikeman", true);
 	}
 	public void primeFighting()
 	{
 		enemies = new Enemy_Muggle[30];
 		powerBalls = new PowerBall[30];
-		spGraphic = new SpGraphic[30];
 		powerBallAOEs = new PowerBallAOE[30];
 		graphic_Teleport = new Graphic_Teleport[30];
 		walls = new Wall_Rectangle[30];
@@ -140,33 +130,25 @@ public final class Controller extends AllViews
 		case 0:
 			imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001", 80, 80);
 			imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(5, "powerball0001_", 35, 15);
-			enemyColour = Color.rgb(255, 0, 0);
 			break;
 		case 1:
 			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002", 80, 80);
 			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(5, "powerball0002_", 35, 15);
-			enemyColour = Color.rgb(0, 0, 255);
-			enemy.setMp(2250);
-			enemy.setMpMax(4500);
 			break;
 		case 2:
 			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003", 80, 80);
 			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(5, "powerball0003_", 35, 15);
-			enemyColour = Color.rgb(170, 119, 221);
-			enemy.setSpeedCur(4);
 			break;
 		case 3:
 			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004", 80, 80);
 			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(5, "powerball0004_", 35, 15);
-			enemyColour = Color.rgb(102, 51, 0);
-			enemy.setHp(9000);
-			enemy.setHpMax(9000);
 			break;
 		}
 	}
 	public void startFighting(int playerTypeSet, int levelNumSet, int difficultyLevelSet)
 	{
 		playerType = playerTypeSet;
+		player.humanType = playerType;
 		difficultyLevel = difficultyLevelSet;
 		levelNum = levelNumSet;
 		difficultyLevelMultiplier = 20 / (double)(difficultyLevel + 10);
@@ -181,24 +163,30 @@ public final class Controller extends AllViews
 			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002", 80, 80);
 			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(5, "powerball0002_", 35, 15);
 			playerColour = Color.rgb(0, 0, 255);
-			player.setMp(2250);
-			player.setMpMax(4500);
 			break;
 		case 2:
 			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003", 80, 80);
 			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(5, "powerball0003_", 35, 15);
 			playerColour = Color.rgb(170, 119, 221);
-			player.setSpeedCur(4);
 			break;
 		case 3:
 			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004", 80, 80);
 			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(5, "powerball0004_", 35, 15);
 			playerColour = Color.rgb(102, 51, 0);
-			player.setHp(9000);
-			player.setHpMax(9000);
 			break;
 		}
 		loadLevel();
+		for(int i = 0; i < 4; i++)
+		{
+			int type = randomGenerator.nextInt(2);
+			if(type == 0)
+			{
+				enemies[i] = new Enemy_Swordsman(this, teleportSpots[0][i], teleportSpots[1][i]);
+			} else if(type == 1)
+			{
+				enemies[i] = new Enemy_Pikeman(this, teleportSpots[0][i], teleportSpots[1][i]);
+			}
+		}
 		background = drawStart();
 	}
 	/*
@@ -327,6 +315,7 @@ public final class Controller extends AllViews
 	 */
 	public void drawContestantStats(Canvas g)
 	{
+		paint.setAlpha(255);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.WHITE);
 		//drawRect(395, 240, 475, 316, g);
@@ -342,22 +331,21 @@ public final class Controller extends AllViews
 		drawRect(400, 116, 470, 132, g);
 		drawRect(400, 157, 470, 173, g);
 		drawRect(400, 203, 470, 219, g);
-		Log.e("game", Double.toString(player.getSp()));
 		drawText(Integer.toString(player.getHp()), 417, 129, g);
 		drawText(Integer.toString(player.getMp()), 417, 170, g);
 		drawText(Integer.toString((int)(3500*player.getSp())), 417, 216, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.YELLOW);
-		drawRect(10, 70, 10 + (int)((70 * player.getAbilityTimer_burst()) / 400), 80, g);
-		drawRect(10, 223, 10 + (int)((70 * player.getAbilityTimer_roll()) / 350), 233, g);
-		drawRect(10, 300, 10 + (int)((70 * player.getAbilityTimer_teleport()) / 500), 310, g);
-		drawRect(190, 295, 190 + (int)((100 * player.getAbilityTimer_powerBall()) / 90), 310, g);
+		drawRect(10, 70, 10 + (int)((70 * player.getAbilityTimer_burst()) / 500), 80, g);
+		drawRect(10, 223, 10 + (int)((70 * player.getAbilityTimer_roll()) / 400), 233, g);
+		drawRect(10, 300, 10 + (int)((70 * player.getAbilityTimer_teleport()) / 350), 310, g);
+		drawRect(150, 305, 150 + (int)((180 * player.getAbilityTimer_powerBall()) / 90), 320, g);
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setColor(Color.BLACK);
 		drawRect(10, 70, 80, 80, g);
 		drawRect(10, 223, 80, 233, g);
 		drawRect(10, 300, 80, 310, g);
-		drawRect(190, 295, 290, 310, g);
+		drawRect(150, 305, 330, 320, g);
 		paint.setColor(Color.RED);
 		paint.setStyle(Paint.Style.FILL);
 		drawRect((int) enemy.getX() - 20, (int) enemy.getY() - 30, (int) enemy.getX() - 20 + (40 * enemy.getHp() / enemy.getHpMax()), (int) enemy.getY() - 20, g);
@@ -376,6 +364,33 @@ public final class Controller extends AllViews
 				drawRect((int) enemies[i].getX() - 20, (int) enemies[i].getY() - 30, (int) enemies[i].getX() + 20, (int) enemies[i].getY() - 20, g);
 			}
 		}
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(Color.GRAY);
+		paint.setAlpha(151);
+		if(player.teleporting || player.rollTimer>0)
+		{
+			drawRect(10, 10, 80, 80, g);
+			drawRect(10, 163, 80, 233, g);
+			drawRect(10, 240, 80, 310, g);
+			drawRect(150, 305, 330, 320, g);
+		}
+		if(player.getAbilityTimer_burst() < 300 || player.getMp()<2500)
+		{
+			drawRect(10, 10, 80, 80, g);
+		}
+		if(player.getAbilityTimer_roll() < 100)
+		{
+			drawRect(10, 163, 80, 233, g);
+		}
+		if(player.getAbilityTimer_teleport() < 150 || player.getMp()<700)
+		{
+			drawRect(10, 240, 80, 310, g);
+		}
+		if(player.getAbilityTimer_powerBall() < 50 || player.getMp()<300)
+		{
+			drawRect(150, 305, 330, 320, g);
+		}
+		paint.setAlpha(255);
 	}
 	/*
 	 * Sets deleted objects to null to be gc'd and tests player and enemy hitting arena bounds
@@ -438,20 +453,6 @@ public final class Controller extends AllViews
 				}
 			}
 		}
-		for(int i = 0; i < spGraphic.length; i++)
-		{
-			if(spGraphic[i] != null)
-			{
-				if(spGraphic[i].isDeleted())
-				{
-					spGraphic[i] = null;
-				}
-				else
-				{
-					spGraphic[i].frameCall();
-				}
-			}
-		}
 		for(int i = 0; i < enemies.length; i++)
 		{
 			if(enemies[i] != null)
@@ -463,10 +464,13 @@ public final class Controller extends AllViews
 				else
 				{
 					enemies[i].frameCall();
-					if(enemies[i].getX() < 100) enemies[i].setX(100);
-					if(enemies[i].getX() > 380) enemies[i].setX(380);
-					if(enemies[i].getY() < 20) enemies[i].setY(20);
-					if(enemies[i].getY() > 300) enemies[i].setY(300);
+					if(enemies[i] != null)
+					{
+						if(enemies[i].getX() < 100) enemies[i].setX(100);
+						if(enemies[i].getX() > 380) enemies[i].setX(380);
+						if(enemies[i].getY() < 20) enemies[i].setY(20);
+						if(enemies[i].getY() > 300) enemies[i].setY(300);
+					}
 				}
 			}
 		}
@@ -497,8 +501,6 @@ public final class Controller extends AllViews
 		{
 			enemy = null;
 		}
-		spGraphicPlayer.frameCall();
-		spGraphicEnemy.frameCall();
 		invalidate();
 	}
 	 /*
@@ -513,9 +515,19 @@ public final class Controller extends AllViews
 		drawRect(0, 0, 480, 320, toReturn);
 		paint.setColor(Color.WHITE);
 		drawRect(90, 10, 390, 310, toReturn);
-		drawBitmap(imageLibrary.loadImage("symbol000" + Integer.toString(playerType+1), 80, 80), 395, 10, toReturn);
-		drawBitmap(imageLibrary.loadImage("fullscreen0001", 90, 320), 0, 0, toReturn);
-		drawBitmap(imageLibrary.loadImage("fullscreen0002", 90, 320), 390, 0, toReturn);
+		if(activity.stickOnRight)
+		{
+			drawBitmap(imageLibrary.loadImage("symbol000" + Integer.toString(playerType+1), 80, 80), 395, 10, toReturn);
+			drawBitmap(imageLibrary.loadImage("fullscreen0001", 90, 320), 0, 0, toReturn);
+			drawBitmap(imageLibrary.loadImage("fullscreen0002", 90, 320), 390, 0, toReturn);
+			drawBitmap(imageLibrary.loadImage("exitfight", 30, 30), 450, 0, toReturn);
+		} else
+		{
+			drawBitmap(imageLibrary.loadImage("symbol000" + Integer.toString(playerType+1), 80, 80), 5, 10, toReturn);
+			drawBitmap(imageLibrary.loadImage("fullscreen0001", 90, 320), 390, 0, toReturn);
+			drawBitmap(imageLibrary.loadImage("fullscreen0002", 90, 320), 0, 0, toReturn);
+			drawBitmap(imageLibrary.loadImage("exitfight", 30, 30), 0, 0, toReturn);
+		}
 		paint.setColor(Color.GRAY);
 		for(int i = 0; i < obstaclesRectanglesX1.length; i++)
 		{
@@ -582,13 +594,6 @@ public final class Controller extends AllViews
 		}
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.GREEN);
-		for(int i = 0; i < spGraphic.length; i++)
-		{
-			if(spGraphic[i] != null)
-			{
-				drawCircle((int)(spGraphic[i].getX() - (spGraphic[i].getWidth() / 2)), (int)(spGraphic[i].getY() - (spGraphic[i].getWidth() / 2)), (int)spGraphic[i].getWidth(), g);
-			}
-		}
 		if(warningTimer > 0)
 		{
 			warningTimer--;
@@ -726,9 +731,6 @@ public final class Controller extends AllViews
 	public int getLevelNum() {
 		return levelNum;
 	}
-	public SpGraphic getSpGraphic(int i) {
-		return spGraphic[i];
-	}
 	public int getObstaclesRectanglesX1(int i) {
 		return obstaclesRectanglesX1[i];
 	}
@@ -747,9 +749,6 @@ public final class Controller extends AllViews
 	public int getObstaclesCirclesY(int i) {
 		return obstaclesCirclesY[i];
 	}
-	public void setSpGraphic(int i, SpGraphic spGraphic) {
-		this.spGraphic[i] = spGraphic;
-	}
 	public int getObstaclesCirclesRadius(int i) {
 		return obstaclesCirclesRadius[i];
 	}
@@ -764,9 +763,6 @@ public final class Controller extends AllViews
 	}
 	public boolean getGameEnded() {
 		return gameEnded;
-	}
-	public SpGraphic[] getSpGraphic() {
-		return spGraphic;
 	}
 	public void incrementCurrentRectangle()
 	{

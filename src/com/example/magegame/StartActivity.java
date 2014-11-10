@@ -1,9 +1,19 @@
 package com.example.magegame;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
@@ -21,6 +31,16 @@ public class StartActivity extends Activity
 	protected int screenMinY;
 	private ViewSwitcher viewSwitcher;
 	private Handler mHandler = new Handler();
+	protected boolean stickOnRight = true;
+	private FileOutputStream fileWrite;
+	private FileInputStream fileRead;
+	private int savePoints = 10;
+	private byte[] savedData = new byte[savePoints];
+	private MediaPlayer backMusic;
+	private SoundPool spool;
+	private AudioManager audioManager;
+	private float volume;
+	private int soundID;
 	private Runnable frameCaller = new Runnable()
 	{
 		public void run()
@@ -39,13 +59,20 @@ public class StartActivity extends Activity
 					loading.frameCall();
 				}
 			}
+			if(menuRun != null)
+			{
+				if(menuRun.gameRunning)
+				{
+					menuRun.frameCall();
+				}
+			}
 			mHandler.postDelayed(this, 50);
 		}
 	};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-		frameCaller.run();
+        super.onCreate(savedInstanceState);        
+        frameCaller.run();
         viewSwitcher = new ViewSwitcher(this);
     	setScreenDimensions();
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -63,6 +90,10 @@ public class StartActivity extends Activity
     	control.setBackgroundColor(Color.BLACK);
     	control.primeFighting();
 		loading.incrementPercentLoaded(30);
+		setVolumeControlStream(AudioManager.STREAM_MUSIC);
+		spool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+		volume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
     }
     private void changeView(AllViews view)
     {
@@ -72,11 +103,27 @@ public class StartActivity extends Activity
     	viewSwitcher.addView(view);
     	viewSwitcher.showNext();
     }
+    public void startTutorial()
+    {
+        read();
+    }
     public void startMenu()
     {
-    	menuRun.currentScreen = "main";
+    	read();
+    	if(savedData[0] == 0)
+    	{
+    		startTutorial();
+    		savedData[0] = 1;
+    		write();
+    		menuRun.currentScreen = "tutorial0001";
+    	} else
+    	{
+	    	menuRun.currentScreen = "main";
+    	}
+    	menuRun.now = menuRun.loadImage("main");
     	changeView(menuRun);
     	currentView = menuRun;
+    	//stickOnRight = !stickOnRight;
     	loading.gameRunning = false;
     	menuRun.gameRunning = true;
     	control.gameRunning = false;
@@ -120,6 +167,35 @@ public class StartActivity extends Activity
 			screenDimensionMultiplier = ((screenWidthstart/1.5)/320);
 		}
 	}
+	public void startMusic()
+	{
+        backMusic= MediaPlayer.create((Context)this, R.raw.backsound);
+        backMusic.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer backMusic) {
+                backMusic.start();
+            }
+        });
+        backMusic.setLooping(true);
+	}
+	public void playEffect(int ID)
+	{
+		soundID = spool.load((Context)this, ID, 1);
+		spool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
+		    public void onLoadComplete(SoundPool soundPool, int sampleId,int status) {
+				spool.play(soundID, 1, 1, 1, 0, 1f);
+		    }
+		});
+	}
+	public void stopMusic()
+	{
+		if(backMusic != null)
+		{
+			backMusic.stop();
+        	backMusic.release();
+        	backMusic = null;
+		}
+	}
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -131,29 +207,93 @@ public class StartActivity extends Activity
     public void onStart() {
         super.onStart();
         currentView.gameRunning = true;
+        startMusic();
     }
 
    @Override
     public void onResume() {
         super.onResume();
         currentView.gameRunning = true;
+        startMusic();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         currentView.gameRunning = false;
+        stopMusic();
     }
 
     @Override
     public void onStop() {
         super.onStop();
         currentView.gameRunning = false;
+        stopMusic();
     }
 
    @Override
     public void onDestroy() {
         super.onDestroy();
         currentView.gameRunning = false;
+        stopMusic();
     }
+   private void read()
+   {
+	   openRead();
+	   try {
+		   fileRead.read(savedData, 0, savePoints);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	   closeRead();
+   }
+   private void write()
+   {
+	   openWrite();
+	   	try {
+	   		fileWrite.write(savedData, 0, savePoints);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	   	closeWrite();
+   }
+   private void openRead()
+   {
+   	try {
+			fileRead = openFileInput("ProjectSaveData");
+		} catch (FileNotFoundException e) {
+			openWrite();
+			closeWrite();
+			openRead();
+		}
+   }
+   private void openWrite()
+   {
+   	try {
+			fileWrite = openFileOutput("ProjectSaveData", Context.MODE_PRIVATE);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+		}
+   }
+   private void closeRead()
+   {
+   	try {
+			fileRead.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+   }
+   private void closeWrite()
+   {
+   	try {
+			fileWrite.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+   }
+   
 }

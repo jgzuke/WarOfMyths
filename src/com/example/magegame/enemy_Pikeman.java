@@ -82,6 +82,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 			if(distanceFound < 30)
 			{
 				mainController.player.getHit(700);
+				mainController.activity.playEffect(R.raw.sword1);
 			}
 		}
 		if(currentFrame == 121)
@@ -90,6 +91,15 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 			if(distanceFound < 30)
 			{
 				mainController.player.getHit(400);
+				mainController.activity.playEffect(R.raw.sword2);
+			}
+		}
+		if(currentFrame == 126)
+		{
+			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
+			if(distanceFound < 30)
+			{
+				mainController.activity.playEffect(R.raw.sword2);
 			}
 		}
 		if(currentFrame == 131)

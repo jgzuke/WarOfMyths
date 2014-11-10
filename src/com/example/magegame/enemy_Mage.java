@@ -5,6 +5,9 @@
  * @param enemyAreaProtected whether or not the main enemy is in a mostly enclosed area
  */
 package com.example.magegame;
+
+import android.util.Log;
+
 public final class Enemy_Mage extends Enemy
 {
 	private int reactTimer = 0;
@@ -43,7 +46,7 @@ public final class Enemy_Mage extends Enemy
 		height = 30;
 		x = 110;
 		y = 160;
-		speedCur = 3.5;
+		speedCur = 4.5;
 	}
 	/*
 	 * Replenishes stats, counts down timers, and checks los etc
@@ -53,6 +56,8 @@ public final class Enemy_Mage extends Enemy
 	Override
 	public void frameCall()
 	{
+		Log.e("game", "enemy" + Integer.toString(humanType));
+		sp += 0.001;
 		if(humanType==2)
 		{
 			speedCur = 3.5*(1+sp);
@@ -93,26 +98,10 @@ public final class Enemy_Mage extends Enemy
 		{
 			if(humanType==2)
 			{
-				abilityTimer_powerBall += mainController.getDifficultyLevelMultiplier()*(1+sp);
+				abilityTimer_powerBall += 3*mainController.getDifficultyLevelMultiplier()*(1+sp);
 			} else
 			{
-				abilityTimer_powerBall += mainController.getDifficultyLevelMultiplier();
-			}
-		}
-		if(isThisPlayer())
-		{
-			if(createSpecialGraphicGainCounter)
-			{
-				mainController.spGraphicPlayer.setGaining(true);
-				createSpecialGraphicGainCounter = false;
-			}
-		}
-		else
-		{
-			if(createSpecialGraphicGainCounter == true)
-			{
-				mainController.spGraphicEnemy.setGaining(true);
-				createSpecialGraphicGainCounter = false;
+				abilityTimer_powerBall += 3*mainController.getDifficultyLevelMultiplier();
 			}
 		}
 		rollTimer--;
@@ -369,13 +358,6 @@ public final class Enemy_Mage extends Enemy
 				setReactTimer();
 				reaction = "Teleport Towards";
 			}
-			sp += mainController.getDifficultyLevelMultiplier()/700;
-			createSpecialGraphicGainCounter = true;
-		}
-		else
-		{
-			sp += mainController.getDifficultyLevelMultiplier()/700;
-			createSpecialGraphicGainCounter = true;
 		}
 	}
 	/*
@@ -589,14 +571,14 @@ public final class Enemy_Mage extends Enemy
 	public void powerBurst()
 	{
 		mp -= 2500;
-		mainController.createPowerBallEnemy(0, 10, 0, 170, x, y);
-		mainController.createPowerBallEnemy(45, 7, 7, 170, x, y);
-		mainController.createPowerBallEnemy(90, 0, 10, 170, x, y);
-		mainController.createPowerBallEnemy(135, -7, 7, 170, x, y);
-		mainController.createPowerBallEnemy(180, -10, 0, 170, x, y);
-		mainController.createPowerBallEnemy(225, -7, -7, 170, x, y);
-		mainController.createPowerBallEnemy(270, 0, -10, 170, x, y);
-		mainController.createPowerBallEnemy(315, 7, -7, 170, x, y);
+		mainController.createPowerBallEnemy(0, 10, 0, 130, x, y);
+		mainController.createPowerBallEnemy(45, 7, 7, 130, x, y);
+		mainController.createPowerBallEnemy(90, 0, 10, 130, x, y);
+		mainController.createPowerBallEnemy(135, -7, 7, 130, x, y);
+		mainController.createPowerBallEnemy(180, -10, 0, 130, x, y);
+		mainController.createPowerBallEnemy(225, -7, -7, 130, x, y);
+		mainController.createPowerBallEnemy(270, 0, -10, 130, x, y);
+		mainController.createPowerBallEnemy(315, 7, -7, 130, x, y);
 		abilityTimer_burst -= 400;
 	}
 	/*

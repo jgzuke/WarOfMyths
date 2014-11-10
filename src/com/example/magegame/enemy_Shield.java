@@ -115,6 +115,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 			if(distanceFound < 30)
 			{
 				mainController.player.getHit(600);
+				mainController.activity.playEffect(R.raw.sword1);
 			}
 		}
 		if(currentFrame == 87)
@@ -123,6 +124,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 			if(distanceFound < 30)
 			{
 				mainController.player.getHit(400);
+				mainController.activity.playEffect(R.raw.sword2);
 			}
 		}
 	}

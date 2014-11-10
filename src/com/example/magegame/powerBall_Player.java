@@ -55,7 +55,13 @@ public final class PowerBall_Player extends PowerBall
                             yDif = y - mainController.enemies[i].y;
                             if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100)
                             {
-                                    mainController.enemies[i].getHit(power);
+                            	if(mainController.player.humanType == 0)
+                				{
+                					mainController.enemies[i].getHit((int)(power*(1+mainController.player.getSp())));
+                				} else
+                				{
+                					mainController.enemies[i].getHit(power);
+                				}
                                     mainController.createPowerBallPlayerAOE(x, y, power);
                                     deleted = true;
                             }

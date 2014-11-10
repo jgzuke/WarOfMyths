@@ -36,7 +36,13 @@ public final class PowerBallAOE_Player extends PowerBallAOE
 		yDif = y - mainController.enemies[i].y;
 		if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone)
 		{
-			mainController.enemies[i].getHit(60);
+			if(mainController.player.humanType == 0)
+			{
+				mainController.enemies[i].getHit((int)(60*(1+mainController.player.getSp())));
+			} else
+			{
+				mainController.enemies[i].getHit(60);
+			}
 		}
                         }
                 }

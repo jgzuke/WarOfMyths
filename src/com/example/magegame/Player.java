@@ -3,10 +3,12 @@
  */
 package com.example.magegame;
 
+import android.util.Log;
+
 public final class Player extends Human
 {
 	protected double touchY;
-	private int rollTimer = 0;
+	protected int rollTimer = 0;
 	private double xMoveRoll;
 	private double yMoveRoll;
 	private int mp = 1750;
@@ -20,13 +22,11 @@ public final class Player extends Human
 	private double xSave = 0;
 	private double ySave = 0;
 	protected boolean teleporting = false;
-	protected boolean chargingSp = false;
 	protected double touchX;
 	protected boolean touching;
 	public Player(Controller creator)
 	{
 		mainController = creator;
-		humanType = mainController.getPlayerType();
 		visualImage = mainController.imageLibrary.player_Image[0];
 		setImageDimensions();
 		width = 30;
@@ -34,7 +34,7 @@ public final class Player extends Human
 		x = 370;
 		y = 160;
 		thisPlayer = true;
-		speedCur = 3.5;
+		speedCur = 4.5;
 	}
 	/*
 	 * Counts timers and executes movement and predefined behaviors
@@ -44,6 +44,7 @@ public final class Player extends Human
 	Override
 	public void frameCall()
 	{
+		sp += 0.001;
 		if(humanType==2)
 		{
 			speedCur = 3.5*(1+sp);
@@ -82,17 +83,12 @@ public final class Player extends Human
 		{
 			if(humanType==2)
 			{
-				abilityTimer_powerBall += 1+sp;
+				abilityTimer_powerBall += 3*(1+sp);
 			} else
 			{
-				abilityTimer_powerBall ++;
+				abilityTimer_powerBall += 3;
 			}
 		}
-			if(createSpecialGraphicGainCounter == true)
-			{
-				mainController.spGraphicPlayer.setGaining(true);
-				createSpecialGraphicGainCounter = false;
-			}
 		rollTimer--;
 		if(humanType==1)
 		{
@@ -115,23 +111,12 @@ public final class Player extends Human
 			sp = spMax;
 		}
 		super.frameCall();
-		if(chargingSp)
-		{
-			createSpecialGraphicGainCounter = true;
-			playing = false;
-			currentFrame = 0;
-			sp += (double)1/(double)700;
-		}
 		if(rollTimer < 1)
 		{
 			rads = Math.atan2(touchY, touchX);
 			rotation = rads * r2d;
-			if(!deleted && !chargingSp)
+			if(!deleted)
 			{
-				if(chargingSp)
-				{
-					sp += 1/700;
-				}
 				if(teleporting)
 				{
 					mp -= 30;
@@ -259,14 +244,14 @@ public final class Player extends Human
 			{
 				if(mp > 2500)
 				{
-					mainController.createPowerBallPlayer(0, 10, 0, 170, x, y);
-					mainController.createPowerBallPlayer(45, 7, 7, 170, x, y);
-					mainController.createPowerBallPlayer(90, 0, 10, 170, x, y);
-					mainController.createPowerBallPlayer(135, -7, 7, 170, x, y);
-					mainController.createPowerBallPlayer(180, -10, 0, 170, x, y);
-					mainController.createPowerBallPlayer(225, -7, -7, 170, x, y);
-					mainController.createPowerBallPlayer(270, 0, -10, 170, x, y);
-					mainController.createPowerBallPlayer(315, 7, -7, 170, x, y);
+					mainController.createPowerBallPlayer(0, 10, 0, 130, x, y);
+					mainController.createPowerBallPlayer(45, 7, 7, 130, x, y);
+					mainController.createPowerBallPlayer(90, 0, 10, 130, x, y);
+					mainController.createPowerBallPlayer(135, -7, 7, 130, x, y);
+					mainController.createPowerBallPlayer(180, -10, 0, 130, x, y);
+					mainController.createPowerBallPlayer(225, -7, -7, 130, x, y);
+					mainController.createPowerBallPlayer(270, 0, -10, 130, x, y);
+					mainController.createPowerBallPlayer(315, 7, -7, 130, x, y);
 					abilityTimer_burst -= 300;
 						mp -= 2500;
 				}

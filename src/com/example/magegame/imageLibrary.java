@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 public final class ImageLibrary
 {
 	public boolean pikemanLoaded = false;
@@ -40,7 +39,6 @@ public final class ImageLibrary
 		opts.inTempStorage = new byte[16 * 1024];
 		packageName = contextSet.getPackageName();
 		res = contextSet.getResources();
-		getting = "gainsp";
 		teleport_Image[0] = loadArray1D(15, "teleportstart", 160, 160);
 		activitySet.loading.incrementPercentLoaded(20);
 		teleport_Image[1] = loadArray1D(15, "teleportfinish", 160, 160);
@@ -160,7 +158,6 @@ public final class ImageLibrary
 	 */
 	public Bitmap loadImage(String imageName, int width, int height)
 	{
-		Log.e("**********", imageName);
 		opts.inSampleSize = 1;
 		int imageNumber = res.getIdentifier(imageName, "drawable", packageName);
 		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), width, height, false);

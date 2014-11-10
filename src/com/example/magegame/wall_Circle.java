@@ -1,7 +1,4 @@
 package com.example.magegame;
-
-import android.util.Log;
-
 public class Wall_Circle extends Wall
 {
 	private double xdif;
@@ -26,7 +23,6 @@ public class Wall_Circle extends Wall
 	@ Override
 	public void frameCall()
 	{
-		Log.e("game", "worked");
 		changing = true;
 		Sprite hold = mainController.player;
 		while(hold != null)

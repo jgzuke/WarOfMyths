@@ -46,8 +46,6 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.os.Handler;
-import android.util.Log;
 public final class LoadingScreen extends AllViews
 {
 	private Resources res;
