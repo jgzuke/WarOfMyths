@@ -74,7 +74,7 @@ public class StartActivity extends Activity
 	protected boolean ownSkin5 = false;
 	protected boolean ownSkin6 = false;
 	protected boolean ownSkin7 = false;
-	protected boolean highGraphics = true;
+	protected boolean highGraphics = false;
 	protected byte currentSkin = 0;
 	protected byte levelBeaten = 18;
 	protected boolean gameRunning = true;

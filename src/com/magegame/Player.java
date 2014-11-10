@@ -31,7 +31,7 @@ public final class Player extends Human
 	protected double touchShootY;
 	protected int powerUpTimer = 0;
 	protected int powerID = 0;
-	private int minimumShootTime = 5;
+	private int minimumShootTime = 4;
 	private double hpAccurate;
 	/**
 	 * Sets all variables to start, sets image

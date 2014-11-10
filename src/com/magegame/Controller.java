@@ -178,6 +178,8 @@ public final class Controller extends View
 		screenMinX = activitySet.screenMinX;
 		screenMinY = activitySet.screenMinY;
 		screenDimensionMultiplier = activitySet.screenDimensionMultiplier;
+		paint.setAntiAlias(false);
+		paint.setDither(false);
 		if(activity.highGraphics)
 		{
 			//paint.setAntiAlias(true);

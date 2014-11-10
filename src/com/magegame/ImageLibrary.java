@@ -13,8 +13,10 @@ public final class ImageLibrary
 	protected boolean archerLoaded = false;
 	protected boolean rogueLoaded = false;
 	protected boolean mageLoaded = false;
+	protected boolean clericLoaded = false;
 	protected Bitmap[] player_Image = new Bitmap[51];
 	protected Bitmap[] mage_Image = new Bitmap[51];
+	protected Bitmap[] cleric_Image = new Bitmap[51];
 	protected Bitmap[] rogue_Image = new Bitmap[65];
 	protected Bitmap[] pikeman_Image = new Bitmap[107]; 
 	protected Bitmap[] shield_Image = new Bitmap[79];
@@ -136,7 +138,6 @@ public final class ImageLibrary
 	{
 		exitFightPortal = loadImage("exitfightportal", 60, 60);
 		backButton = loadImage("exitfight", 40, 40);
-		mage_Image = loadArray1D(31, "human_mage", 30, 30);
 		loadPlayerImage();
 		powerUps = loadArray1D(10, "powerup", 30, 30);
 		powerUpBigs = loadArray1D(5, "powerupbig", 70, 70);
@@ -310,6 +311,7 @@ public final class ImageLibrary
 			currentLevelTop = null;
 		}
 		recycleArray(31, mage_Image);
+		recycleArray(31, cleric_Image);
 		recycleArray(31, player_Image);
 		recycleArray(5, powerUpBigs);
 		recycleArray(10, powerUps);
@@ -397,6 +399,15 @@ public final class ImageLibrary
 				}
 				mageLoaded = false;
 			}
+			else if(toChange.equals("cleric") && clericLoaded)
+			{
+				for(int i = 0; i < cleric_Image.length; i++)
+				{
+					cleric_Image[i].recycle();
+					cleric_Image[i] = null;
+				}
+				clericLoaded = false;
+			}
 	}
 	/**
 	 * Loads or recycles a human animation array
@@ -427,8 +438,13 @@ public final class ImageLibrary
 			}
 			else if(toChange.equals("mage"))
 			{
-				mage_Image = loadArray1D(31, nameToLoad, 30, 30);
+				mage_Image = loadArray1D(31, nameToLoad, 30, 34);
 				mageLoaded = true;
+			}
+			else if(toChange.equals("cleric"))
+			{
+				cleric_Image = loadArray1D(25, nameToLoad, 39, 34);
+				clericLoaded = true;
 			}
 	}
 	/**
@@ -462,6 +478,11 @@ public final class ImageLibrary
 			{
 				mage_Image = loadArray1D(31, nameToLoad, width, height);
 				mageLoaded = true;
+			}
+			else if(toChange.equals("cleric"))
+			{
+				cleric_Image = loadArray1D(25, nameToLoad, width, height);
+				clericLoaded = true;
 			}
 	}
 	/**

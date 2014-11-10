@@ -72,8 +72,8 @@ public class PlayerGestureDetector implements OnTouchListener {
 		        case MotionEvent.ACTION_MOVE:
 		            if(player.touching)
 		            {
-			            player.touchX = visualX(e.getX(trackingId))-(427-buttonShiftX);
-			            player.touchY = visualY(e.getY(trackingId))-267;
+			            player.touchX = visualX(e.getX(e.findPointerIndex(trackingId)))-(427-buttonShiftX);
+			            player.touchY = visualY(e.getY(e.findPointerIndex(trackingId)))-267;
 			            if(Math.abs(player.touchX)<10)
 			            {
 			            	player.touchX=0;
@@ -89,12 +89,12 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            	{
 		            		if(!control.activity.shootTapScreen)
 			            	{
-			            		player.touchShootY = visualY(e.getY(touchingShootID))-267;
-			            		player.touchShootX = visualX(e.getX(touchingShootID))-(53+(buttonShiftX*0.95897));
+			            		player.touchShootY = visualY(e.getY(e.findPointerIndex(touchingShootID)))-267;
+			            		player.touchShootX = visualX(e.getX(e.findPointerIndex(touchingShootID)))-(53+(buttonShiftX*0.95897));
 			            	} else
 			            	{
-			            		player.touchShootY = screenY(e.getY(touchingShootID))-player.y;
-			            		player.touchShootX = screenX(e.getX(touchingShootID))-player.x;
+			            		player.touchShootY = screenY(e.getY(e.findPointerIndex(touchingShootID)))-player.y;
+			            		player.touchShootX = screenX(e.getX(e.findPointerIndex(touchingShootID)))-player.x;
 			            	}
 		            	}
 		            }
@@ -102,7 +102,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            {
 		            	if(startDragMusic)
 		            	{
-		            		double rawVolume = visualX(e.getX(trackingId))-264;
+		            		double rawVolume = visualX(e.getX(e.findPointerIndex(trackingId)))-264;
 		        			if(rawVolume<0) rawVolume = 0;
 		            		if(rawVolume>127) rawVolume = 127;
 		            		double volume = Math.pow(rawVolume, 3)/16129;
@@ -113,7 +113,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            	}
 		            	if(startDragEffect)
 		            	{
-		            		double rawVolume = visualX(e.getX(trackingId))-264;
+		            		double rawVolume = visualX(e.getX(e.findPointerIndex(trackingId)))-264;
 		        			if(rawVolume<0) rawVolume = 0;
 		            		if(rawVolume>127) rawVolume = 127;
 		            		double volume = Math.pow(rawVolume, 3)/16129;
@@ -128,14 +128,14 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            	if(startDragLevels)
 		            	{
 		            		chooseLevelSliderY = startDragLevelsSlideYSave;
-		            		chooseLevelSliderY += startDragLevelsYSave-(int)visualY(e.getY(trackingId));
+		            		chooseLevelSliderY += startDragLevelsYSave-(int)visualY(e.getY(e.findPointerIndex(trackingId)));
 		            		if(chooseLevelSliderY<35) chooseLevelSliderY=35;
 		            		if(chooseLevelSliderY>285) chooseLevelSliderY=285;
 		            		control.invalidate();
 		            	}
 		            	if(startDragLevelSlider)
 		            	{
-		            		chooseLevelSliderY = (int)visualY(e.getY(trackingId));
+		            		chooseLevelSliderY = (int)visualY(e.getY(e.findPointerIndex(trackingId)));
 		            		if(chooseLevelSliderY<35) chooseLevelSliderY=35;
 		            		if(chooseLevelSliderY>285) chooseLevelSliderY=285;
 		            		control.invalidate();
@@ -170,6 +170,10 @@ public class PlayerGestureDetector implements OnTouchListener {
 		        	if(e.getPointerId(e.getActionIndex()) == touchingShootID)
 		        	{
 		        		player.touchingShoot = false;
+		        	}
+		        	if(e.getPointerId(e.getActionIndex())<trackingId)
+		        	{
+		        		
 		        	}
 		        break;
 		        case MotionEvent.ACTION_POINTER_DOWN:
