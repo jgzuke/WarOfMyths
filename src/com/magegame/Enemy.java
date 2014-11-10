@@ -529,7 +529,7 @@ abstract public class Enemy extends Human
 	/**
 	 * Runs random direction for 25 or if not enough space 10 frames
 	 */
-	protected void runRandomOld()
+	protected void runRandom()
 	{
 		boolean canMove = false;
 		rotation = control.getRandomInt(360);
@@ -586,56 +586,13 @@ abstract public class Enemy extends Human
 		}
 		if(canMove)
 		{
-			setRunTimer(10);
+			setRunTimer(20);
 		}
 		else
 		{
-			setRunTimer(5);
+			setRunTimer(10);
 		}
 		playing = true;
-	}
-	protected void runRandom()
-	{
-		int steps = (int)(50/speedCur);
-		rads = rotation / r2d;
-		int[]rotationChanges = {90, 80, 100, -90, -80, -100, 0, 10, -10, 180, 190, 170};
-		if(Math.random()>0.5)
-		{
-			for(int i = 0; i < 12; i++) rotationChanges[i]*=-1;
-		}
-		for(int i = 0; i < 12; i++)
-		{
-			if(!control.checkObstructionsAll(x, y,(rotation+rotationChanges[i])/r2d, 50))
-			{
-				rotation+=rotationChanges[i];
-				rads = rotation / r2d;
-				setRunTimer(steps);
-				playing = true;
-				i=13;
-			}
-		}
-		if(playing == false)
-		{
-			for(int i = 6; i < 12; i++)
-			{
-				if(!control.checkObstructionsAll(x, y,(rotation+rotationChanges[i])/r2d, 20))
-				{
-					rotation+=rotationChanges[i];
-					rads = rotation / r2d;
-					setRunTimer(steps*2/5);
-					playing = true;
-					i=13;
-				}
-				if(i==5)
-				{
-					i=13;
-				}
-				if(i==11)
-				{
-					i=0;
-				}
-			}
-		}
 	}
 	protected void baseHp() {
 		hp *= Math.pow(control.getDifficultyLevelMultiplier(), ((double)hp/10000));

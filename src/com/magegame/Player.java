@@ -118,7 +118,10 @@ public final class Player extends Human
 			hpAccurate += (double)hp/1000;
 			super.getHit((int)hpAccurate);
 			hpAccurate -= (int)hpAccurate;
-			if(deleted) control.restartGame();
+			if(deleted)
+			{
+				control.activity.loseFight();
+			}
 		}
 		minimumShootTime--;
 		powerUpTimer--;
@@ -340,7 +343,7 @@ public final class Player extends Human
 	{
 		if(abilityTimer_powerBall > 30)
 		{
-			if(rollTimer < 0)
+			if(rollTimer < 0&&control.levelNum!=10)
 			{
 					control.createPowerBallPlayer(rads*r2d, projectileSpeed, 130, x, y);
 					abilityTimer_powerBall -= 30;
@@ -476,7 +479,7 @@ public final class Player extends Human
 			}
 			super.getHit(damage);
 			sp -= sp*damage/1500;
-			if(deleted) control.restartGame();
+			if(deleted) control.activity.loseFight();
 	}
 	/**
 	 * gives player a benefit, ranging from health to transformation
@@ -514,13 +517,19 @@ public final class Player extends Human
 			powerID=4;
 			break;
 		case 7:
-			control.activity.gameCurrency += 1;
+			control.moneyMade += control.moneyMultiplier;
+			control.activity.gameCurrency += control.moneyMultiplier;
+			break;
+		case 8:
+			control.hasKey = true;
 			break;
 		case 9:
-			control.activity.gameCurrency += 5;
+			control.moneyMade += 5*control.moneyMultiplier;
+			control.activity.gameCurrency += 5*control.moneyMultiplier;
 			break;
 		case 10:
-			control.activity.gameCurrency += 20;
+			control.moneyMade += 20*control.moneyMultiplier;
+			control.activity.gameCurrency += 20*control.moneyMultiplier;
 			break;
 		case 11:
 			transformedTimer = 0;

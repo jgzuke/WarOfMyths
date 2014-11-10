@@ -76,6 +76,7 @@ public class StartActivity extends Activity
 	protected boolean ownSkin7 = false;
 	protected boolean highGraphics = false;
 	protected byte currentSkin = 0;
+	protected byte levelBeaten = 18;
 	protected boolean gameRunning = true;
 	private FileOutputStream fileWrite;
 	private FileInputStream fileRead;
@@ -121,6 +122,10 @@ public class StartActivity extends Activity
 		startMusic();
 		control = new Controller(this, this);
 		setContentView(control);
+		if(firstTime)
+		{
+			startFight(2);
+		}
 		control.changePlayOptions();
 		String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiGLP+ZTiqZSbr1GJ7dWrRTBeju8IFdqWFNfejT8fAFcnxptJUsrtqpNdkaJJpEIZbT8XkcGcI3kwOhEfepJDjARZ+k6JFsHc3xPqaT2ACyfctAeUfBIHJA1PWxwnsbfxQIg0fv9lbfJaO9E7KphhtqE51jqSKnnO013sGbqi4QoZL1Ov/6f0pOv2TRnpN7XNbr/EGlUa9AKkyxlWmlxhlJowb03Kwh8e0uUs+kJjRzy+aNdGsNZRDwforn2XLZd9du9CTJ9K65K9/sUVgn5Zkj4bVYK8Y1CkMdiPBJAgz/v9Zh6FVJTTCa1LQmwMI6rZfvCWs6LrcmItis+4U0M9cwIDAQAB";
 		mHelper = new IabHelper(this, base64EncodedPublicKey);
@@ -179,6 +184,7 @@ public class StartActivity extends Activity
 	 */
 	protected void playMoney()
 	{
+		Log.e("game", "money");
 		float newV = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		newV = (float)(newV * volumeEffect / 127);
 		if(Math.random()>0.5)
@@ -199,7 +205,86 @@ public class StartActivity extends Activity
 		control.lowerHp = false;
 		control.limitSpells = false;
 		control.enemyRegen = false;
+		control.changeDifficulty(10);
+		control.imageLibrary.directionsTutorial = control.imageLibrary.loadImage("menu_directions", 200, 180);
+		control.startFighting(10);
 		control.gamePaused = false;
+	}
+	/**
+	 * player loses a fight, start screen
+	 */
+	protected void loseFight()
+	{
+		control.gamePaused = true;
+		control.currentPause = "lost";
+		control.invalidate();
+	}
+	/**
+	 * player wins a fight, increases level, starts next level
+	 */
+	protected void winFight()
+	{
+		control.startWarning("Won Round ("+Integer.toString((int)control.moneyMade)+"g)");
+		if(control.levelNum < 180)
+		{
+			if((int)(control.levelNum / 10) - 2 == levelBeaten)
+			{
+				levelBeaten++;
+				realCurrency += control.moneyMultiplier*3;
+				control.startWarning("Victory ("+Integer.toString((int)control.moneyMade)+"g/"+Integer.toString((int)control.moneyMultiplier*3)+"p)");
+			}
+			control.startingLevel =(int)(control.levelNum/10)-1;
+			if(control.difficultyLevel == 10)
+			{
+				control.moneyMultiplier = 5;
+			}
+			if(control.difficultyLevel == 6)
+			{
+				control.moneyMultiplier = 7;
+			}
+			if(control.difficultyLevel == 3)
+			{
+				control.moneyMultiplier = 12;
+			}
+			if(control.difficultyLevel == 0)
+			{
+				control.moneyMultiplier = 20;
+			}
+			control.moneyMultiplier = (int)((double)control.moneyMultiplier*control.getLevelWinningsMultiplier(control.startingLevel));
+			if(control.drainHp)
+			{
+				control.moneyMultiplier *= 1.4;
+			}
+			if(control.lowerHp)
+			{
+				control.moneyMultiplier *= 1.4;
+			}
+			if(control.limitSpells)
+			{
+				control.moneyMultiplier *= 1.4;
+			}
+			if(control.enemyRegen)
+			{
+				control.moneyMultiplier *= 1.4;
+			}
+			startFight(control.startingLevel+2);
+		} else
+		{
+			startMenu();
+		}
+	}
+	/**
+	 * starts a level from menu
+	 * @param levelSet level to start
+	 */
+	protected void startFight(int levelSet)
+	{
+		control.startFighting(levelSet * 10);
+		control.gamePaused = false;
+		if(levelSet == 2)
+		{
+			control.player.getPowerUp(2);
+		}
 	}
 	/**
 	 * resets volume
@@ -982,6 +1067,7 @@ public class StartActivity extends Activity
 		if(shootTapScreen) savedData[2] = 1;
 		if(shootTapDirectional) savedData[3] = 0;
 		if(holdShoot) savedData[29] = 1;
+		savedData[4] = levelBeaten;
 		savedData[5] = uApollo;
 		savedData[6] = uPoseidon;
 		savedData[7] = uZues;
@@ -1060,6 +1146,7 @@ public class StartActivity extends Activity
 		shootTapScreen = savedData[2] == 1;
 		shootTapDirectional = savedData[3] == 0;
 		holdShoot = savedData[29] == 1;
+		levelBeaten = savedData[4];
 		uApollo = savedData[5];
 		uPoseidon = savedData[6];
 		uZues = savedData[7];
