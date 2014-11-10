@@ -1,7 +1,5 @@
 package com.example.magegame;
 
-import android.util.Log;
-
 public class Wall_Rectangle extends Wall
 {
 	private int x;
@@ -20,10 +18,10 @@ public class Wall_Rectangle extends Wall
 		x = (oRX1 + oRX2) / 2;
 		y = (oRY1 + oRY2) / 2;
 		mainController = creator;
-		mainController.setObstaclesRectanglesX1(mainController.getCurrentRectangle(), oRX1);
-		mainController.setObstaclesRectanglesX2(mainController.getCurrentRectangle(), oRX2);
-		mainController.setObstaclesRectanglesY1(mainController.getCurrentRectangle(), oRY1);
-		mainController.setObstaclesRectanglesY2(mainController.getCurrentRectangle(), oRY2);
+		mainController.setORectX1(mainController.getCurrentRectangle(), oRX1);
+		mainController.setORectX2(mainController.getCurrentRectangle(), oRX2);
+		mainController.setORectY1(mainController.getCurrentRectangle(), oRY1);
+		mainController.setORectY2(mainController.getCurrentRectangle(), oRY2);
 		mainController.incrementCurrentRectangle();
 		oRX1 -= humanWidth;
 		oRY1 -= humanWidth;

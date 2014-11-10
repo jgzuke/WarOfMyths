@@ -15,9 +15,9 @@ public class Wall_Circle extends Wall
 		oCY = OCY;
 		oCR = OCR;
 		mainController = creator;
-		mainController.setObstaclesCirclesX(mainController.getCurrentCircle(), OCX);
-		mainController.setObstaclesCirclesY(mainController.getCurrentCircle(), OCY);
-		mainController.setObstaclesCirclesRadius(mainController.getCurrentCircle(), OCR);
+		mainController.setOCircX(mainController.getCurrentCircle(), OCX);
+		mainController.setOCircY(mainController.getCurrentCircle(), OCY);
+		mainController.setOCircRadius(mainController.getCurrentCircle(), OCR);
 		mainController.incrementCurrentCircle();
 		oCR += humanWidth;
 		oCRS = Math.pow(oCR, 2);

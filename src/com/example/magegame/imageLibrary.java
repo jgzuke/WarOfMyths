@@ -44,8 +44,8 @@ public final class ImageLibrary
 	}
 	protected void loadAllImages()
 	{
-		teleport_Image[0] = loadArray1D(15, "teleportstart", 160, 160);
-		teleport_Image[1] = loadArray1D(15, "teleportfinish", 160, 160);
+		//teleport_Image[0] = loadArray1D(15, "teleportstart", 160, 160);
+		//teleport_Image[1] = loadArray1D(15, "teleportfinish", 160, 160);
 		mage_Image = loadArray1D(59, "mage", 30, 30);
 		warnings[0] = loadImage("warn0001", 147, 27);
 		warnings[1] = loadImage("warn0002", 173, 74);
@@ -80,8 +80,8 @@ public final class ImageLibrary
 	}
 	protected void recycleImages()
 	{
-		recycleArray(15, teleport_Image[0]);
-		recycleArray(15, teleport_Image[1]);
+		//recycleArray(15, teleport_Image[0]);
+		//recycleArray(15, teleport_Image[1]);
 		recycleArray(59, mage_Image);
 		recycleArray(59, player_Image);
 		recycleArray(2, warnings);

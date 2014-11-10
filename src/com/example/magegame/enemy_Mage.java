@@ -51,6 +51,7 @@ public final class Enemy_Mage extends Enemy
 	Override
 	protected void frameCall()
 	{
+		visualImage = mainController.imageLibrary.mage_Image[currentFrame];
 		rollTimer--;
 		reactionTimeRating = mainController.getDifficultyLevel();
 		reactTimer--;
@@ -273,7 +274,7 @@ public final class Enemy_Mage extends Enemy
 	{		
 			currentFrame = 0;
 			playing = false;
-			if(mainController.getRandomInt(20) == 0)
+			if(mainController.getRandomInt(10) == 0)
 			{
 				runRandom();
 			}
@@ -290,7 +291,7 @@ public final class Enemy_Mage extends Enemy
 		while(areaProtectedRotation < 360)
 		{
 			areaProtectedRads = areaProtectedRotation / r2d;
-			if(checkObstructions(X, Y, Math.cos(areaProtectedRads) * 20, Math.sin(areaProtectedRads) * 20, 50, 20))
+			if(mainController.checkObstructions(X, Y, areaProtectedRads, 50))
 			{
 				areaProtectedCount++;
 			}
@@ -310,7 +311,7 @@ public final class Enemy_Mage extends Enemy
 	{
 		rads = Math.atan2(-(mainController.player.y - y), -(mainController.player.x - x));
 		rotation = rads * r2d;
-		if(!checkObstructions(x, y, Math.cos(rads) * 12, Math.sin(rads) * 12, 42, 12))
+		if(!mainController.checkObstructions(x, y, areaProtectedRads, 42))
 		{
 			roll();
 		}
@@ -323,7 +324,7 @@ public final class Enemy_Mage extends Enemy
 				rollPathChooseCounter += 10;
 				rotation = rollPathChooseRotationStore + rollPathChooseCounter;
 				rads = rotation / r2d;
-				if(!checkObstructions(x, y, Math.cos(rads) * 12, Math.sin(rads) * 12, 42, 12))
+				if(!mainController.checkObstructions(x, y, areaProtectedRads, 42))
 				{
 					roll();
 					rollPathChooseCounter = 180;
@@ -332,7 +333,7 @@ public final class Enemy_Mage extends Enemy
 				{
 					rotation = rollPathChooseRotationStore - rollPathChooseCounter;
 					rads = rotation / r2d;
-					if(!checkObstructions(x, y, Math.cos(rads) * 12, Math.sin(rads) * 12, 42, 12))
+					if(!mainController.checkObstructions(x, y, areaProtectedRads, 42))
 					{
 						roll();
 						rollPathChooseCounter = 180;
@@ -359,10 +360,10 @@ public final class Enemy_Mage extends Enemy
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 		rotation = rads * r2d;
 		rads = (rotation + 90) / r2d;
-		if(checkObstructions(x, y, Math.cos(rads) * 12, Math.sin(rads) * 12, 42, 12))
+		if(mainController.checkObstructions(x, y, areaProtectedRads, 42))
 		{
 			rads = (rotation - 90) / r2d;
-			if(checkObstructions(x, y, Math.cos(rads) * 12, Math.sin(rads) * 12, 42, 12))
+			if(mainController.checkObstructions(x, y, areaProtectedRads, 42))
 			{
 				rolledSideways = false;
 			}
@@ -372,11 +373,10 @@ public final class Enemy_Mage extends Enemy
 				rads = rotation / r2d;
 				roll();
 			}
-		}
-		else
+		} else
 		{
 			rads = (rotation - 90) / r2d;
-			if(checkObstructions(x, y, Math.cos(rads) * 12, Math.sin(rads) * 12, 42, 12))
+			if(mainController.checkObstructions(x, y, areaProtectedRads, 42))
 			{
 				rotation += 90;
 				rads = rotation / r2d;
@@ -427,6 +427,8 @@ public final class Enemy_Mage extends Enemy
 				rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 			}
 			rotation = rads * r2d;
+			rads -= 0.07;
+			rads += mainController.getRandomDouble()*0.14;
 			mainController.createPowerBallEnemy(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 130, x, y);
 			abilityTimer_powerBall -= 30;
 		}

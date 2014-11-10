@@ -26,10 +26,10 @@ public class PlayerGestureDetector implements OnTouchListener {
 	{
 		if(main.activity.stickOnRight)
 		{
-			buttonShiftX = 10;
+			buttonShiftX = 0;
 		} else
 		{
-			buttonShiftX = 400;
+			buttonShiftX = 390;
 		}
 	}
 	protected void setPlayer(Player playerSet)
@@ -48,8 +48,8 @@ public class PlayerGestureDetector implements OnTouchListener {
 		        case MotionEvent.ACTION_MOVE:
 		            if(player.touching)
 		            {
-		            	player.touchX = visualX(e.getX(trackingId))-(435-buttonShiftX);
-		            	player.touchY = visualY(e.getY(trackingId))-275;
+		            	player.touchX = visualX(e.getX(trackingId))-(427-buttonShiftX);
+		            	player.touchY = visualY(e.getY(trackingId))-267;
 		            }
 		        break;
 		        case MotionEvent.ACTION_UP:
@@ -75,26 +75,26 @@ public class PlayerGestureDetector implements OnTouchListener {
 	{
 		if(main.pointOnSquare(x, y, 420, 0, 480, 60))
         {
-        	main.activity.startMenu();
-        } else if(main.pointOnSquare(x, y, buttonShiftX, 85, buttonShiftX+70, 155))
+        	main.activity.startMenu(false);
+        } else if(main.pointOnSquare(x, y, buttonShiftX+12, 82, buttonShiftX+82, 152))
         {
         	player.teleport(visualX(x), visualY(y));
-        } else if(main.pointOnSquare(x, y, buttonShiftX, 10, buttonShiftX+70, 80))
+        } else if(main.pointOnSquare(x, y, buttonShiftX+12, 12, buttonShiftX+82, 82))
         {
         	player.burst();
-        }else if(main.pointOnSquare(x, y, buttonShiftX, 160, buttonShiftX+70, 230))
+        }else if(main.pointOnSquare(x, y, buttonShiftX+12, 152, buttonShiftX+82, 222))
         {
         	player.roll();
-        } else if(main.pointOnSquare(x, y, buttonShiftX-5, 235, buttonShiftX+75, 315) && !main.activity.shootTapScreen)
+        } else if(main.pointOnCircle(x, y, 53+(buttonShiftX*0.95897), 267, 60) && !main.activity.shootTapScreen)
         {
         	if(main.activity.shootTapDirectional)
         	{
-            	player.rads = Math.atan2(visualY(y)-275, visualX(x)-(35+buttonShiftX));
+            	player.rads = Math.atan2(visualY(y)-267, visualX(x)-(53+(buttonShiftX*0.95897)));
         		player.rotation = player.rads*player.r2d;
         		if(firstPointer)
         		{
-	        		player.touchX = visualX(x)-275;
-	            	player.touchY = visualY(y)-(35+buttonShiftX);
+	        		player.touchX = visualX(x)-267;
+	            	player.touchY = visualY(y)-(53+(buttonShiftX*0.95897));
         		}
         		player.releasePowerBall();
         	} else
@@ -123,11 +123,11 @@ public class PlayerGestureDetector implements OnTouchListener {
             		player.releasePowerBall();
             	}
         	}
-        } else if(main.pointOnCircle(x, y, 435-buttonShiftX, 275, 50))
+        } else if(main.pointOnCircle(x, y, 427-(buttonShiftX*0.95897), 267, 60))
         {
         	player.touching = true;
-        	player.touchX = visualX(x)-(435-buttonShiftX);
-        	player.touchY = visualY(y)-275;
+        	player.touchX = visualX(x)-(427-(buttonShiftX*0.95897));
+        	player.touchY = visualY(y)-267;
         	trackingId = ID;
         }
 	}

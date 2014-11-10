@@ -54,33 +54,6 @@ abstract public class Enemy extends Human
 		clearArray(pathedToHit, 30);
 		pathedToHitLength = 0;
 		setImageDimensions();
-	}	
-	/*
-	 * Checks for a clear line starting at set coordinates and going for a set distance at set velocity
-	 * @param fromX Starting x coordinate
-	 * @param fromY Starting y coordinate
-	 * @param moveX X velocity
-	 * @param moveY Y velocity
-	 * @param distance Interval at which to check whether line is clear
-	 * @param distance Distance to extend line
-	 * @return Returns whether line is clear
-	 */
-	protected boolean checkObstructions(double fromX, double fromY, double moveX, double moveY, double distance, double speed)
-	{
-		int checkObstructionsCounter = 0;
-		boolean checkObstructionsObstructed = false;
-		while(checkObstructionsCounter < distance)
-		{
-			checkObstructionsCounter += speed;
-			fromX += moveX;
-			fromY += moveY;
-			if(mainController.checkHitBack(fromX, fromY))
-			{
-				checkObstructionsObstructed = true;
-				distance = 0;
-			}
-		}
-		return checkObstructionsObstructed;
 	}
 	protected void getHit(int damage)
 	{
@@ -110,7 +83,7 @@ abstract public class Enemy extends Human
 	{
 		rads = Math.atan2(-(mainController.player.y - y), -(mainController.player.x - x));
 		rotation = rads * r2d;
-		if(checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 40, 4))
+		if(mainController.checkObstructions(x, y, rads, 40))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -119,7 +92,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 40, 4))
+				if(!mainController.checkObstructions(x, y, rads, 40))
 				{
 					runPathChooseCounter = 180;
 				}
@@ -127,7 +100,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 40, 4))
+					if(!mainController.checkObstructions(x, y,  rads, 40))
 					{
 						runPathChooseCounter = 180;
 					}
@@ -153,7 +126,7 @@ abstract public class Enemy extends Human
 	protected void checkLOS()
 	{
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
-		if(!checkObstructions(x, y, Math.cos(rads) * 20, Math.sin(rads) * 20, checkDistance(mainController.player.x, mainController.player.y, x, y) - 20, 20))
+		if(!mainController.checkObstructionsPoint(x, y, mainController.player.x, mainController.player.y))
 		{
 			LOS = true;
 		}
@@ -174,8 +147,7 @@ abstract public class Enemy extends Human
 			distanceFound = checkDistance((int) Math.abs(danger[0][dangerCheckCounter] + (danger[2][dangerCheckCounter] / 10 * distanceFound)), (int) Math.abs(danger[1][dangerCheckCounter] + (danger[3][dangerCheckCounter] / 10 * distanceFound)), x, y);
 			if(distanceFound < 20)
 			{
-				distanceFound = checkDistance(danger[0][dangerCheckCounter], danger[1][dangerCheckCounter], x, y);
-				if(!checkObstructions(danger[0][dangerCheckCounter], danger[1][dangerCheckCounter], danger[2][dangerCheckCounter] * 2, danger[3][dangerCheckCounter] * 2, distanceFound, 20))
+				if(!mainController.checkObstructionsPoint(danger[0][dangerCheckCounter], danger[1][dangerCheckCounter], x, y))
 				{
 					pathedToHit[pathedToHitLength] = dangerCheckCounter;
 					pathedToHitLength++;         
@@ -225,7 +197,7 @@ abstract public class Enemy extends Human
 	{
 		rads = Math.atan2(towardsY - y, towardsX - x);
 		rotation = rads * r2d;
-		if(checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 16, 4))
+		if(mainController.checkObstructions(x, y, rads, 16))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -234,7 +206,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 16, 4))
+				if(!mainController.checkObstructions(x, y,rads, 16))
 				{
 					runPathChooseCounter = 180;
 				}
@@ -242,7 +214,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 16, 4))
+					if(!mainController.checkObstructions(x, y,rads, 16))
 					{
 						runPathChooseCounter = 180;
 					}
@@ -264,7 +236,7 @@ abstract public class Enemy extends Human
 		boolean canMove = false;
 		rotation = mainController.getRandomInt(360);
 		rads = rotation / r2d;
-		if(checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 100, 4))
+		if(mainController.checkObstructions(x, y,rads, 100))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -273,7 +245,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 100, 4))
+				if(!mainController.checkObstructions(x, y,rads, 100))
 				{
 					runPathChooseCounter = 180;
 					canMove = true;
@@ -282,7 +254,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 100, 4))
+					if(!mainController.checkObstructions(x, y,rads, 100))
 					{
 						runPathChooseCounter = 180;
 						canMove = true;
@@ -290,7 +262,7 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		if(checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 40, 4))
+		if(mainController.checkObstructions(x, y,rads, 40))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -299,7 +271,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 40, 4))
+				if(!mainController.checkObstructions(x, y,rads, 40))
 				{
 					runPathChooseCounter = 180;
 				}
@@ -307,7 +279,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 40, 4))
+					if(!mainController.checkObstructions(x, y,rads, 40))
 					{
 						runPathChooseCounter = 180;
 					}

@@ -30,14 +30,21 @@ public class StartActivity extends Activity
 	protected double screenDimensionMultiplier;
 	protected int screenMinX;
 	protected int screenMinY;
-	protected int worshipApollo = 1;
-	protected int worshipPoseidon = 1;
-	protected int worshipZues = 1;
-	protected int worshipHades = 1;
-	protected int worshipHephaestus = 1;
-	protected int worshipAres = 1;
-	protected int worshipAthena = 1;
-	protected int worshipHermes = 1;
+	private int gameCurrency;
+	private int realCurrency;
+	protected int wApollo = 1;
+	protected int wPoseidon = 1;
+	protected int wZues = 1;
+	protected int wHades = 1;
+	protected int wHephaestus = 1;
+	protected int wAres = 1;
+	protected int wAthena = 1;
+	protected int wHermes = 1;
+	protected int uAmbrosia = 1;
+	protected int uArtemisArrow = 1;
+	protected int uDionysusWine = 1;
+	protected int uHestiasBlessing = 1;
+	
 	private ViewSwitcher viewSwitcher;
 	private Handler mHandler = new Handler();
 	protected boolean stickOnRight = false;
@@ -122,10 +129,16 @@ public class StartActivity extends Activity
     	viewSwitcher.addView(view);
     	viewSwitcher.showNext();
     }
-    protected void startMenu()
+    protected void startMenu(boolean wonRound)
     {
     	imageLibrary.recycleImages();
-    	menuRun.changeScreen("main");
+    	if(!wonRound)
+    	{
+        	menuRun.changeScreen("wonround");
+    	} else
+    	{
+    		menuRun.changeScreen("lostround");
+    	}
     	changeView(menuRun);
     	currentView = menuRun;
     	menuRun.gameRunning = true;
@@ -175,7 +188,7 @@ public class StartActivity extends Activity
 	protected void startMusic()
 	{
 		stopMusic();
-        backMusic= MediaPlayer.create((Context)this, R.raw.backsound);
+        backMusic= MediaPlayer.create((Context)this, R.raw.archangel);
         backMusic.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer backMusic) {
@@ -187,14 +200,14 @@ public class StartActivity extends Activity
 	protected void startStoreMusic()
 	{
 		stopMusic();
-        /*backMusic= MediaPlayer.create((Context)this, R.raw.store);
+        backMusic= MediaPlayer.create((Context)this, R.raw.heart);
         backMusic.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer backMusic) {
                 backMusic.start();
             }
         });
-        backMusic.setLooping(true);*/
+        backMusic.setLooping(true);
 	}
 	protected void playEffect(int ID)
 	{
@@ -214,12 +227,163 @@ public class StartActivity extends Activity
         	backMusic = null;
 		}
 	}
+    protected void buyGame(String toBuy)
+    {
+    	gameCurrency -= buy(toBuy, gameCurrency);
+    }
+    protected void buyReal(String toBuy)
+    {
+    	realCurrency -= buy(toBuy, realCurrency);
+    }
+	protected int buy(String toBuy, int currency)
+    {
+    	int ID = getItemID(toBuy);
+    	double cost = 0;
+    	switch (ID)
+    	{
+    	case 1:
+    		cost = Math.pow(4*wApollo, 2);
+    		if(currency>=cost)
+    		{
+    			wApollo += 0.1;
+    		}
+    		break;
+    	case 2:
+    		cost = Math.pow(4*wPoseidon, 2);
+    		if(currency>=cost)
+    		{
+    			wPoseidon += 0.1;
+    		}
+    		break;
+    	case 3:
+    		cost = Math.pow(4*wZues, 2);
+    		if(currency>=cost)
+    		{
+    			wZues += 0.1;
+    		}
+    		break;
+    	case 4:
+    		cost = Math.pow(4*wHades, 2);
+    		if(currency>=cost)
+    		{
+    			wHades += 0.1;
+    		}
+    		break;
+    	case 5:
+    		cost = Math.pow(4*wHephaestus, 2);
+    		if(currency>=cost)
+    		{
+    			wHephaestus += 0.1;
+    		}
+    		break;
+    	case 6:
+    		cost = Math.pow(4*wAres, 2);
+    		if(currency>=cost)
+    		{
+    			wAres += 0.1;
+    		}
+    		break;
+    	case 7:
+    		cost = Math.pow(4*wAthena, 2);
+    		if(currency>=cost)
+    		{
+    			wAthena += 0.1;
+    		}
+    		break;
+    	case 8:
+    		cost = Math.pow(4*wHermes, 2);
+    		if(currency>=cost)
+    		{
+    			wHermes += 0.1;
+    		}
+    		break;
+    	case 9:
+    		cost = 20;
+    		if(currency>=cost)
+    		{
+    			uAmbrosia ++;
+    		}
+    		break;
+    	case 10:
+    		cost = 20;
+    		if(currency>=cost)
+    		{
+    			uArtemisArrow ++;
+    		}
+    		break;
+		case 11:
+			cost = 20;
+    		if(currency>=cost)
+    		{
+    			uDionysusWine ++;
+    		}
+			break;
+		case 12:
+			cost = 20;
+    		if(currency>=cost)
+    		{
+    			uHestiasBlessing ++;
+    		}
+			break;
+    	}
+    	if(cost == 0)
+    	{
+    		//playEffect(R.raw.nomoney);
+    	}
+    	return (int)cost;
+    }
+    protected int getItemID(String toBuy)
+    {
+    	int ID = 0;
+    	if(toBuy.equals("wApollo"))
+    	{
+    		ID = 1;
+    	} else if(toBuy.equals("wPoseidon"))
+    	{
+    		ID = 2;
+    	} else if(toBuy.equals("wZues"))
+    	{
+    		ID = 3;
+    	} else if(toBuy.equals("wHades"))
+    	{
+    		ID = 4;
+    	} else if(toBuy.equals("wHephaestus"))
+    	{
+    		ID = 5;
+    	} else if(toBuy.equals("wAres"))
+    	{
+    		ID = 6;
+    	} else if(toBuy.equals("wAthena"))
+    	{
+    		ID = 7;
+    	} else if(toBuy.equals("wHermes"))
+    	{
+    		ID = 8;
+    	} else if(toBuy.equals("uAmbrosia"))
+    	{
+    		ID = 9;
+    	} else if(toBuy.equals("uArtemisArrow"))
+    	{
+    		ID = 10;
+    	} else if(toBuy.equals("uDionysusWine"))
+    	{
+    		ID = 11;
+    	} else if(toBuy.equals("uHestiasBlessing"))
+    	{
+    		ID = 12;
+    	}
+    	return ID;
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
     {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.start, menu);
         return true;
+    }
+    public void winFight(int difficultyLevel)
+    {
+    	
     }
     @Override
     public void onStart() {

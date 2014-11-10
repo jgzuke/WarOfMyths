@@ -387,9 +387,18 @@ public final class MenuRunner extends AllViews implements OnTouchListener
 					now = null;
 					changeScreen("main");
 				}
-			} else if(currentScreen.equals("fightdetails3"))
+			} else if(currentScreen.equals("wonround"))
 			{
-				
+				now = null;
+				changeScreen("main");
+				activity.playEffect(R.raw.pageflip);
+				invalidate();
+			} else if(currentScreen.equals("lostround"))
+			{
+				now = null;
+				changeScreen("main");
+				activity.playEffect(R.raw.pageflip);
+				invalidate();
 			}
 		}
 		return true;

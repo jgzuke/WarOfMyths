@@ -28,21 +28,21 @@ public final class PowerBall_Player extends PowerBall
 				mainController.enemies[i].incrementLevelCurrentPosition();
 				xDif = x - mainController.enemies[i].x;
 				yDif = y - mainController.enemies[i].y;
-				if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100)
+				if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 400)
 				{
 					if(mainController.player.humanType == 0)
 					{
-						mainController.enemies[i].getHit((int)(power * mainController.player.spMod*mainController.activity.worshipAres));
+						mainController.enemies[i].getHit((int)(power * mainController.player.spMod*mainController.activity.wAres));
 					}
 					else
 					{
-						mainController.enemies[i].getHit(power*mainController.activity.worshipAres);
+						mainController.enemies[i].getHit(power*mainController.activity.wAres);
 					}
 					explode();
 				}
 			}
 		}
-		if(mainController.checkHitBack(x, y))
+		if(mainController.checkHitBack(x, y) || mainController.checkHitBack(x-(xForward/2), y-(yForward/2)))
 		{
 			explode();
 		}
@@ -51,11 +51,11 @@ public final class PowerBall_Player extends PowerBall
 	{
 		if(mainController.player.humanType == 0)
 		{
-			mainController.createPowerBallPlayerAOE(x, y, (int)(power * mainController.player.spMod*mainController.activity.worshipAres));
+			mainController.createPowerBallPlayerAOE(x, y, (int)(power * mainController.player.spMod*mainController.activity.wAres));
 		}
 		else
 		{
-			mainController.createPowerBallPlayerAOE(x, y, power*mainController.activity.worshipAres);
+			mainController.createPowerBallPlayerAOE(x, y, power*mainController.activity.wAres);
 		}
 		deleted = true;
 	}

@@ -41,7 +41,7 @@ abstract public class Human extends DrawnSprite
 	}
 	protected void getHit(int damage)
 	{
-		hp -= damage;
+		hp -= damage*2;
 		if(hp < 1)
 		{
 			hp = 0;

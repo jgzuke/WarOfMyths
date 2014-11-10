@@ -64,7 +64,7 @@ public final class Enemy_Archer extends Enemy_Muggle
 			hp += 5;
 			currentFrame = 0;
 			playing = false;
-			if(mainController.getRandomInt(20) == 0)
+			if(mainController.getRandomInt(10) == 0)
 			{
 				runRandom();
 			}

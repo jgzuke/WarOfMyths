@@ -59,7 +59,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		{
 			currentFrame = 0;
 			playing = false;
-			if(mainController.getRandomInt(20) == 0)
+			if(mainController.getRandomInt(10) == 0)
 			{
 				runRandom();
 			}

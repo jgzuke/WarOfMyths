@@ -6,6 +6,7 @@ package com.example.magegame;
 public final class Player extends Human
 {
 	protected double touchY;
+	private double damageMultiplier = 1;
 	protected int rollTimer = 0;
 	private double xMoveRoll;
 	private double yMoveRoll;
@@ -19,20 +20,45 @@ public final class Player extends Human
 	private double xSave = 0;
 	private double ySave = 0;
 	protected boolean teleporting = false;
+	private boolean usedDionysusWine = false;
+	private int projectileSpeed = 10;
 	protected double touchX;
 	protected boolean touching;
 	public Player(Controller creator)
 	{
 		mainController = creator;
+		resetVariables();
+		/*if(mainController.activity.useHestiasBlessing>0)
+		{
+			mainController.activity.useHestiasBlessing --;
+			damageMultiplier /= 2;
+		}
+		if(mainController.activity.useArtemisArrow>0)
+		{
+			mainController.activity.useArtemisArrow --;
+			projectileSpeed = 17;
+		}*/
+	}
+	public void resetVariables()
+	{
+		damageMultiplier = 1;
+		rollTimer = 0;
+		sp = 0;
+		abilityTimer_roll = 0;
+		abilityTimer_teleport = 0;
+		abilityTimer_burst = 0;
+		abilityTimer_powerBall = 0;
+		teleporting = false;
+		usedDionysusWine = false;
+		projectileSpeed = 10;
+		touching = false;
 		visualImage = mainController.imageLibrary.player_Image[0];
 		setImageDimensions();
-		width = 30;
-		height = 30;
 		x = 370;
 		y = 160;
 		thisPlayer = true;
 		speedCur = 4.5;
-		hp = (int)(7000 * mainController.activity.worshipHephaestus);
+		hp = (int)(7000 * mainController.activity.wHephaestus);
 		setHpMax(hp);
 	}
 	/*
@@ -43,53 +69,57 @@ public final class Player extends Human
 	Override
 	protected void frameCall()
 	{
+		if(usedDionysusWine)
+		{
+			super.getHit(100);
+		}
 		mainController.player.sp += 0.0001;
 		spMod = 1+(sp*spChangeForType);
 		if(humanType==2)
 		{
-			speedCur = 4*Math.pow(spMod, 0.5)*Math.pow(mainController.activity.worshipHermes, 0.5);
+			speedCur = 4*Math.pow(spMod, 0.5)*Math.pow(mainController.activity.wHermes, 0.5);
 		} else
 		{
-			speedCur = 4*Math.pow(mainController.activity.worshipHermes, 0.5);
+			speedCur = 4*Math.pow(mainController.activity.wHermes, 0.5);
 		}
 		if(abilityTimer_roll < 120)
 		{
 			if(humanType==2)
 			{
-				abilityTimer_roll += spMod*mainController.activity.worshipAthena;
+				abilityTimer_roll += spMod*mainController.activity.wAthena*mainController.activity.wHermes;
 			} else
 			{
-				abilityTimer_roll += mainController.activity.worshipAthena;
+				abilityTimer_roll += mainController.activity.wAthena*mainController.activity.wHermes;
 			}
 		}
 		if(abilityTimer_teleport < 350)
 		{
 			if(humanType==2)
 			{
-				abilityTimer_teleport += spMod*mainController.activity.worshipAthena;
+				abilityTimer_teleport += spMod*mainController.activity.wAthena*mainController.activity.wHermes*2;
 			} else
 			{
-				abilityTimer_teleport += mainController.activity.worshipAthena;
+				abilityTimer_teleport += mainController.activity.wAthena*mainController.activity.wHermes*2;
 			}
 		}
 		if(abilityTimer_burst < 500)
 		{
 			if(humanType==1)
 			{
-				abilityTimer_burst += spMod*mainController.activity.worshipAthena;
+				abilityTimer_burst += spMod*mainController.activity.wAthena;
 			} else
 			{
-				abilityTimer_burst += mainController.activity.worshipAthena;
+				abilityTimer_burst += mainController.activity.wAthena;
 			}
 		}
 		if(abilityTimer_powerBall < 40)
 		{
 			if(humanType==1)
 			{
-				abilityTimer_powerBall += 3*spMod*mainController.activity.worshipAthena;
+				abilityTimer_powerBall += 3*spMod*mainController.activity.wAthena;
 			} else
 			{
-				abilityTimer_powerBall += 3*mainController.activity.worshipAthena;
+				abilityTimer_powerBall += 3*mainController.activity.wAthena;
 			}
 		}
 		rollTimer--;
@@ -141,6 +171,7 @@ public final class Player extends Human
 	}
 	protected void movement()
 	{
+		playing = true;
 		rads = Math.atan2(touchY, touchX);
 		rotation = rads * r2d;
 		x += Math.cos(rads) * speedCur;
@@ -154,7 +185,7 @@ public final class Player extends Human
 			{
 					playing = false;
 					currentFrame = 0;
-					mainController.createPowerBallPlayer(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 130, x, y);
+					mainController.createPowerBallPlayer(rotation, Math.cos(rads) * projectileSpeed, Math.sin(rads) * projectileSpeed, 130, x, y);
 					abilityTimer_powerBall -= 30;
 			}
 		} else
@@ -186,22 +217,27 @@ public final class Player extends Human
 		{
 			if(rollTimer < 0)
 			{
-				if(teleporting == false)
+				//mainController.teleportStart(x, y);
+				x += Math.cos(rads)*50;
+				y += Math.sin(rads)*50;
+				//mainController.teleportFinish(x, y);
+				abilityTimer_teleport -= 250;
+				
+				/*if(teleporting == false)
 				{
 						xSave = x;
 						ySave = y;
 						teleporting = true;
 						mainController.teleportStart(x, y);
 						x = 999999999;
-				}
-				else
+				} else
 				{
 					x = X;
 					y = Y;
 					teleporting = false;
 					mainController.teleportFinish(x, y);
 					abilityTimer_teleport -= 250;
-				}
+				}*/
 			}
 		} else
 		{
@@ -214,14 +250,14 @@ public final class Player extends Human
 		{
 			if(teleporting == false && rollTimer < 0)
 			{
-					mainController.createPowerBallPlayer(0, 10, 0, 130, x, y);
-					mainController.createPowerBallPlayer(45, 7, 7, 130, x, y);
-					mainController.createPowerBallPlayer(90, 0, 10, 130, x, y);
-					mainController.createPowerBallPlayer(135, -7, 7, 130, x, y);
-					mainController.createPowerBallPlayer(180, -10, 0, 130, x, y);
-					mainController.createPowerBallPlayer(225, -7, -7, 130, x, y);
-					mainController.createPowerBallPlayer(270, 0, -10, 130, x, y);
-					mainController.createPowerBallPlayer(315, 7, -7, 130, x, y);
+					mainController.createPowerBallPlayer(0, projectileSpeed, 0, 130, x, y);
+					mainController.createPowerBallPlayer(45, projectileSpeed*0.7, projectileSpeed*0.7, 130, x, y);
+					mainController.createPowerBallPlayer(90, 0, projectileSpeed, 130, x, y);
+					mainController.createPowerBallPlayer(135, -projectileSpeed*0.7, projectileSpeed*0.7, 130, x, y);
+					mainController.createPowerBallPlayer(180, -projectileSpeed, 0, 130, x, y);
+					mainController.createPowerBallPlayer(225, -projectileSpeed*0.7, -projectileSpeed*0.7, 130, x, y);
+					mainController.createPowerBallPlayer(270, 0, -projectileSpeed, 130, x, y);
+					mainController.createPowerBallPlayer(315, projectileSpeed*0.7, -projectileSpeed*0.7, 130, x, y);
 					abilityTimer_burst -= 400;
 			}
 		} else
@@ -241,16 +277,32 @@ public final class Player extends Human
 	@Override
 	protected void getHit(int damage)
 	{
-		if(humanType == 3)
-		{
-			damage /= spMod;
-		}
-		super.getHit(damage);
-		sp -= sp*damage/2000;
-		if(deleted)
-		{
-			mainController.activity.startMenu();
-		}
+			damage *= damageMultiplier;
+			if(humanType == 3)
+			{
+				damage /= spMod;
+			}
+			//super.getHit(damage);
+			sp -= sp*damage/2000;
+			if(deleted)
+			{
+				/*if(mainController.activity.useAmbrosia>0)
+				{
+					mainController.activity.useAmbrosia --;
+					hp = getHpMax()/2;
+					deleted = false;
+				} else if(mainController.activity.useDionysusWine>0)
+				{
+					mainController.activity.useDionysusWine --;
+					hp = getHpMax();
+					usedDionysusWine = true;
+					damageMultiplier = 0;
+					deleted = false;
+				} else
+				{*/
+					mainController.activity.startMenu(true);
+				//}
+			}
 	}
 	protected double getAbilityTimer_roll() {
 		return abilityTimer_roll;
