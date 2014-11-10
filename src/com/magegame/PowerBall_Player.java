@@ -1,6 +1,19 @@
+/**
+ * behavior for player power ball
+ */
 package com.magegame;
 public final class PowerBall_Player extends PowerBall
 {
+	/**
+	 * Sets position, speed, power, and direction of travel
+	 * @param creator control object
+	 * @param X starting x position
+	 * @param Y starting y position
+	 * @param Power power bolt was fired with
+	 * @param Xforward bolts x velocity
+	 * @param Yforward bolts y velocity
+	 * @param Rotation bolts direction of travel
+	 */
 	protected PowerBall_Player(Controller creator, int X, int Y, int Power, double Xforward, double Yforward, double Rotation)
 	{
 		control = creator;
@@ -14,27 +27,18 @@ public final class PowerBall_Player extends PowerBall
 		setImageDimensions();
 		power = Power;
 		rotation = Rotation;
-	}@
-	Override
+	}
+	/**
+	 * checks whether power ball hits any enemies
+	 */
+	@ Override
 	protected void frameCall()
 	{
 		super.frameCall();
 		if(control.checkHitBack(x, y) || control.checkHitBack(x-(xForward/2), y-(yForward/2)) && !deleted)
 		{
 			explodeBack();
-			if(control.playerType==0)
-			{
-				control.activity.playEffect("burn");
-			} else if(control.playerType==1)
-			{
-				control.activity.playEffect("water");
-			} else if(control.playerType==2)
-			{
-				control.activity.playEffect("electric");
-			} else
-			{
-				control.activity.playEffect("earth");
-			}
+			control.activity.playPlayerEffect();
 		}
 		if(control.enemyInView(x, y))
 		{
@@ -46,21 +50,9 @@ public final class PowerBall_Player extends PowerBall
 					control.enemies[i].incrementLevelCurrentPosition();
 					xDif = x - control.enemies[i].x;
 					yDif = y - control.enemies[i].y;
-					if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 400)
+					if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 600)
 					{
-						if(control.playerType==0)
-						{
-							control.activity.playEffect("burn");
-						} else if(control.playerType==1)
-						{
-							control.activity.playEffect("water");
-						} else if(control.playerType==2)
-						{
-							control.activity.playEffect("electric");
-						} else
-						{
-							control.activity.playEffect("earth");
-						}
+						control.activity.playPlayerEffect();
 						power*=Math.pow((double)control.activity.wAres/10, 0.5);
 						if(control.player.humanType == 0)
 						{
@@ -73,6 +65,9 @@ public final class PowerBall_Player extends PowerBall
 			}
 		}
 	}
+	/**
+	 * explodes power ball when it hits back
+	 */
 	public void explodeBack()
 	{
 		x -= xForward;
@@ -80,6 +75,9 @@ public final class PowerBall_Player extends PowerBall
 		control.createPowerBallPlayerAOE(x, y, 10);
 		deleted = true;
 	}
+	/**
+	 * explodes power ball when it hits enemy
+	 */
 	public void explode()
 	{
 		control.createPowerBallPlayerAOE(x, y, power);

@@ -1,3 +1,6 @@
+/**
+ * behavior for all sprites
+ */
 package com.magegame;
 
 abstract public class Sprite
@@ -12,30 +15,8 @@ abstract public class Sprite
 	protected boolean deleted = false;
 	public Sprite()
 	{}
+	/**
+	 * called every frame, performs desired actions
+	 */
 	abstract protected void frameCall();
-	protected double getX() {
-		return x;
-	}
-	protected double getY() {
-		return y;
-	}
-	protected void setX(double x) {
-		this.x = x;
-	}
-	protected void setY(double y) {
-		this.y = y;
-	}
-	protected double getRotation() {
-		return rotation;
-	}
-	protected double getWidth() {
-		return width;
-	}
-	protected double getHeight() {
-		return height;
-	}
-	protected boolean isDeleted() {
-		return deleted;
-	}
-	
 }

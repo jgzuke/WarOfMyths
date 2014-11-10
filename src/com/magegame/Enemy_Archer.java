@@ -1,28 +1,27 @@
-/*
-, * Main enemy ai, cooldowns stats etc
- * @param reactionTimeRating how many frames the enemy takes to react to certain scenarios
- * @param playerAreaProtected whether or not the player is in a mostly enclosed area
- * @param enemyAreaProtected whether or not the main enemy is in a mostly enclosed area
+/**
+ * AI and variables for archers
  */
 package com.magegame;
 
 public final class Enemy_Archer extends Enemy_Muggle
 {
 	private double projectileVelocity;
+	/**
+	 * Sets health, worth, and image
+	 * @param creator control object
+	 * @param setX starting x position
+	 * @param setY starting y position
+	 */
 	public Enemy_Archer(Controller creator, int setX, int setY)
 	{
-		super(creator, setX, setY);
+		super(creator, setX, setY); //sets x, y and creator
 		visualImage = control.imageLibrary.archer_Image[0];
 		setImageDimensions();
-		hp = (int)(3000 * control.getDifficultyLevelMultiplier());
+		hp = (int)(3000);// * control.getDifficultyLevelMultiplier());
 		setHpMax(hp);
 		worth = 4;
 		weight = 1;
 	}
-	/*
-	 * Replenishes stats, counts down timers, and checks los etc
-	 * @see com.example.magegame.Enemy#frameCall()
-	 */
 	@
 	Override
 	protected void frameCall()
@@ -36,18 +35,17 @@ public final class Enemy_Archer extends Enemy_Muggle
 		}
 		super.frameCall();
 	}
-	@
-	Override
+	@ Override
 	protected void frameReactionsDangerLOS()
 	{
 		frameReactionsNoDangerLOS();
 	}
-	@Override
+	@ Override
 	protected void frameReactionsDangerNoLOS()
 	{
 		frameReactionsNoDangerNoLOS();
 	}
-	@	Override
+	@ Override
 	protected void frameReactionsNoDangerLOS()
 	{
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
@@ -86,8 +84,8 @@ public final class Enemy_Archer extends Enemy_Muggle
 			runTowardPlayer();
 		}
 	}
-	/*
-	 * Releases stored powerBall towards player
+	/**
+	 * Releases arrow towards player
 	 */
 	protected void shoot()
 	{
@@ -96,16 +94,8 @@ public final class Enemy_Archer extends Enemy_Muggle
 			timeToHit *= (control.getRandomDouble()*0.7)+0.4;
 			double newPX;
 			double newPY;
-			if(control.player.isTeleporting())
-			{
-				newPX = control.player.getXSave();
-				newPY = control.player.getYSave();
-			}
-			else
-			{
 				newPX = control.player.x+(pXVelocity*timeToHit);
 				newPY = control.player.y+(pYVelocity*timeToHit);
-			}
 			double xDif = newPX-x;
 			double yDif = newPY-y;
 			rads = Math.atan2(yDif, xDif);
@@ -113,7 +103,6 @@ public final class Enemy_Archer extends Enemy_Muggle
 			control.createCrossbowBolt(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
 			control.activity.playEffect("arrowrelease");
 	}
-	
 	@Override
 	protected void stun(int time) {
 		

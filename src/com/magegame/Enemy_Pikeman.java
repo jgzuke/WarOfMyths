@@ -1,15 +1,21 @@
-/*
+/**
  * Specific object behavior and ai for pikemen
  */
 package com.magegame;
 public final class Enemy_Pikeman extends Enemy_Muggle
 {
+	/**
+	 * Sets health, weight, and image
+	 * @param creator control object
+	 * @param setX starting x position
+	 * @param setY starting y position
+	 */
 	public Enemy_Pikeman(Controller creator, double setX, double setY)
 	{
 		super(creator, setX, setY);
 		visualImage = control.imageLibrary.pikeman_Image[0];
 		setImageDimensions();
-		hp = (int)(4000 * control.getDifficultyLevelMultiplier());
+		hp = (int)(4500);//  * control.getDifficultyLevelMultiplier());
 		setHpMax(hp);
 		weight = 1.5;
 	}@

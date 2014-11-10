@@ -1,3 +1,6 @@
+/**
+ * behavior for circular walls
+ */
 package com.magegame;
 public class Wall_Circle extends Wall
 {
@@ -9,6 +12,15 @@ public class Wall_Circle extends Wall
 	private double oCRatio;
 	private double oCRS;
 	private double rads;
+	/**
+	 * sets variables and stores some in control object array
+	 * @param creator control object
+	 * @param OCX x value
+	 * @param OCY y value
+	 * @param OCR radius
+	 * @param OCRatio ratio between x and y
+	 * @param Tall whether or not the wall is tall enough to stop projectiles
+	 */
 	public Wall_Circle(Controller creator, int OCX, int OCY, int OCR, double OCRatio, boolean Tall)
 	{
 		tall = Tall;
@@ -17,22 +29,19 @@ public class Wall_Circle extends Wall
 		oCR = OCR;
 		oCRatio = OCRatio;
 		control = creator;
-		control.setOCircXAll(control.getCurrentCircleAll(), OCX);
-		control.setOCircYAll(control.getCurrentCircleAll(), OCY);
-		control.setOCircRadiusAll(control.getCurrentCircleAll(), OCR);
-		control.setOCircRatioAll(control.getCurrentCircleAll(), OCRatio);
+		control.setOCircAll(control.getCurrentCircleAll(), OCX, OCY, OCR, OCRatio);
 		control.incrementCurrentCircleAll();
 		if(tall)
 		{
-			control.setOCircX(control.getCurrentCircle(), OCX);
-			control.setOCircY(control.getCurrentCircle(), OCY);
-			control.setOCircRadius(control.getCurrentCircle(), OCR);
-			control.setOCircRatio(control.getCurrentCircle(), OCRatio);
+			control.setOCirc(control.getCurrentCircle(), OCX, OCY, OCR, OCRatio);
 			control.incrementCurrentCircle();
 		}
 		oCR += humanWidth;
 		oCRS = Math.pow(oCR, 2);
 	}
+	/**
+	 * checks whether wall hits player or enemies
+	 */
 	@ Override
 	protected void frameCall()
 	{

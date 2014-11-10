@@ -1,17 +1,25 @@
-/*
- * Specific object behavior and ai for pikemen
+/**
+ * Target behavior and variables
  */
 package com.magegame;
 public final class Enemy_Target extends Enemy_Muggle
 {
 	protected int timer = 10;
 	protected boolean shooting;
+	/**
+	 * Sets all variables for target
+	 * @param creator control object
+	 * @param setX starting x position
+	 * @param setY starting y position
+	 * @param Rotation rotation of target
+	 * @param Shooting whether target is shooting
+	 */
 	public Enemy_Target(Controller creator, double setX, double setY, double Rotation, boolean Shooting)
 	{
 		super(creator, setX, setY);
 		visualImage = control.imageLibrary.target_Image;
 		setImageDimensions();
-		hp = (int)(6000);
+		hp = (int)(3000);
 		setHpMax(hp);
 		rotation = Rotation;
 		shooting = Shooting;

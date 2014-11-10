@@ -1,4 +1,4 @@
-/*
+/**
  * Main enemy ai, cooldowns stats etc
  * @param reactionTimeRating how many frames the enemy takes to react to certain scenarios
  * @param playerAreaProtected whether or not the player is in a mostly enclosed area
@@ -30,6 +30,12 @@ public final class Enemy_Mage extends Enemy
 	private double teleportAwayChooseDistance;
 	private double teleportAwayChooseX;
 	private double teleportAwayChooseY;
+	/**
+	 * sets weight, worth, position, image, and health
+	 * @param creator control object
+	 * @param setX starting x position
+	 * @param setY starting y position
+	 */
 	public Enemy_Mage(Controller creator, int setX, int setY)
 	{
 		super(creator);
@@ -41,14 +47,13 @@ public final class Enemy_Mage extends Enemy
 		y = setY;
 		lastPlayerX = x;
 		lastPlayerY = y;
-		hp = (int)(3000 * control.getDifficultyLevelMultiplier());
+		hp = (int)(2500);//  * control.getDifficultyLevelMultiplier());
 		setHpMax(hp);
 		worth = 6;
 		weight = 0.8;
 	}
-	/*
+	/**
 	 * Replenishes stats, counts down timers, and checks los etc
-	 * @see com.example.magegame.Enemy#frameCall()
 	 */
 	@
 	Override
@@ -63,9 +68,9 @@ public final class Enemy_Mage extends Enemy
 		{
 			abilityTimer_burst += control.getDifficultyLevelMultiplier();
 		}
-		if(abilityTimer_powerBall < 40)
+		if(abilityTimer_powerBall < 90)
 		{
-			abilityTimer_powerBall += 2*Math.pow(control.getDifficultyLevelMultiplier(), 0.5);
+			abilityTimer_powerBall += 3*Math.pow(control.getDifficultyLevelMultiplier(), 0.5);
 		}
 		if(currentFrame == 30)
 		{
@@ -76,8 +81,22 @@ public final class Enemy_Mage extends Enemy
 		{
 			enemyAreaProtected = checkAreaProtected(x, y);
 		}
-		x += Math.cos(rotation/r2d) * speedCur;
-		y += Math.sin(rotation/r2d) * speedCur;
+		if(rollTimer < 1)
+		{
+			if(getRunTimer()>0)
+			{
+				x += Math.cos(rotation/r2d) * speedCur;
+				y += Math.sin(rotation/r2d) * speedCur;
+			} else
+			{
+				currentFrame = 0;
+				playing = false;
+				if(control.getRandomInt(10) == 0)
+				{
+					runRandom();
+				}
+			}
+		}
 		if(rollTimer < 1 && reactTimer < 1)
 		{
 			if(getCheckLOSTimer() < 1)
@@ -139,7 +158,7 @@ public final class Enemy_Mage extends Enemy
 		}
 		super.frameCall();
 	}
-	/*
+	/**
 	 * Starts counting timer until the specific reaction is performed
 	 */
 	protected void setReactTimer()
@@ -153,7 +172,7 @@ public final class Enemy_Mage extends Enemy
 			reactTimer = reactionTimeRating + 10;
 		}
 	}
-	/*
+	/**
 	 * Converts reactions from Strings to integers so they can be switched through (strings were used to make code more understandable)
 	 * @return Returns reaction as an integer
 	 */
@@ -168,8 +187,8 @@ public final class Enemy_Mage extends Enemy
 		if(reaction.equalsIgnoreCase("Run Away")) react = 6;
 		if(reaction.equalsIgnoreCase("Power Burst")) react = 7;
 		return react;
-	}@
-	Override
+	}
+	@ Override
 	protected void frameReactionsDangerLOS()
 	{
 		distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
@@ -242,7 +261,7 @@ public final class Enemy_Mage extends Enemy
 			}
 		} else
 		{
-			if(playerDistance < 110)
+			if(playerDistance < 90)
 			{
 				if(abilityTimer_burst > 400)
 				{
@@ -264,14 +283,14 @@ public final class Enemy_Mage extends Enemy
 	@Override
 	protected void frameReactionsNoDangerNoLOS()
 	{		
-			currentFrame = 0;
+			/*currentFrame = 0;
 			playing = false;
 			if(control.getRandomInt(10) == 0)
 			{
 				runRandom();
-			}
+			}*/
 	}
-	/*
+	/**
 	 * Checks whether the point given is in a mostly enclosed area
 	 * @return returns whether point is protected
 	 */
@@ -296,7 +315,7 @@ public final class Enemy_Mage extends Enemy
 		}
 		return areaProtected;
 	}
-	/*
+	/**
 	 * Rolls away from player
 	 */
 	protected void rollAway()
@@ -334,7 +353,7 @@ public final class Enemy_Mage extends Enemy
 			}
 		}
 	}
-	/*
+	/**
 	 * Rolls towards player
 	 */
 	protected void rollTowards()
@@ -343,7 +362,7 @@ public final class Enemy_Mage extends Enemy
 		rotation = rads * r2d;
 		roll();
 	}
-	/*
+	/**
 	 * Rolls as close to perpendicular as possible to the player
 	 */
 	protected void rollSideways()
@@ -389,7 +408,7 @@ public final class Enemy_Mage extends Enemy
 			}
 		}
 	}
-	/*
+	/**
 	 * Rolls in the current direction to enemy is rotated
 	 */
 	protected void roll()
@@ -400,6 +419,9 @@ public final class Enemy_Mage extends Enemy
 		xMoveRoll = Math.cos(rads) * 8;
 		yMoveRoll = Math.sin(rads) * 8;
 	}
+	/**
+	 * Enemy mage burst attack, same as players, creates AOE's at certain times after casting
+	 */
 	private void burst()
 	{
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
@@ -415,8 +437,8 @@ public final class Enemy_Mage extends Enemy
 		control.activity.playEffect("burst");
 		control.activity.playEffect("electric");
 	}
-	/*
-	 * Releases stored powerBall towards player
+	/**
+	 * Releases powerBall towards player
 	 */
 	protected void releasePowerBall()
 	{
@@ -427,29 +449,21 @@ public final class Enemy_Mage extends Enemy
 			timeToHit *= (control.getRandomDouble()*0.7)+0.4;
 			double newPX;
 			double newPY;
-			if(control.player.isTeleporting())
-			{
-				newPX = control.player.getXSave();
-				newPY = control.player.getYSave();
-			}
-			else
-			{
 				newPX = control.player.x+(pXVelocity*timeToHit);
 				newPY = control.player.y+(pYVelocity*timeToHit);
-			}
 			double xDif = newPX-x;
 			double yDif = newPY-y;
 			rads = Math.atan2(yDif, xDif);
 			rads += 0.2*(0.5-control.getRandomDouble())/Math.pow(control.getDifficultyLevelMultiplier(), 2);
-			control.createPowerBallEnemy(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
-			abilityTimer_powerBall -= 25;
+			control.createPowerBallEnemy(rads*r2d, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
+			abilityTimer_powerBall -= 30;
 			control.activity.playEffect("shoot");
 			minimumShootTime = 2;
 		}
 	}
 	
-	/*
-	 * Acts out stored reaction
+	/**
+	 * Acts on stored reaction
 	 */
 	protected void react()
 	{
@@ -483,6 +497,9 @@ public final class Enemy_Mage extends Enemy
 			break;
 		}
 	}
+	/**
+	 * Stuns enemy
+	 */
 	protected void stun()
 	{
         rotation =rads * r2d + 180;
@@ -493,15 +510,31 @@ public final class Enemy_Mage extends Enemy
         currentFrame = 0;                                 
         reactTimer = 0;
 	}
+	/**
+	 * returns reaction timer
+	 * @return reactTimer
+	 */
 	protected int getReactTimer() {
 		return reactTimer;
 	}
+	/**
+	 * returns xMoveRoll
+	 * @return xMoveRoll
+	 */
 	protected double getXMoveRoll() {
 		return xMoveRoll;
 	}
+	/**
+	 * returns yMoveRoll
+	 * @return yMoveRoll
+	 */
 	protected double getYMoveRoll() {
 		return yMoveRoll;
 	}
+	/**
+	 * sets rolltimer
+	 * @param rollTimer
+	 */
 	protected void setRollTimer(int rollTimer) {
 		this.rollTimer = rollTimer;
 	}

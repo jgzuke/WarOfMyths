@@ -1,12 +1,18 @@
-/*
+/**
  * Object behavior and ai for enemies with sheilds
  */
 package com.magegame;
 abstract public class Enemy_Shield extends Enemy_Muggle
 {
+	/**
+	 * Calls super
+	 * @param creator control object
+	 * @param setX starting x position
+	 * @param setY starting y position
+	 */
 	public Enemy_Shield(Controller creator, double setX, double setY)
 	{
-		super(creator, setX, setY);
+		super(creator, setX, setY); //sets x, y and creator
 	}@
 	Override
 	protected void frameCall()
@@ -27,7 +33,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		super.frameCall();
 	}@
 	Override
-	protected void getHit(int damage)
+	protected void getHit(double damage)
 	{
 		if(currentFrame > 46) damage /= 8;
 		super.getHit(damage);
@@ -72,9 +78,9 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	Override
 	protected void frameReactionsNoDangerLOS()
 	{
-		rads = Math.atan2((control.getPlayerY() - y), (control.getPlayerX() - x));
+		rads = Math.atan2(( control.player.y - y), (control.player.x - x));
 		rotation = rads * r2d;
-		distanceFound = checkDistance(x, y, control.getPlayerX(), control.getPlayerY());
+		distanceFound = checkDistance(x, y, control.player.x,  control.player.y);
 		if(distanceFound < 40)
 		{
 			attacking = true;

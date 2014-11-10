@@ -1,4 +1,4 @@
-/*
+/**
  * Loads, stores and resizes all graphics
  */
 package com.magegame;
@@ -31,10 +31,10 @@ public final class ImageLibrary
 	protected Bitmap[] powerBall_ImageEnemy = new Bitmap[5];
 	protected Bitmap powerBallAOE_ImageEnemy;
 	protected Bitmap[] teleport_Image = new Bitmap[15];
-	protected Bitmap[] warnings = new Bitmap[2];
 	protected Bitmap[] powerUps = new Bitmap[9];
 	protected Bitmap[] powerUpBigs = new Bitmap[4];
 	protected Bitmap[] coins = new Bitmap[2];
+	protected Bitmap[] trans = new Bitmap[10];
 	protected Bitmap arrow;
 	protected Bitmap levelLocked;
 	protected Bitmap currentLevel;
@@ -46,8 +46,11 @@ public final class ImageLibrary
 	protected String packageName;
 	private Controller control;
 	protected BitmapFactory.Options opts;
-	/*
-	 * Loads all images needed for every game
+	protected Bitmap transattack;
+	/**
+	 * loads in images and optimizes settings for loading
+	 * @param contextSet start activity for getting resources etc
+	 * @param controlSet control object
 	 */
 	public ImageLibrary(Context contextSet, Controller controlSet)
 	{
@@ -61,24 +64,72 @@ public final class ImageLibrary
 		control = controlSet;
 		loadAllImages();
 	}
+	/**
+	 * loads players current animation
+	 */
 	protected void loadPlayerImage()
 	{
-		//player_Image = loadArray1D(31, "human_playerzack", 32, 36);
-		//player_Image = loadArray1D(31, "human_playerleather", 32, 36);
-		//player_Image = loadArray1D(31, "human_playerbarbarian", 32, 36);
-		//player_Image = loadArray1D(31, "human_playergolden", 32, 36);
-		player_Image = loadArray1D(31, "human_playercleric", 32, 36);
+		switch(control.activity.currentSkin)
+		{
+			case 0: player_Image = loadArray1D(31, "human_playerzack", 32, 36);
+				break;
+			case 1: player_Image = loadArray1D(31, "human_playergolden", 32, 36);
+				break;
+			case 2: player_Image = loadArray1D(31, "human_playerleather", 32, 36);
+				break;
+			case 3: player_Image = loadArray1D(31, "human_playerbarbarian", 32, 36);
+				break;
+			case 4: player_Image = loadArray1D(31, "human_playercleric", 32, 36);
+				break;
+			case 5: player_Image = loadArray1D(31, "human_playerent", 80, 76);
+				break;
+			case 6: player_Image = loadArray1D(31, "human_playergargoyle", 60, 69);
+				break;
+			case 7: player_Image = loadArray1D(31, "human_playerdragon", 32, 36);
+				break;
+			default: player_Image = loadArray1D(31, "human_playerzack", 32, 36);
+				break;
+		}
 	}
+	/**
+	 * load transformation background
+	 */
+	protected void loadTrans()
+	{
+		String temp;
+		if(control.player.transformed==1)
+		{
+			transattack = loadImage("attacksword", 66, 66);
+		} else
+		{
+			transattack = loadImage("attackhammer", 66, 66);
+		}
+		switch(control.playerType)
+		{
+			case 0: temp = "fire";
+				break;
+			case 1: temp = "water";
+				break;
+			case 2: temp = "electric";
+				break;
+			case 3: temp = "earth";
+				break;
+			default: temp = "fire";
+				break;
+		}
+		trans = loadArray1D(10, "human_trans"+temp, 119, 119);
+	}
+	/**
+	 * loads all required images for all games
+	 */
 	protected void loadAllImages()
 	{
 		exitFightPortal = loadImage("exitfightportal", 60, 60);
 		levelLocked = loadImage("menu_levellocked", 30, 30);
 		mage_Image = loadArray1D(31, "human_mage", 30, 30);
-		warnings[0] = loadImage("warn0001", 147, 27);
-		warnings[1] = loadImage("warn0002", 205, 27);
 		loadPlayerImage();
 		powerUps = loadArray1D(10, "powerup", 30, 30);
-		powerUpBigs = loadArray1D(5, "powerupbig", 50, 50);
+		powerUpBigs = loadArray1D(5, "powerupbig", 70, 70);
 		coins = loadArray1D(2, "menu_coin", 30, 30);
 		target_Image = loadImage("human_target", 48, 53);
 		teleport_Image = loadArray1D(9, "teleport", 60, 21);
@@ -93,6 +144,12 @@ public final class ImageLibrary
 		//loadSpriteImages();
 		changeArrayLoaded("swordsman", true);
 	}
+	/**
+	 * loads level image layers and background image
+	 * @param levelNum level to load
+	 * @param width width of level
+	 * @param height height of level
+	 */
 	protected void loadLevel(int levelNum, int width, int height)
 	{
 		if(currentLevel!= null)
@@ -130,11 +187,17 @@ public final class ImageLibrary
 			toTile = loadImage("level_tile0004", 90, 90);
 		}
 	}
+	/**
+	 * loads powerball of players type
+	 */
 	protected void loadPlayerPowerBall()
 	{
 		powerBallAOE_ImagePlayer = loadImage("powerballaoe000"+Integer.toString(control.playerType+1), 80, 80);
 		powerBall_ImagePlayer = loadArray1D(5, "powerball000"+Integer.toString(control.playerType+1)+"_", 42, 18);
 	}
+	/**
+	 * loads enemies in each level if app is exited and reentered
+	 */
 	protected void loadSpriteImages()
 	{
 		if(control != null)
@@ -182,6 +245,9 @@ public final class ImageLibrary
 				}
 		}
 	}
+	/**
+	 * recycles images to save memory
+	 */
 	protected void recycleImages()
 	{
 		if(currentLevel != null)
@@ -196,7 +262,6 @@ public final class ImageLibrary
 		}
 		recycleArray(31, mage_Image);
 		recycleArray(31, player_Image);
-		recycleArray(2, warnings);
 		recycleArray(5, powerUpBigs);
 		recycleArray(10, powerUps);
 		recycleArray(4, effects);
@@ -208,6 +273,11 @@ public final class ImageLibrary
 		changeArrayLoaded("swordsman", false);
 		changeArrayLoaded("rogue", false);
 	}
+	/**
+	 * recycles desired array of images
+	 * @param length length of array
+	 * @param array array to recycle
+	 */
 	protected void recycleArray(int length, Bitmap[] array)
 	{
 		for(int i = 0; i < length; i++)
@@ -219,7 +289,7 @@ public final class ImageLibrary
 			}
 		}
 	}
-	/*
+	/**
 	 * Loads or recycles a human animation array
 	 * @param toChange Which human to either load or recycle
 	 * @param loading Whether to load or not
@@ -303,7 +373,7 @@ public final class ImageLibrary
 			}
 		}
 	}
-	/*
+	/**
 	 * Loads and resizes array of images
 	 * @param length Length of array to load
 	 * @param start Starting string which precedes array index to match resource name
@@ -320,7 +390,7 @@ public final class ImageLibrary
 		}
 		return newArray;
 	}
-	/*
+	/**
 	 * Adds 0's before string to make it four digits long
 	 * Animations done in flash which when exporting .png sequence end file name with four character number
 	 * @return Returns four character version of number
@@ -334,7 +404,7 @@ public final class ImageLibrary
 		}
 		return end;
 	}
-	/*
+	/**
 	 * Loads image of name given from resources and scales to specified width and height
 	 * @return Returns bitmap loaded and resized
 	 */

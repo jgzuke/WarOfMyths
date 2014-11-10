@@ -1,12 +1,26 @@
+/**
+ * behavior for enemy power ball explosion
+ */
 package com.magegame;
 public final class PowerBallAOE_Enemy extends PowerBallAOE
 {
+	/**
+	 * sets image
+	 * @param creator control object
+	 * @param X starting x coordinate
+	 * @param Y starting y coordinate
+	 * @param Power power or size to start at
+	 * @param Shrinking whether it is shrinking or growing
+	 */
 	public PowerBallAOE_Enemy(Controller creator, int X, int Y, double Power, boolean Shrinking)
 	{
 		super(creator, X, Y, Power, Shrinking);
 		visualImage = control.imageLibrary.powerBallAOE_ImageEnemy;
-	}@
-	Override
+	}
+	/**
+	 * checks whether it damages player
+	 */
+	@ Override
 	protected void frameCall()
 	{
 		super.frameCall();
@@ -20,6 +34,9 @@ public final class PowerBallAOE_Enemy extends PowerBallAOE
 			}
 		}
 	}
+	/**
+	 * if is is shrinking, explode creates more growing ones at certain points in time
+	 */
 	@ Override
 	protected void explode(int power)
 	{

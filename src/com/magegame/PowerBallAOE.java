@@ -1,3 +1,6 @@
+/**
+ * behavior for all AOE effects
+ */
 package com.magegame;
 abstract public class PowerBallAOE extends DrawnSprite
 {
@@ -10,6 +13,14 @@ abstract public class PowerBallAOE extends DrawnSprite
 	protected int alphaDown;
 	protected int timeToDeath;
 	protected boolean damaging = true;
+	/**
+	 * sets position, size, and behaviors
+	 * @param creator control object
+	 * @param X starting x coordinate
+	 * @param Y starting y coordinate
+	 * @param Power power or size to start at
+	 * @param Shrinking whether it is shrinking or growing
+	 */
 	public PowerBallAOE(Controller creator, int X, int Y, double Power, boolean Shrinking)
 	{
 		normal = Shrinking;
@@ -28,6 +39,9 @@ abstract public class PowerBallAOE extends DrawnSprite
 		}
 		alphaDown = (int)(254/timeToDeath);
 	}
+	/**
+	 * changes width and explodes at certain intervals
+	 */
 	@ Override
 	protected void frameCall()
 	{
@@ -57,15 +71,29 @@ abstract public class PowerBallAOE extends DrawnSprite
 		}
 		widthDone = 7.5 + (width / 2);
 	}
+	/**
+	 * returns alpha value
+	 * @return alpha value
+	 */
 	protected byte getAlpha() {
 		return alpha;
 	}
+	/**
+	 * if is is shrinking, explode creates more growing ones at certain points in time
+	 * @param power power to explode with
+	 */
 	abstract protected void explode(int power);
-	@ Override
+	/**
+	 * returns 1.5 of width
+	 * @return 1.5 of width
+	 */
 	protected double getWidth() {
 		return width*1.5;
 	}
-	@ Override
+	/**
+	 * returns 1.5 of height
+	 * @return 1.5 of height
+	 */
 	protected double getHeight() {
 		return height*1.5;
 	}

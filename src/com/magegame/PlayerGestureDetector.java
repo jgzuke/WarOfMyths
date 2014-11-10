@@ -1,3 +1,6 @@
+/**
+ * detects gestures and clicks
+ */
 package com.magegame;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,6 +21,10 @@ public class PlayerGestureDetector implements OnTouchListener {
 	private boolean startDragMusic = false;
 	private boolean startDragEffect = false;
 	private int touchingShootID = 0;
+	/**
+	 * sets screen dimensions and checks current option settings
+	 * @param mainSet control object
+	 */
 	public PlayerGestureDetector(Controller mainSet)
 	{
 		control = mainSet;
@@ -26,6 +33,9 @@ public class PlayerGestureDetector implements OnTouchListener {
 		screenMinY = mainSet.screenMinY;
 		getSide();
 	}
+	/**
+	 * checks which side of screen each joystick is on
+	 */
 	protected void getSide()
 	{
 		if(control.activity.stickOnRight)
@@ -36,10 +46,17 @@ public class PlayerGestureDetector implements OnTouchListener {
 			buttonShiftX = 390;
 		}
 	}
+	/**
+	 * sets player as controls player object
+	 * @param playerSet
+	 */
 	protected void setPlayer(Player playerSet)
 	{
 		player = playerSet;
 	}
+	/**
+	 * decides which gesture capture is appropriate to call, drags or changes to position are done here
+	 */
 	@Override
     public boolean onTouch(View v, MotionEvent e) {
 			actionMask = e.getActionMasked();
@@ -50,23 +67,31 @@ public class PlayerGestureDetector implements OnTouchListener {
 		        case MotionEvent.ACTION_MOVE:
 		            if(player.touching)
 		            {
-		            	player.touchX = visualX(e.getX(trackingId))-(427-buttonShiftX);
-		            	player.touchY = visualY(e.getY(trackingId))-267;
-		            	if(Math.abs(player.touchX)<10)
-		            	{
-		            		player.touchX=0;
-		            	}
-		            	if(Math.abs(player.touchY)<10)
-		            	{
-		            		player.touchY=0;
-		            	}
+			            player.touchX = visualX(e.getX(trackingId))-(427-buttonShiftX);
+			            player.touchY = visualY(e.getY(trackingId))-267;
+			            if(Math.abs(player.touchX)<10)
+			            {
+			            	player.touchX=0;
+			            }
+			            if(Math.abs(player.touchY)<10)
+			            {
+			            	player.touchY=0;
+			            }
 		            }
 		            if(player.touchingShoot)
 		            {
+		            	//TODO
 		            	if(control.activity.shootTapDirectional)
 		            	{
-		            		player.touchShootY = visualY(e.getY(touchingShootID))-267;
-		            		player.touchShootX = visualX(e.getX(touchingShootID))-(53+(buttonShiftX*0.95897));
+		            		if(!control.activity.shootTapScreen)
+			            	{
+			            		player.touchShootY = visualY(e.getY(touchingShootID))-267;
+			            		player.touchShootX = visualX(e.getX(touchingShootID))-(53+(buttonShiftX*0.95897));
+			            	} else
+			            	{
+			            		player.touchShootY = screenY(e.getY(touchingShootID))-player.y;
+			            		player.touchShootX = screenX(e.getX(touchingShootID))-player.x;
+			            	}
 		            	}
 		            }
 		            if(control.gamePaused&&control.currentPause.equals("options"))
@@ -127,6 +152,13 @@ public class PlayerGestureDetector implements OnTouchListener {
 		        }
 		        return true;
     }
+	/**
+	 * all taps are handled here
+	 * @param x x position of click
+	 * @param y y position of click
+	 * @param ID id of click pointer
+	 * @param firstPointer whether this pointer is the only one on screen
+	 */
 	protected void clickDown(float x, float y, int ID, boolean firstPointer)
 	{
 		if(control.gamePaused)
@@ -167,6 +199,9 @@ public class PlayerGestureDetector implements OnTouchListener {
 			} else if(control.currentPause.equals("buypremium"))
 			{
 				clickDownBuyPremium(x, y);
+			} else if(control.currentPause.equals("buyskins"))
+			{
+				clickDownBuySkins(x, y);
 			}
 		} else
 		{
@@ -176,24 +211,47 @@ public class PlayerGestureDetector implements OnTouchListener {
 				{
 					clickDownNotPaused(x, y, ID, firstPointer);
 				}
-			} else
+			}
+			if(!clickDownNotPaused(x, y, ID, firstPointer))
 			{
-				clickDownNotPaused(x, y, ID, firstPointer);
+				if(player.transformed == 0)
+				{
+					clickDownNotPausedNormal(x, y, ID, firstPointer);
+				} else if(player.transformed == 1&&control.levelNum!=10)
+				{
+					clickDownNotPausedGolem(x, y, ID, firstPointer);
+				} else if(player.transformed == 2&&control.levelNum!=10)
+				{
+					clickDownNotPausedHammer(x, y, ID, firstPointer);
+				}
 			}
 		}
 	}
+	/**
+	 * checks whether the back button was pressed
+	 * @param x x value of click
+	 * @param y y value of click
+	 * @return whether back was clicked
+	 */
 	protected boolean pressedBack(float x, float y)
 	{
 		boolean pressed = false;
 		if(control.pointOnSquare(x, y, 430, 0, 480, 50)&&control.activity.stickOnRight)
         {
 			pressed = true;
+			control.activity.playEffect("pageflip");
         } else if(control.pointOnSquare(x, y, 0, 0, 50, 50)&&!control.activity.stickOnRight)
         {
         	pressed = true;
+        	control.activity.playEffect("pageflip");
         }
 		return pressed;
 	}
+	/**
+	 * checks clicks when in the buy specific gold item screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownBuy(float x, float y)
 	{
 		if(control.pointOnSquare(x, y, 66, 231, 214, 276)&&control.activity.canBuyGame(control.buyingItem))
@@ -223,6 +281,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
         }
 	}
+	/**
+	 * checks clicks when in the buy cash screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownBuyCash(float x, float y)
 	{
 		if(control.pointOnSquare(x, y, 20, 110, 130, 290))
@@ -230,13 +293,13 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.activity.buyRealCurrency100();
 		} else if(control.pointOnSquare(x, y, 130, 110, 240, 290))
 		{
-			control.activity.buyRealCurrency100();
+			control.activity.buyRealCurrency250();
 		} else if(control.pointOnSquare(x, y, 240, 110, 350, 290))
 		{
-			control.activity.buyRealCurrency100();
+			control.activity.buyRealCurrency1000();
 		} else if(control.pointOnSquare(x, y, 350, 110, 460, 290))
 		{
-			control.activity.buyRealCurrency100();
+			control.activity.buyRealCurrency5000();
 		} else if(pressedBack(x, y))
         {
 			if(lastScreenWorship)
@@ -249,6 +312,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
         }
 	}
+	/**
+	 * checks clicks when in won level screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownWon(float x, float y)
 	{
 		if(control.pointOnSquare(x, y, 66, 231, 214, 276))
@@ -265,6 +333,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.activity.startMenu();
         }
 	}
+	/**
+	 * checks clicks when in the level lost screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownLost(float x, float y)
 	{
 		if(control.pointOnSquare(x, y, 66, 231, 214, 276))
@@ -281,6 +354,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.activity.startMenu();
         }
 	}
+	/**
+	 * checks clicks when in the worhip gods screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownWorship(float x, float y)
 	{
 		lastScreenWorship = true;
@@ -364,6 +442,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 		}
 	}
+	/**
+	 * checks clicks when in the buy specific cash item screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownBuyItemCash(float x, float y)
 	{
 		if(control.pointOnSquare(x, y, 66, 231, 214, 276)&&control.activity.canBuyReal(control.buyingItem))
@@ -381,6 +464,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 	    }
 	}
+	/**
+	 * checks clicks when in the buy cash items screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownBuyPremium(float x, float y)
 	{
 		boolean hit = true;
@@ -463,6 +551,117 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 		}
 	}
+	/**
+	 * checks clicks when in the buy skins screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
+	protected void clickDownBuySkins(float x, float y)
+	{
+		//TODO
+		boolean hit = true;
+		if(control.pointOnSquare(x, y, 0, 40, 160, 133))
+		{
+			control.activity.currentSkin = 0;
+			control.imageLibrary.loadPlayerImage();
+		} else if(control.pointOnSquare(x, y, 0, 133, 160, 227))
+		{
+			if(!control.activity.ownSkin1)
+			{
+				control.activity.buyReal("skin1");
+			}
+			if(control.activity.ownSkin1)
+			{
+				control.activity.currentSkin = 1;
+				control.imageLibrary.loadPlayerImage();
+			}
+		} else if(control.pointOnSquare(x, y, 0, 227, 160, 320))
+		{
+			if(!control.activity.ownSkin2)
+			{
+				control.activity.buyReal("skin2");
+			}
+			if(control.activity.ownSkin2)
+			{
+				control.activity.currentSkin = 2;
+				control.imageLibrary.loadPlayerImage();
+			}
+		} else if(control.pointOnSquare(x, y, 160, 133, 320, 227))
+		{
+			if(!control.activity.ownSkin3)
+			{
+				control.activity.buyReal("skin3");
+			}
+			if(control.activity.ownSkin3)
+			{
+				control.activity.currentSkin = 3;
+				control.imageLibrary.loadPlayerImage();
+			}
+		} else if(control.pointOnSquare(x, y, 160, 227, 320, 320))
+		{
+			if(!control.activity.ownSkin4)
+			{
+				control.activity.buyReal("skin4");
+			}
+			if(control.activity.ownSkin4)
+			{
+				control.activity.currentSkin = 4;
+				control.imageLibrary.loadPlayerImage();
+			}
+		} else if(control.pointOnSquare(x, y, 320, 40, 480, 133))
+		{
+			if(!control.activity.ownSkin5)
+			{
+				control.activity.buyReal("skin5");
+			}
+			if(control.activity.ownSkin5)
+			{
+				control.activity.currentSkin = 5;
+				control.imageLibrary.loadPlayerImage();
+			}
+		} else if(control.pointOnSquare(x, y, 320, 133, 480, 227))
+		{
+			if(!control.activity.ownSkin6)
+			{
+				control.activity.buyReal("skin6");
+			}
+			if(control.activity.ownSkin6)
+			{
+				control.activity.currentSkin = 6;
+				control.imageLibrary.loadPlayerImage();
+			}
+		} else if(control.pointOnSquare(x, y, 320, 227, 480, 320))
+		{
+			if(!control.activity.ownSkin7)
+			{
+				control.activity.buyReal("skin7");
+			}
+			if(control.activity.ownSkin7)
+			{
+				control.activity.currentSkin = 7;
+				control.imageLibrary.loadPlayerImage();
+			}
+		} else if(control.pointOnSquare(x, y, 109, 21, 162, 51))
+		{
+			control.currentPause="buycash";
+			control.invalidate();
+		} else if(pressedBack(x, y))
+        {
+			control.gamePaused = false;
+        } else
+        {
+        	hit = false;
+        }
+		if(hit)
+		{
+			control.invalidate();
+		}
+	}
+	/**
+	 * checks clicks when in the buy powerups screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownBlessing(float x, float y)
 	{
 		lastScreenWorship = false;
@@ -525,6 +724,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 		}
 	}
+	/**
+	 * checks clicks when in the start fight screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownStartFight(float x, float y)
 	{
 		if(pressedBack(x, y))
@@ -579,6 +783,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 			}
 		}
 	}
+	/**
+	 * checks clicks when in the choose god screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownChooseGod(float x, float y)
 	{
 		if(pressedBack(x, y))
@@ -603,6 +812,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 				control.invalidate();
 			}
 	}
+	/**
+	 * checks clicks when in the options screen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownOptions(float x, float y, int ID)
 	{
 		if(control.pointOnSquare(x, y, 264, 90, 392, 116))
@@ -610,7 +824,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			trackingId = ID;
 			startDragMusic = true;
 			double rawVolume = visualX(x)-264;
-			if(rawVolume<0) rawVolume = 0;
+			if(rawVolume<1) rawVolume = 1;
     		if(rawVolume>127) rawVolume = 127;
     		double volume = Math.pow(rawVolume, 2)/127;
     		if(volume<0) volume = 0;
@@ -624,7 +838,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			trackingId = ID;
 			startDragEffect = true;
 			double rawVolume = visualX(x)-264;
-			if(rawVolume<0) rawVolume = 0;
+			if(rawVolume<1) rawVolume = 1;
     		if(rawVolume>127) rawVolume = 127;
     		double volume = Math.pow(rawVolume, 2)/127;
     		if(volume<0) volume = 0;
@@ -657,7 +871,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.activity.playEffect("pageflip");
 			control.invalidate();
 		}
-		if(control.pointOnSquare(x, y, 227, 147, 247, 167))
+		/*if(control.pointOnSquare(x, y, 227, 147, 247, 167))
 		{
 			control.activity.stickOnRight = true;
 			control.activity.playEffect("pageflip");
@@ -670,7 +884,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.activity.playEffect("pageflip");
 			control.changePlayOptions();
 			control.invalidate();
-		}
+		}*/
 		if(control.pointOnSquare(x, y, 168, 228, 188, 248))
 		{
 			control.activity.holdShoot = true;
@@ -689,18 +903,25 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 	    }
 	}
+	/**
+	 * checks clicks when in the pausescreen
+	 * @param x x value of click
+	 * @param y y value of click
+	 */
 	protected void clickDownPaused(float x, float y)
 	{
 		boolean clicked = true;
 		if(pressedBack(x, y))
 	    {
 	    	control.gamePaused = false;
-	    } else if(control.pointOnSquare(x, y, 262, 95, 414, 157))
+	    } else if(control.pointOnSquare(x, y, 300, 95, 464, 157))
         {
         	control.activity.startMenu();
-        } else if(control.pointOnSquare(x, y, 245, 181, 414, 243))
+        	control.activity.playEffect("pageflip");
+        } else if(control.pointOnSquare(x, y, 300, 181, 464, 243))
         {
         	control.currentPause = "options";
+        	control.activity.playEffect("pageflip");
 			control.invalidate();
         } else if(control.pointOnCircle(x, y, 60, 60, 35) && control.activity.pHeal>0)
         {
@@ -718,7 +939,7 @@ public class PlayerGestureDetector implements OnTouchListener {
         		control.activity.pWater--;
         	} else
         	{
-        		control.alreadyWorshipping();
+        		control.startWarning("Already Worshipping");
         	}
         } else if(control.pointOnCircle(x, y, 160, 160, 35) && control.activity.pEarth>0)
         {
@@ -728,7 +949,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 	        	control.activity.pEarth--;
         	} else
         	{
-        		control.alreadyWorshipping();
+        		control.startWarning("Already Worshipping");
         	}
         } else if(control.pointOnCircle(x, y, 60, 260, 35) && control.activity.pAir>0)
         {
@@ -738,7 +959,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 	        	control.activity.pAir--;
         	} else
         	{
-        		control.alreadyWorshipping();
+        		control.startWarning("Already Worshipping");
         	}
         } else if(control.pointOnCircle(x, y, 160, 260, 35) && control.activity.pFire>0)
         {
@@ -748,8 +969,16 @@ public class PlayerGestureDetector implements OnTouchListener {
 	        	control.activity.pFire--;
         	} else
         	{
-        		control.alreadyWorshipping();
+        		control.startWarning("Already Worshipping");
         	}
+        } else if(control.pointOnCircle(x, y, 250, 110, 35) && control.activity.pFire>0)
+        {
+	        player.getPowerUp(11);
+	        control.activity.pGolem--;
+        } else if(control.pointOnCircle(x, y, 250, 210, 35) && control.activity.pFire>0)
+        {
+	        player.getPowerUp(12);
+	        control.activity.pHammer--;
         } else
         {
         	clicked = false;
@@ -759,6 +988,12 @@ public class PlayerGestureDetector implements OnTouchListener {
 			control.invalidate();
 		}
 	}
+	/**
+	 * checks clicks when in the menu level
+	 * @param setX x value of click
+	 * @param setY y value of click
+	 * @return whether anything was clicked
+	 */
 	protected boolean clickDownNotPausedMenu(float setX, float setY)
 	{		
 		boolean hitButton = false;
@@ -782,6 +1017,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 	        	control.gamePaused = true;
 				control.currentPause = "chooseGod";
 				control.invalidate();
+	        } else if(getDistance(x, y, 164, 262)<15)
+	        {
+	        	control.gamePaused = true;
+				control.currentPause = "buyskins";
+				control.invalidate();
 	        } else
 	        {
 	        	hitButton = false;
@@ -797,6 +1037,12 @@ public class PlayerGestureDetector implements OnTouchListener {
         }
 		return hitButton;
 	}
+	/**
+	 * checks clicks when in the tutorial level
+	 * @param setX x value of click
+	 * @param setY y value of click
+	 * @return whether anything was clicked
+	 */
 	protected boolean clickDownNotPausedTutorial(float setX, float setY)
 	{
 		boolean hitButton = false;
@@ -835,6 +1081,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 					if(control.activity.levelBeaten == 0)
 		        	{
 						control.activity.levelBeaten++;
+						control.activity.realCurrency += 25;
 		        	}
 					control.activity.startFight(3);
 				} else
@@ -846,34 +1093,55 @@ public class PlayerGestureDetector implements OnTouchListener {
 		}
 		return hitButton;
 	}
-	protected void clickDownNotPaused(float x, float y, int ID, boolean firstPointer)
+	/**
+	 * checks clicks when not paused
+	 * @param x x value of click
+	 * @param y y value of click
+	 * @param ID id of click
+	 * @param firstPointer whether this is the only pointer on screen
+	 * @return whether anything was clicked
+	 */
+	protected boolean clickDownNotPaused(float x, float y, int ID, boolean firstPointer)
 	{
+		boolean touched = false;
 		if(control.pointOnSquare(x, y, 430, 0, 480, 50)&&control.activity.stickOnRight)
         {
         	control.gamePaused = true;
         	control.currentPause = "paused";
         	control.invalidate();
+        	touched = true;
         } else if(control.pointOnSquare(x, y, 0, 0, 50, 50)&&!control.activity.stickOnRight)
         {
         	control.gamePaused = true;
         	control.currentPause = "paused";
         	control.invalidate();
-        } else if(control.pointOnSquare(x, y, buttonShiftX+12, 82, buttonShiftX+82, 152))
+        	touched = true;
+        } else if(control.pointOnCircle(x, y, 427-(buttonShiftX*0.95897), 267, 60))
         {
-        	//player.teleport(visualX(x), visualY(y));
-        } else if(control.pointOnSquare(x, y, buttonShiftX+12, 12, buttonShiftX+82, 82))
+        	player.touching = true;
+        	player.touchX = visualX(x)-(427-(buttonShiftX*0.95897));
+        	player.touchY = visualY(y)-267;
+        	trackingId = ID;
+        	touched = true;
+        }
+		return touched;
+	}
+	/**
+	 * checks clicks when player is not transformed
+	 * @param x x value of click
+	 * @param y y value of click
+	 * @param ID id of click
+	 * @param firstPointer whether this is the only pointer on screen
+	 */
+	protected void clickDownNotPausedNormal(float x, float y, int ID, boolean firstPointer)
+	{
+		if(control.pointOnSquare(x, y, buttonShiftX+12, 41, buttonShiftX+82, 111)&&control.levelNum!=10)
         {
         	player.burst();
-        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 152, buttonShiftX+82, 222))
+        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 145, buttonShiftX+82, 215)&&control.levelNum!=10)
         {
         	player.roll();
-        }/* else if(control.pointOnSquare(x, y, buttonShiftX+12, 33, buttonShiftX+82, 103))
-        {
-        	player.burst();
-        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 118, buttonShiftX+82, 188))
-        {
-        	player.roll();
-        }*/ else if(control.pointOnCircle(x, y, 53+(buttonShiftX*0.95897), 267, 60) && !control.activity.shootTapScreen)
+        } else if(control.pointOnCircle(x, y, 53+(buttonShiftX*0.95897), 267, 60) && !control.activity.shootTapScreen)
         {
         	if(control.activity.holdShoot)
         	{
@@ -898,17 +1166,15 @@ public class PlayerGestureDetector implements OnTouchListener {
         	}
         } else if(control.pointOnScreen(x, y))
         {
-        	if(player.teleporting)
-        	{
-            	player.teleport(screenX(x), screenY(y));
-        	} else if(control.activity.shootTapScreen)
+        	if(control.activity.shootTapScreen)
         	{
         		if(control.activity.holdShoot)
             	{
         			player.touchingShoot = true;
         			touchingShootID = ID;
-        			player.touchShootY = visualY(y)-267;
-            		player.touchShootX = visualX(x)-(53+(buttonShiftX*0.95897));
+        			player.touchShootY = screenY(y)-player.y;
+            		player.touchShootX = screenX(x)-player.x;
+            		//TODO
             	} else
             	{
             		if(control.activity.shootTapDirectional)
@@ -923,30 +1189,86 @@ public class PlayerGestureDetector implements OnTouchListener {
 	            	}
             	}
         	}
-        } else if(control.pointOnCircle(x, y, 427-(buttonShiftX*0.95897), 267, 60))
-        {
-        	player.touching = true;
-        	player.touchX = visualX(x)-(427-(buttonShiftX*0.95897));
-        	player.touchY = visualY(y)-267;
-        	trackingId = ID;
         }
 	}
+	/**
+	 * checks clicks when player is transformed into golem
+	 * @param x x value of click
+	 * @param y y value of click
+	 * @param ID id of click
+	 * @param firstPointer whether this is the only pointer on screen
+	 */
+	protected void clickDownNotPausedGolem(float x, float y, int ID, boolean firstPointer)
+	{
+		if(control.pointOnSquare(x, y, buttonShiftX+12, 41, buttonShiftX+82, 111))
+        {
+        	player.pound();
+        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 145, buttonShiftX+82, 215))
+        {
+        	player.hit();
+        }
+	}
+	/**
+	 * checks clicks when player is transformed into hammer guy
+	 * @param x x value of click
+	 * @param y y value of click
+	 * @param ID id of click
+	 * @param firstPointer whether this is the only pointer on screen
+	 */
+	protected void clickDownNotPausedHammer(float x, float y, int ID, boolean firstPointer)
+	{
+		if(control.pointOnSquare(x, y, buttonShiftX+12, 41, buttonShiftX+82, 111))
+        {
+        	player.pound();
+        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 145, buttonShiftX+82, 215))
+        {
+        	player.hit();
+        }
+	}
+	/**
+	 * checks distance between two points
+	 * @param x1 first x
+	 * @param y1 first y
+	 * @param x2 second x
+	 * @param y2 second y
+	 * @return distance between points
+	 */
 	protected double getDistance(double x1, double y1, double x2, double y2)
 	{
 		return Math.sqrt(Math.pow(visualX(x1)-visualX(x2), 2) + Math.pow(visualY(y1)-visualY(y2), 2));
 	}
+	/**
+	 * converts value from click x point to where on the level it would be
+	 * @param x x value of click
+	 * @return x position of click in level
+	 */
 	protected double screenX(double x)
 	{
 		return (visualX(x)-90)-control.xShiftLevel;
 	}
+	/**
+	 * converts value from click y point to where on the level it would be
+	 * @param y y value of click
+	 * @return y position of click in level
+	 */
 	protected double screenY(double y)
 	{
 		return (visualX(y)+10)-control.yShiftLevel;
 	}
+	/**
+	 * converts value from click x point to where on the screen it would be
+	 * @param x x value of click
+	 * @return x position of click on screen
+	 */
 	protected double visualX(double x)
 	{
 		return (x-screenMinX)/screenDimensionMultiplier;
 	}
+	/**
+	 * converts value from click y point to where on the screen it would be
+	 * @param y y value of click
+	 * @return y position of click on screen
+	 */
 	protected double visualY(double y)
 	{
 		return ((y-screenMinY)/screenDimensionMultiplier);

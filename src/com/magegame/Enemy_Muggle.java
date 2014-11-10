@@ -1,4 +1,4 @@
-/*
+/**
  * All enemies but main mage, defines some variables and starts ai reactions
  * @param lastPlayerX Last X coordinate the player was seen at
  * @param lastPlayerY Last Y coordinate the player was seen at
@@ -7,6 +7,12 @@ package com.magegame;
 abstract public class Enemy_Muggle extends Enemy
 {
 	protected boolean attacking = false;
+	/**
+	 * Sets position and control object
+	 * @param creator control object
+	 * @param setX starting x position
+	 * @param setY starting y position
+	 */
 	public Enemy_Muggle(Controller creator, double setX, double setY)
 	{
 		super(creator);
@@ -18,9 +24,8 @@ abstract public class Enemy_Muggle extends Enemy
 		lastPlayerX = x;
 		lastPlayerY = y;
 	}
-	/*
+	/**
 	 * Calls correct ai method, sets correct los and in danger states
-	 * @see com.example.magegame.Enemy#frameCall()
 	 */
 	@
 	Override
@@ -78,13 +83,13 @@ abstract public class Enemy_Muggle extends Enemy
 		super.frameCall();
 	}
 	@Override
-	protected void getHit(int damage)
+	protected void getHit(double damage)
 	{
 		damage /= control.getDifficultyLevelMultiplier();
 		super.getHit(damage);
 	}
-	/*
-	 * How object acts during an attack
+	/**
+	 * How object acts during an attack animation
 	 */
 	abstract protected void attacking();
 	@Override

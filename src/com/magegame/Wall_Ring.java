@@ -1,3 +1,6 @@
+/**
+ * behavior for ring walls
+ */
 package com.magegame;
 public class Wall_Ring extends Wall
 {
@@ -11,6 +14,14 @@ public class Wall_Ring extends Wall
 	private double oCRSOut;
 	private double oCRSAve;
 	private double rads;
+	/**
+	 * sets variables and stores some in control object array
+	 * @param creator control object
+	 * @param OCX x value
+	 * @param OCY y value
+	 * @param OCRIn inner radius
+	 * @param OCROut outer radius
+	 */
 	public Wall_Ring(Controller creator, int OCX, int OCY, int OCRIn, int OCROut)
 	{
 		oCX = OCX;
@@ -18,10 +29,7 @@ public class Wall_Ring extends Wall
 		oCRIn = OCRIn;
 		oCROut = OCROut;
 		control = creator;
-		control.setORingX(control.getCurrentRing(), OCX);
-		control.setORingY(control.getCurrentRing(), OCY);
-		control.setORingInner(control.getCurrentRing(), oCRIn);
-		control.setORingOuter(control.getCurrentRing(), oCROut);
+		control.setORing(control.getCurrentRing(), OCX, OCY, oCRIn, oCROut);
 		control.incrementCurrentRing();
 		
 		oCRIn -= humanWidth;
@@ -30,6 +38,9 @@ public class Wall_Ring extends Wall
 		oCRSOut = Math.pow(oCROut, 2);
 		oCRSAve = Math.pow((oCRIn+oCROut)/2, 2);
 	}
+	/**
+	 * checks whether wall hits player or enemies
+	 */
 	@ Override
 	protected void frameCall()
 	{

@@ -1,4 +1,4 @@
-/*
+/**
  * All enemies, sets reaction methods, contains checks and mathematical functions
  * @param danger holds powerBalls headed towards object and their coordinates velocity etc
  */
@@ -32,6 +32,10 @@ abstract public class Enemy extends Human
 	protected double pYVelocity=0;
 	private double pXSpot=0;
 	private double pYSpot=0;
+	/**
+	 * sets danger arrays, speed and control object
+	 * @param creator control object
+	 */
 	public Enemy(Controller creator)
 	{
 		control = creator;
@@ -41,6 +45,11 @@ abstract public class Enemy extends Human
 		danger[3] = levelYForward;
 		speedCur = 1.5 + (Math.pow(control.getDifficultyLevelMultiplier(), 0.7)*2.5);
 	}
+	/**
+	 * clears desired array
+	 * @param array array to clear
+	 * @param length length of array to clear
+	 */
 	protected void clearArray(double[] array, int length)
 	{
 		for(int i = 0; i < length; i++)
@@ -48,9 +57,8 @@ abstract public class Enemy extends Human
 			array[i] = -11111;
 		}
 	}
-	/*
+	/**
 	 * Clears danger arrays, sets current dimensions, and counts timers
-	 * @see com.example.magegame.human#frameCall()
 	 */
 	@
 	Override
@@ -85,10 +93,19 @@ abstract public class Enemy extends Human
 			movementX = x - (Math.cos(moveRads) * radius) - control.player.x;
 			movementY = y - (Math.sin(moveRads) * radius) - control.player.y;
 			double added = weight+control.player.weight;
-			control.player.x += movementX*(weight/added);
-			control.player.y += movementY*(weight/added);
-			x -= movementX*(control.player.weight/added);
-			y -= movementY*(control.player.weight/added);
+			if(control.player.rollTimer>0)
+			{
+				control.player.x += movementX*(weight/added)/2;
+				control.player.y += movementY*(weight/added)/2;
+				x -= movementX*(control.player.weight/added)/3;
+				y -= movementY*(control.player.weight/added)/3;
+			} else
+			{
+				control.player.x += movementX*(weight/added);
+				control.player.y += movementY*(weight/added);
+				x -= movementX*(control.player.weight/added);
+				y -= movementY*(control.player.weight/added);
+			}
 		}
 		for(int i = 0; i < control.enemies.length; i++)
 		{
@@ -110,10 +127,16 @@ abstract public class Enemy extends Human
 			}
 		}
 	}
-	protected void getHit(int damage)
+	/**
+	 * Takes a sent amount of damage, modifies based on sheilds etc.
+	 * if health below 0 kills enemy
+	 * @param damage amount of damage to take
+	 */
+	protected void getHit(double damage)
 	{
 		if(!deleted)
 		{
+			damage /= 1.5;
 			if(control.player.powerUpTimer>0 && control.player.powerID == 4)
 			{
 				damage *= 1.5*Math.pow((double)control.activity.wApollo/10, 0.7);
@@ -154,14 +177,14 @@ abstract public class Enemy extends Human
 			}
 		}
 	}
-	/*
+	/**
 	 * Rotates to run away from player 
 	 */
 	protected void runAway()
 	{
 		rads = Math.atan2(-(control.player.y - y), -(control.player.x - x));
 		rotation = rads * r2d;
-		int distance = (int)checkDistance(x, y, control.getPlayerX(), control.getPlayerY());
+		int distance = (int)checkDistance(x, y, control.player.x,  control.player.y);
 		if(control.checkObstructionsAll(x, y, rads, distance))
 		{
 			int runPathChooseCounter = 0;
@@ -187,7 +210,7 @@ abstract public class Enemy extends Human
 			}
 		}
 	}        
-	/*
+	/**
 	 * Runs in direction object is rotated for 10 frames
 	 */
 	protected void run()
@@ -196,7 +219,7 @@ abstract public class Enemy extends Human
 		playing = true;
         currentFrame = 0;
 	}
-	/*
+	/**
 	 * Checks whether object can 'see' player
 	 */
 	protected void checkLOS()
@@ -211,7 +234,7 @@ abstract public class Enemy extends Human
 			LOS = false;
 		}
 	}
-	/*
+	/**
 	 * Checks whether any powerBalls are headed for object
 	 */
 	protected void checkDanger()
@@ -232,7 +255,7 @@ abstract public class Enemy extends Human
 			dangerCheckCounter++;
 		}
 	}
-	/*
+	/**
 	 * Checks distance between two points
 	 * @return Returns distance
 	 */
@@ -240,36 +263,88 @@ abstract public class Enemy extends Human
 	{
 		return Math.sqrt((Math.pow(fromX - toX, 2)) + (Math.pow(fromY - toY, 2)));
 	}
+	/**
+	 * returns last distance found
+	 * @return distanceFound
+	 */
 	protected double getDistanceFound() {
 		return distanceFound;
 	}
+	/**
+	 * sets distanceFound
+	 * @param distanceFound sets to distanceFound
+	 */
 	protected void setDistanceFound(double distanceFound) {
 		this.distanceFound = distanceFound;
 	}
+	/**
+	 * reaction when in danger with LOS
+	 */
 	abstract protected void frameReactionsDangerLOS();
+	/**
+	 * reaction when in danger with no LOS
+	 */
 	abstract protected void frameReactionsDangerNoLOS();
+	/**
+	 * reaction when in no danger with LOS
+	 */
 	abstract protected void frameReactionsNoDangerLOS();
+	/**
+	 * returns type
+	 * @return type of enemy
+	 */
 	abstract protected int getType();
+	/**
+	 * stuns enemy
+	 * @param time time to stun enemy for
+	 */
 	abstract protected void stun(int time);
+	/**
+	 * returns roll timer
+	 * @return roll timer
+	 */
 	abstract protected int getRollTimer();
+	/**
+	 * sets run timer
+	 * @param runTimer sets to run timer
+	 */
 	protected void setRunTimer(int runTimer) {
 		this.runTimer = runTimer;
 	}
+	/**
+	 * reaction when in no danger with no LOS
+	 */
 	abstract protected void frameReactionsNoDangerNoLOS();
+	/**
+	 * returns levelCurrentPosition
+	 * @return levelCurrentPosition
+	 */
 	protected int getLevelCurrentPosition() {
 		return levelCurrentPosition;
 	}
+	/**
+	 * returns pathedToHitLength
+	 * @return pathedToHitLength
+	 */
 	protected int getPathedToHitLength() {
 		return pathedToHitLength;
 	}
+	/**
+	 * sets a certain index in danger arrays
+	 * @param i index to set
+	 * @param levelX x position of danger
+	 * @param levelY y position of danger
+	 * @param levelXForward x velocity of danger
+	 * @param levelYForward y velocity of danger
+	 */
 	protected void setLevels(int i, double levelX, double levelY, double levelXForward, double levelYForward) {
 		this.levelX[i] = levelX;
 		this.levelY[i] = levelY;
 		this.levelXForward[i] = levelXForward;
 		this.levelYForward[i] = levelYForward;
 	}
-	/*
-	 * Runs towards a specific x, y point for four frames
+	/**
+	 * Runs towards player, if you cant, run randomly
 	 */
 	protected void runTowardPlayer()
 	{
@@ -305,6 +380,13 @@ abstract public class Enemy extends Human
 		}
 		playing = true;
 	}
+	/**
+	 * runs towards a set x and y
+	 * @param towardsX destination x value
+	 * @param towardsY destination y value
+	 * @param distance distance to run
+	 * @return whether it is possible or not to run here
+	 */
 	protected boolean runTowardDistanceGood(double towardsX, double towardsY, int distance)
 	{
 		int runPathChooseCounter = 0;
@@ -340,6 +422,12 @@ abstract public class Enemy extends Human
 		setRunTimer(distance/4);
 		return goodMove;
 	}
+	/**
+	 * check whether you can run around a corner to player
+	 * @param towardsX destination x value
+	 * @param towardsY destination y value
+	 * @return whether it is possible to get to player going around the corner
+	 */
 	protected boolean runAroundCorner(double towardsX, double towardsY)
 	{
 		int runPathChooseCounter = 0;
@@ -378,6 +466,14 @@ abstract public class Enemy extends Human
 		setRunTimer(15);
 		return goodMove;
 	}
+	/**
+	 * part of runAroundCorner
+	 * @param towardsX destination x value
+	 * @param towardsY destination y value
+	 * @param newX enemies x after first segment of movement
+	 * @param newY enemies y after first segment of movement
+	 * @return whether you can run to player from here
+	 */
 	protected boolean ranAroundCorner(double towardsX, double towardsY, double newX, double newY)
 	{
 		int runPathChooseCounter = 0;
@@ -417,70 +513,8 @@ abstract public class Enemy extends Human
 			}
 		}
 		return goodMove;
-	}
-	/*protected void runToward(double towardsX, double towardsY)
-	{
-		runTowardRecurse(x, y, towardsX, towardsY);
-		setRunTimer(4);
-		playing = true;
-		if(currentFrame > 20)
-		{
-			currentFrame = 0;
-		}
-	}
-	protected boolean runTowardRecurse(double X, double Y, double towardsX, double towardsY)
-	{
-		boolean isClear = false;
-		rads = Math.atan2(towardsY - Y, towardsX - X);
-		rotation = rads * r2d;
-		if(control.checkObstructionsAll(X, Y, rads, 25))
-		{
-			int runPathChooseCounter = 0;
-			double runPathChooseRotationStore = rotation;
-			while(runPathChooseCounter < 180)
-			{
-				runPathChooseCounter += 15;
-				rotation = runPathChooseRotationStore + runPathChooseCounter;
-				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(X, Y,rads, 25))
-				{
-					if(runTowardRecurse(X+(Math.cos(rads)*25), X+(Math.sin(rads)*25), towardsX, towardsY))
-					{
-						runPathChooseCounter = 180;
-						isClear = true;
-					}
-				}
-				else
-				{
-					rotation = runPathChooseRotationStore - runPathChooseCounter;
-					rads = rotation / r2d;
-					if(!control.checkObstructionsAll(X, Y,rads, 25))
-					{
-						if(runTowardRecurse(X+(Math.cos(rads)*25), X+(Math.sin(rads)*25), towardsX, towardsY))
-						{
-							runPathChooseCounter = 180;
-							isClear = true;
-						}
-					}
-				}
-			}
-		} else
-		{
-			if(!(checkDistance(towardsX, towardsY, X, Y)<25))
-			{
-				if(runTowardRecurse(X+(Math.cos(rads)*25), X+(Math.sin(rads)*25), towardsX, towardsY))
-				{
-					isClear = true;
-				}
-			}
-		}
-		return isClear;
-	}*/
-	
-	
-	
-	
-	/*
+	}	
+	/**
 	 * Runs random direction for 25 or if not enough space 10 frames
 	 */
 	protected void runRandom()
@@ -488,7 +522,7 @@ abstract public class Enemy extends Human
 		boolean canMove = false;
 		rotation = control.getRandomInt(360);
 		rads = rotation / r2d;
-		if(control.checkObstructionsAll(x, y,rads, 100))
+		if(control.checkObstructionsAll(x, y,rads, (int)(speedCur*20)))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -497,7 +531,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(x, y,rads, 100))
+				if(!control.checkObstructionsAll(x, y,rads, (int)(speedCur*20)))
 				{
 					runPathChooseCounter = 180;
 					canMove = true;
@@ -506,7 +540,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!control.checkObstructionsAll(x, y,rads, 100))
+					if(!control.checkObstructionsAll(x, y,rads, (int)(speedCur*20)))
 					{
 						runPathChooseCounter = 180;
 						canMove = true;
@@ -514,7 +548,7 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		if(control.checkObstructionsAll(x, y,rads, 40))
+		if(control.checkObstructionsAll(x, y,rads, (int)(speedCur*10)))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -523,7 +557,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(x, y,rads, 40))
+				if(!control.checkObstructionsAll(x, y,rads, (int)(speedCur*10)))
 				{
 					runPathChooseCounter = 180;
 				}
@@ -531,7 +565,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!control.checkObstructionsAll(x, y,rads, 40))
+					if(!control.checkObstructionsAll(x, y,rads, (int)(speedCur*10)))
 					{
 						runPathChooseCounter = 180;
 					}
@@ -540,36 +574,66 @@ abstract public class Enemy extends Human
 		}
 		if(canMove)
 		{
-			setRunTimer(16);
+			setRunTimer(20);
 		}
 		else
 		{
-			setRunTimer(7);
+			setRunTimer(10);
 		}
 		playing = true;
 	}
+	/**
+	 * adds 1 to levelCurrentPosition
+	 */
 	protected void incrementLevelCurrentPosition()
 	{
 		levelCurrentPosition ++;
 	}
+	/**
+	 * returns checkLOSTimer
+	 * @return checkLOSTimer
+	 */
 	protected int getCheckLOSTimer() {
 		return checkLOSTimer;
 	}
+	/**
+	 * resets checkLOSTimer to 10
+	 */
 	protected void resetCheckLOSTimer() {
 		checkLOSTimer = 10;
 	}
+	/**
+	 * returns runTimer
+	 * @return runTimer
+	 */
 	protected int getRunTimer() {
 		return runTimer;
 	}
+	/**
+	 * returns last known player x
+	 * @return last known player x
+	 */
 	protected double getLastPlayerX() {
 		return lastPlayerX;
 	}
+	/**
+	 * returns last known player y
+	 * @return last known player y
+	 */
 	protected double getLastPlayerY() {
 		return lastPlayerY;
 	}
+	/**
+	 * sets whether you have checked where you saw the player last for his existence
+	 * @param checkedPlayerLast have you checked where you saw him
+	 */
 	protected void setCheckedPlayerLast(boolean checkedPlayerLast) {
 		this.checkedPlayerLast = checkedPlayerLast;
 	}
+	/**
+	 * returns whether players last whereabouts have been investigated
+	 * @return whether players last whereabouts have been investigated
+	 */
 	protected boolean isCheckedPlayerLast() {
 		return checkedPlayerLast;
 	}

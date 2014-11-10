@@ -1,3 +1,6 @@
+/**
+ * behavior for rectangular walls
+ */
 package com.magegame;
 
 public class Wall_Rectangle extends Wall
@@ -10,6 +13,16 @@ public class Wall_Rectangle extends Wall
 	protected int oRY2;
 	private boolean hitPlayer;
 	private double r2d = 180/Math.PI;
+	/**
+	 * sets variables and stores some in control object array
+	 * @param creator control object
+	 * @param ORX x position
+	 * @param ORY y position
+	 * @param wallWidth width of wall
+	 * @param wallHeight height of wall
+	 * @param HitPlayer whether wall interacts with the player
+	 * @param Tall whether or not the wall is tall enough to stop projectiles
+	 */
 	public Wall_Rectangle(Controller creator, int ORX, int ORY, int wallWidth, int wallHeight, boolean HitPlayer, boolean Tall)
 	{
 		tall = Tall;
@@ -21,17 +34,11 @@ public class Wall_Rectangle extends Wall
 		x = (oRX1 + oRX2) / 2;
 		y = (oRY1 + oRY2) / 2;
 		control = creator;
-		control.setORectX1All(control.getCurrentRectangleAll(), oRX1);
-		control.setORectX2All(control.getCurrentRectangleAll(), oRX2);
-		control.setORectY1All(control.getCurrentRectangleAll(), oRY1);
-		control.setORectY2All(control.getCurrentRectangleAll(), oRY2);
+		control.setORectAll(control.getCurrentRectangleAll(), oRX1, oRX2, oRY1, oRY2);
 		control.incrementCurrentRectangleAll();
 		if(tall)
 		{
-			control.setORectX1(control.getCurrentRectangle(), oRX1);
-			control.setORectX2(control.getCurrentRectangle(), oRX2);
-			control.setORectY1(control.getCurrentRectangle(), oRY1);
-			control.setORectY2(control.getCurrentRectangle(), oRY2);
+			control.setORect(control.getCurrentRectangle(), oRX1, oRX2, oRY1, oRY2);
 			control.incrementCurrentRectangle();
 		}
 		oRX1 -= humanWidth;
@@ -39,6 +46,9 @@ public class Wall_Rectangle extends Wall
 		oRX2 += humanWidth;
 		oRY2 += humanWidth;
 	}
+	/**
+	 * checks whether wall hits player or enemies
+	 */
         @ Override
         protected void frameCall()
 	{

@@ -1,3 +1,6 @@
+/**
+ * stores values for passes in control object array
+ */
 package com.magegame;
 
 public class Wall_Pass extends Wall
@@ -7,16 +10,21 @@ public class Wall_Pass extends Wall
 	private int oRY1;
 	private int oRY2;
 	private boolean hitPlayer;
+	/**
+	 * sets variables and stores some in control object array
+	 * @param creator control object
+	 * @param ORX x position
+	 * @param ORY y position
+	 * @param wallWidth width of wall
+	 * @param wallHeight height of wall
+	 */
 	public Wall_Pass(Controller creator, int ORX, int ORY, int wallWidth, int wallHeight)
 	{
 		oRX1 = ORX;
 		oRY1 = ORY;
 		oRX2 = ORX+wallWidth;
 		oRY2 = ORY+wallHeight;
-		creator.setOPassageX1(creator.getCurrentPassage(), oRX1);
-		creator.setOPassageX2(creator.getCurrentPassage(), oRX2);
-		creator.setOPassageY1(creator.getCurrentPassage(), oRY1);
-		creator.setOPassageY2(creator.getCurrentPassage(), oRY2);
+		creator.setOPassage(creator.getCurrentPassage(), oRX1, oRX2, oRY1, oRY2);
 		creator.incrementCurrentPassage();
 	}
 	@Override

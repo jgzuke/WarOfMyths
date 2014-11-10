@@ -1,3 +1,6 @@
+/**
+ * all variables to store as well as some base level behaviors, pause and resume and start functions
+ */
 package com.magegame;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,7 +23,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.util.Log;
@@ -28,6 +35,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.ViewSwitcher;
 public class StartActivity extends Activity
 {
@@ -35,8 +43,8 @@ public class StartActivity extends Activity
 	protected double screenDimensionMultiplier;
 	protected int screenMinX;
 	protected int screenMinY;
-	protected int gameCurrency = 200;
-	protected int realCurrency = 200;
+	protected int gameCurrency = 20000;
+	protected int realCurrency = 20000;
 	protected byte wApollo = 8;
 	protected byte wPoseidon = 8;
 	protected byte wZues = 8;
@@ -46,6 +54,8 @@ public class StartActivity extends Activity
 	protected byte wAthena = 8;
 	protected byte wHermes = 8;
 	protected byte wHera = 8;
+	protected byte pGolem = 1;
+	protected byte pHammer = 1;
 	protected byte pHeal = 1;
 	protected byte pCool = 1;
 	protected byte pWater = 1;
@@ -56,15 +66,23 @@ public class StartActivity extends Activity
 	protected boolean shootTapScreen = false;
 	protected boolean shootTapDirectional = true;
 	protected boolean holdShoot = true;
-	protected byte levelBeaten = 10;
+	protected boolean ownSkin1 = false;
+	protected boolean ownSkin2 = false;
+	protected boolean ownSkin3 = false;
+	protected boolean ownSkin4 = false;
+	protected boolean ownSkin5 = false;
+	protected boolean ownSkin6 = false;
+	protected boolean ownSkin7 = false;
+	protected byte currentSkin = 0;
+	protected byte levelBeaten = 7;
 	protected boolean gameRunning = true;
 	private FileOutputStream fileWrite;
 	private FileInputStream fileRead;
-	private int savePoints = 40;
+	private int savePoints = 50;
 	protected byte[] savedData = new byte[savePoints];
 	protected MediaPlayer backMusic;
 	private SoundPool spool;
-	private int[] soundPoolMap = new int[13];
+	private int[] soundPoolMap = new int[15];
 	protected AudioManager audioManager;
 	protected byte playerType = 0;
 	protected double volumeMusic = 127;
@@ -77,9 +95,15 @@ public class StartActivity extends Activity
 	private int RC_REQUEST = 10001;
 	IabHelper mHelper;@
 	Override
+	/**
+	 * sets screena and window variables and reads in data
+	 * creates control object and sets up IAB
+	 */
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		setWindowAndAudio();
+		setScreenDimensions();
 		read();
 		boolean firstTime = false;
 		if(savedData[0] == 0)
@@ -93,11 +117,8 @@ public class StartActivity extends Activity
 		{
 			readSaveData();
 		}
-		setWindowAndAudio();
-		setScreenDimensions();
 		control = new Controller(this, this);
 		setContentView(control);
-		startMusic();
 		if(firstTime)
 		{
 			startFight(2);
@@ -128,7 +149,11 @@ public class StartActivity extends Activity
 				mHelper.queryInventoryAsync(mGotInventoryListener);
 			}
 		});
+		startMusic();
 	}
+	/**
+	 * sets screen variables as well as audio settings
+	 */
 	protected void setWindowAndAudio()
 	{
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -149,7 +174,29 @@ public class StartActivity extends Activity
 		soundPoolMap[10] = spool.load(this, R.raw.enemy_arrowhit, 1);
 		soundPoolMap[11] = spool.load(this, R.raw.enemy_arrowrelease, 1);
 		soundPoolMap[12] = spool.load(this, R.raw.effect_pageflip, 1);
+		soundPoolMap[13] = spool.load(this, R.raw.money_1, 1);
+		soundPoolMap[14] = spool.load(this, R.raw.money_2, 1);
 	}
+	/**
+	 * plays a random money effect
+	 */
+	protected void playMoney()
+	{
+		Log.e("game", "money");
+		float newV = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+		newV = (float)(newV * volumeEffect / 127);
+		if(Math.random()>0.5)
+		{
+			spool.play(soundPoolMap[13], newV, newV, 1, 0, 1f);
+		} else
+		{
+			spool.play(soundPoolMap[14], newV, newV, 1, 0, 1f);
+		}
+		//TODO
+	}
+	/**
+	 * starts the menu screen by turning all negative effects to player off
+	 */
 	protected void startMenu()
 	{
 		control.drainHp = false;
@@ -161,61 +208,72 @@ public class StartActivity extends Activity
 		control.startFighting(10);
 		control.gamePaused = false;
 	}
+	/**
+	 * player loses a fight, start screen
+	 */
 	protected void loseFight()
 	{
 		control.gamePaused = true;
 		control.currentPause = "lost";
 		control.invalidate();
 	}
+	/**
+	 * player wins a fight, increases level, starts next level
+	 */
 	protected void winFight()
 	{
-		if((int)(control.levelNum / 10) - 2 == levelBeaten)
+		control.startWarning("Won Round ("+Integer.toString((int)control.moneyMade)+"g)");
+		if(control.levelNum < 90)
 		{
-			levelBeaten++;
-		}
-		/*control.gamePaused = true;
-		control.currentPause = "won";
-		control.invalidate();*/
-		/*main.startingLevel =(int)(main.levelNum/10)-1;
-		main.gamePaused = true;
-		main.currentPause = "startfight";
-		main.invalidate();*/
-		control.startingLevel =(int)(control.levelNum/10)-1;
-		if(control.difficultyLevel == 10)
+			if((int)(control.levelNum / 10) - 2 == levelBeaten)
+			{
+				levelBeaten++;
+				realCurrency += 25;
+			}
+			control.startingLevel =(int)(control.levelNum/10)-1;
+			if(control.difficultyLevel == 10)
+			{
+				control.moneyMultiplier = 5;
+			}
+			if(control.difficultyLevel == 6)
+			{
+				control.moneyMultiplier = 7;
+			}
+			if(control.difficultyLevel == 3)
+			{
+				control.moneyMultiplier = 12;
+			}
+			if(control.difficultyLevel == 0)
+			{
+				control.moneyMultiplier = 20;
+			}
+			control.moneyMultiplier = (int)((double)control.moneyMultiplier*control.getLevelWinningsMultiplier(control.startingLevel));
+			if(control.drainHp)
+			{
+				control.moneyMultiplier *= 1.4;
+			}
+			if(control.lowerHp)
+			{
+				control.moneyMultiplier *= 1.4;
+			}
+			if(control.limitSpells)
+			{
+				control.moneyMultiplier *= 1.4;
+			}
+			if(control.enemyRegen)
+			{
+				control.moneyMultiplier *= 1.4;
+			}
+			startFight(control.startingLevel+2);
+		} else
 		{
-			control.moneyMultiplier = 5;
+			startMenu();
 		}
-		if(control.difficultyLevel == 6)
-		{
-			control.moneyMultiplier = 7;
-		}
-		if(control.difficultyLevel == 3)
-		{
-			control.moneyMultiplier = 12;
-		}
-		if(control.difficultyLevel == 0)
-		{
-			control.moneyMultiplier = 20;
-		}
-		control.moneyMultiplier = (int)((double)control.moneyMultiplier*control.getLevelWinningsMultiplier(control.startingLevel));
-		if(control.drainHp)
-		{
-			control.moneyMultiplier *= 1.4;
-		}
-		if(control.lowerHp)
-		{
-			control.moneyMultiplier *= 1.4;
-		}
-		if(control.limitSpells)
-		{
-			control.moneyMultiplier *= 1.4;
-		}
-		if(control.enemyRegen)
-		{
-			control.moneyMultiplier *= 1.4;
-		}
-		startFight(control.startingLevel+2);
 	}
+	/**
+	 * starts a level from menu
+	 * @param levelSet level to start
+	 */
 	protected void startFight(int levelSet)
 	{
 		control.startFighting(levelSet * 10);
@@ -225,6 +283,9 @@ public class StartActivity extends Activity
 			control.player.getPowerUp(2);
 		}
 	}
+	/**
+	 * sets dimensions of screen
+	 */
 	protected void setScreenDimensions()
 	{
 		int dimension1 = getResources().getDisplayMetrics().heightPixels;
@@ -256,6 +317,9 @@ public class StartActivity extends Activity
 			screenDimensionMultiplier = ((screenWidthstart / 1.5) / 320);
 		}
 	}
+	/**
+	 * starts background music
+	 */
 	protected void startMusic()
 	{
 		stopMusic();
@@ -273,6 +337,29 @@ public class StartActivity extends Activity
 		systemVolume = (float)(systemVolume * volumeMusic / 127);
 		backMusic.setVolume(systemVolume, systemVolume);
 	}
+	/**
+	 * plays players current type effect
+	 */
+	protected void playPlayerEffect()
+	{
+		if(control.playerType==0)
+		{
+			control.activity.playEffect("burn");
+		} else if(control.playerType==1)
+		{
+			control.activity.playEffect("water");
+		} else if(control.playerType==2)
+		{
+			control.activity.playEffect("electric");
+		} else
+		{
+			control.activity.playEffect("earth");
+		}
+	}
+	/**
+	 * plays effect based on sent integer
+	 * @param toPlay id of effect to play
+	 */
 	protected void playEffect(String toPlay)
 	{
 		float newV = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -283,7 +370,7 @@ public class StartActivity extends Activity
 		if(toPlay.equals("earth")) spool.play(soundPoolMap[3], newV, newV, 1, 0, 1f);
 		if(toPlay.equals("burst")) spool.play(soundPoolMap[4], newV, newV, 1, 0, 1f);
 		if(toPlay.equals("shoot")) spool.play(soundPoolMap[5], newV, newV, 1, 0, 1f);
-		if(toPlay.equals("teleport")) spool.play(soundPoolMap[6], newV, newV, 1, 0, 1f);
+		if(toPlay.equals("powerup")) spool.play(soundPoolMap[6], newV, newV, 1, 0, 1f);
 		if(toPlay.equals("sword1")) spool.play(soundPoolMap[7], newV, newV, 1, 0, 1f);
 		if(toPlay.equals("sword2")) spool.play(soundPoolMap[8], newV, newV, 1, 0, 1f);
 		if(toPlay.equals("swordmiss")) spool.play(soundPoolMap[9], newV, newV, 1, 0, 1f);
@@ -291,6 +378,9 @@ public class StartActivity extends Activity
 		if(toPlay.equals("arrowrelease")) spool.play(soundPoolMap[11], newV, newV, 1, 0, 1f);
 		if(toPlay.equals("pageflip")) spool.play(soundPoolMap[12], newV, newV, 1, 0, 1f);
 	}
+	/**
+	 * stops background music and releases it
+	 */
 	protected void stopMusic()
 	{
 		if(backMusic != null)
@@ -300,24 +390,65 @@ public class StartActivity extends Activity
 			backMusic = null;
 		}
 	}
+	/**
+	 * buys an item with in game money
+	 * @param toBuy item to buy
+	 */
 	protected void buyGame(String toBuy)
 	{
-		gameCurrency -= buy(toBuy, gameCurrency, true);
-		saveGame();
+		int cost = buy(toBuy, gameCurrency, true);
+		if(cost != 0)
+		{
+			playMoney();
+			gameCurrency -= cost;
+			saveGame();
+		} else
+		{
+			control.startWarning("Not enough Money");
+		}
 	}
+	/**
+	 * buys an item with real money
+	 * @param toBuy item to buy
+	 */
 	protected void buyReal(String toBuy)
 	{
-		realCurrency -= buy(toBuy, realCurrency, true);
-		saveGame();
+		int cost = buy(toBuy, realCurrency, true);
+		if(cost != 0)
+		{
+			playMoney();
+			realCurrency -= cost;
+			saveGame();
+		} else
+		{
+			control.startWarning("Not enough Money");
+		}
 	}
+	/**
+	 * checks whether an item is affordable
+	 * @param toBuy item to check
+	 * @return whether you can buy it
+	 */
 	protected boolean canBuyGame(String toBuy)
 	{
 		return !(buy(toBuy, gameCurrency, false) == 0);
 	}
+	/**
+	 * checks whether an item is affordable
+	 * @param toBuy item to check
+	 * @return whether you can buy it
+	 */
 	protected boolean canBuyReal(String toBuy)
 	{
 		return !(buy(toBuy, realCurrency, false) == 0);
 	}
+	/**
+	 * buys or checks price of an item
+	 * @param toBuy item to buy or check
+	 * @param currency how much currency you have
+	 * @param buying whether you are buying or checking price
+	 * @return price of item, returns 0 if unaffordable 
+	 */
 	protected int buy(String toBuy, int currency, boolean buying)
 	{
 		int ID = getItemID(toBuy);
@@ -449,7 +580,105 @@ public class StartActivity extends Activity
 				afforded = true;
 			}
 			break;
-		}
+		case 16:
+			cost = 100;
+			if(currency >= cost)
+			{
+				if(!ownSkin1) 
+				{
+					if(buying)
+					{
+						ownSkin1 = true;
+					}
+					afforded = true;
+				}
+			}
+			break;
+		case 17:
+			cost = 100;
+			if(currency >= cost)
+			{
+				if(!ownSkin2) 
+				{
+					if(buying)
+					{
+						ownSkin2 = true;
+					}
+					afforded = true;
+				}
+			}
+			break;
+		case 18:
+			cost = 200;
+			if(currency >= cost)
+			{
+				if(!ownSkin3) 
+				{
+					if(buying)
+					{
+						ownSkin3 = true;
+					}
+					afforded = true;
+				}
+			}
+			break;
+		case 19:
+			cost = 200;
+			if(currency >= cost)
+			{
+				if(!ownSkin4) 
+				{
+					if(buying)
+					{
+						ownSkin4 = true;
+					}
+					afforded = true;
+				}
+			}
+			break;
+		case 20:
+			cost = 500;
+			if(currency >= cost)
+			{
+				if(!ownSkin5) 
+				{
+					if(buying)
+					{
+						ownSkin5 = true;
+					}
+					afforded = true;
+				}
+			}
+			break;
+		case 21:
+			cost = 700;
+			if(currency >= cost)
+			{
+				if(!ownSkin6) 
+				{
+					if(buying)
+					{
+						ownSkin6 = true;
+					}
+					afforded = true;
+				}
+			}
+			break;
+		case 22:
+			cost = 1000;
+			if(currency >= cost)
+			{
+				if(!ownSkin7) 
+				{
+					if(buying)
+					{
+						ownSkin7 = true;
+					}
+					afforded = true;
+				}
+			}
+			break;
+		}	
 		if(!afforded)
 		{
 			cost = 0;
@@ -457,6 +686,11 @@ public class StartActivity extends Activity
 		}
 		return(int) cost;
 	}
+	/**
+	 * returns items ID
+	 * @param toBuy item to get id for
+	 * @return id of item
+	 */
 	protected int getItemID(String toBuy)
 	{
 		int ID = 0;
@@ -519,9 +753,35 @@ public class StartActivity extends Activity
 		else if(toBuy.equals("Worship Hera"))
 		{
 			ID = 15;
+		} else if(toBuy.equals("skin1"))
+		{
+			ID = 16;
+		} else if(toBuy.equals("skin2"))
+		{
+			ID = 17;
+		} else if(toBuy.equals("skin3"))
+		{
+			ID = 18;
+		} else if(toBuy.equals("skin4"))
+		{
+			ID = 19;
+		} else if(toBuy.equals("skin5"))
+		{
+			ID = 20;
+		} else if(toBuy.equals("skin6"))
+		{
+			ID = 21;
+		} else if(toBuy.equals("skin7"))
+		{
+			ID = 22;
 		}
 		return ID;
 	}
+	/**
+	 * returns item description
+	 * @param toBuy item to get description for
+	 * @return description
+	 */
 	protected String[] getItemDescribe(String toBuy)
 	{
 		String[] describe = new String[2];
@@ -601,16 +861,20 @@ public class StartActivity extends Activity
 			describe[1] = "blessings during battles";
 		}
 		return describe;
-	}@
-	Override
+	}
+	@ Override
 	public boolean onCreateOptionsMenu(Menu menu)
 	{
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.start, menu);
 		return true;
 	}
-	public void winFight(int difficultyLevel)
-	{}
+	/**
+	 * adds 0's to the start of a string until it reaches a certain number of digits
+	 * @param end starting string
+	 * @param digits number or desired digits
+	 * @return complete full length string
+	 */
 	protected String correctDigits(String end, int digits)
 	{
 		while(end.length() < digits)
@@ -619,17 +883,23 @@ public class StartActivity extends Activity
 		}
 		return end;
 	}
+	/**
+	 * saves all required data 
+	 */
 	protected void saveGame()
 	{
 		setSaveData();
 		write();
 		readSaveData();
-	}@
-	Override
+	}
+	@ Override
 	public void onStart()
 	{
 		super.onStart();
 	}
+	/**
+	 * set data to write it to save file
+	 */
 	public void setSaveData()
 	{
 		savedData[1] = 1;
@@ -655,6 +925,8 @@ public class StartActivity extends Activity
 		savedData[16] = pEarth;
 		savedData[17] = pAir;
 		savedData[18] = pFire;
+		savedData[38] = pGolem;
+		savedData[39] = pHammer;
 		if(control != null)
 		{
 			savedData[23] = (byte) control.playerType;
@@ -686,7 +958,25 @@ public class StartActivity extends Activity
 		savedData[22] = (byte)low;
 		savedData[28] = (byte)huge;
 		savedData[26] = (byte)(wHera);
+		savedData[30] = 0;
+		savedData[31] = 0;
+		savedData[32] = 0;
+		savedData[33] = 0;
+		savedData[34] = 0;
+		savedData[35] = 0;
+		savedData[36] = 0;		
+		if(ownSkin1) savedData[30] = 1;
+		if(ownSkin2) savedData[31] = 1;
+		if(ownSkin3) savedData[32] = 1;
+		if(ownSkin4) savedData[33] = 1;
+		if(ownSkin5) savedData[34] = 1;
+		if(ownSkin6) savedData[35] = 1;
+		if(ownSkin7) savedData[36] = 1;
+		savedData[37] = currentSkin;
 	}
+	/**
+	 * read data once it has been put into savedData array
+	 */
 	public void readSaveData()
 	{
 		stickOnRight = savedData[1] == 0;
@@ -708,14 +998,28 @@ public class StartActivity extends Activity
 		pEarth = savedData[16];
 		pAir = savedData[17];
 		pFire = savedData[18];
+		pGolem = savedData[38];
+		pHammer = savedData[39];
 		playerType = savedData[23];
 		gameCurrency = savedData[20] + (128 * savedData[19]) + (16384*savedData[27]);
 		realCurrency = savedData[22] + (128 * savedData[21]) + (16384*savedData[28]);
 		volumeMusic = savedData[24];
 		volumeEffect = savedData[25];
 		wHera = savedData[26];
-	}@
-	Override
+		ownSkin1 = savedData[30] == 1;
+		ownSkin2 = savedData[31] == 1;
+		ownSkin3 = savedData[32] == 1;
+		ownSkin4 = savedData[33] == 1;
+		ownSkin5 = savedData[34] == 1;
+		ownSkin6 = savedData[35] == 1;
+		ownSkin7 = savedData[36] == 1;
+		currentSkin = savedData[37];
+	}
+	/**
+	 * reads saved data
+	 * starts music, loads images
+	 */
+	@ Override
 	public void onResume()
 	{
 		super.onResume();
@@ -727,8 +1031,11 @@ public class StartActivity extends Activity
 		startMusic();
 		control.imageLibrary.loadAllImages();
 		gameRunning = true;
-	}@
-	Override
+	}
+	/**
+	 * stops music, stops timer, saves data
+	 */
+	@ Override
 	public void onPause()
 	{
 		super.onPause();
@@ -737,12 +1044,15 @@ public class StartActivity extends Activity
 		stopMusic();
 		control.imageLibrary.recycleImages();
 		gameRunning = false;
-	}@
-	Override
+	}
+	@ Override
 	public void onStop()
 	{
 		super.onStop();
 	}
+	/**
+	 * reads data from file and sets variables accordingly
+	 */
 	private void read()
 	{
 		openRead();
@@ -757,6 +1067,9 @@ public class StartActivity extends Activity
 		}
 		closeRead();
 	}
+	/**
+	 * saves data to file
+	 */
 	private void write()
 	{
 		openWrite();
@@ -771,6 +1084,9 @@ public class StartActivity extends Activity
 		}
 		closeWrite();
 	}
+	/**
+	 * opens the save file to be read from
+	 */
 	private void openRead()
 	{
 		try
@@ -784,6 +1100,9 @@ public class StartActivity extends Activity
 			openRead();
 		}
 	}
+	/**
+	 * opens the save file to be written to
+	 */
 	private void openWrite()
 	{
 		try
@@ -795,6 +1114,9 @@ public class StartActivity extends Activity
 			// TODO Auto-generated catch block
 		}
 	}
+	/**
+	 * closes the save file from reading
+	 */
 	private void closeRead()
 	{
 		try
@@ -807,6 +1129,9 @@ public class StartActivity extends Activity
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * closes the save file from writing
+	 */
 	private void closeWrite()
 	{
 		try

@@ -1,11 +1,18 @@
-/*
- * Handles visuals for player or enemy teleportation
+/**
+ * Handles behavior for powerups
  */
 package com.magegame;
 public final class PowerUp extends DrawnSprite
 {
 	private int ID;
 	private int startInt = 1;
+	/**
+	 * sets image, dimensions, and position
+	 * @param creator control object
+	 * @param X starting x value
+	 * @param Y starting y value
+	 * @param Type type of powerup
+	 */
 	public PowerUp(Controller creator, double X, double Y, int Type)
 	{
 		width = 30;
@@ -26,8 +33,11 @@ public final class PowerUp extends DrawnSprite
 			ID=Type;
 		}
 		visualImage = control.imageLibrary.powerUps[ID-1];
-	}@
-	Override
+	}
+	/**
+	 * checks whether player is close enough to pick up
+	 */
+	@ Override
 	protected void frameCall()
 	{
 		double xDif = x - control.player.x;

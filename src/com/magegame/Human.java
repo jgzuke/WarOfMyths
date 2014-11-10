@@ -1,4 +1,4 @@
-/*
+/**
  * Enemies and player, regains health, provides variables and universal getHit method
  */
 package com.magegame;
@@ -15,15 +15,14 @@ abstract public class Human extends DrawnSprite
 	protected boolean thisPlayer = false;
 	protected int humanType;
 	protected double weight = 2;
-	/*
-	 * Regains health
-	 * @see com.example.magegame.Sprite#frameCall()
+	/**
+	 * Regains health, ends walk animation, plays animation
 	 */
 	@
 	Override
 	protected void frameCall()
 	{
-		if(currentFrame == 20)
+		if(currentFrame == 19)
 		{
 			currentFrame = 0;
 		}
@@ -36,10 +35,18 @@ abstract public class Human extends DrawnSprite
 			hp = hpMax;
 		}
 	}
+	/**
+	 * returns health
+	 * @return health
+	 */
 	protected int getHp() {
 		return hp;
 	}
-	protected void getHit(int damage)
+	/**
+	 * takes damage
+	 * @param damage amount of damage to take
+	 */
+	protected void getHit(double damage)
 	{
 		hp -= damage*2;
 		if(hp < 1)
@@ -48,18 +55,38 @@ abstract public class Human extends DrawnSprite
 			deleted = true;
 		}
 	}
+	/**
+	 * returns max health
+	 * @return max health
+	 */
 	protected int getHpMax() {
 		return hpMax;
 	}
+	/**
+	 * sets speed
+	 * @param speedCur speed to set
+	 */
 	protected void setSpeedCur(double speedCur) {
 		this.speedCur = speedCur;
 	}
+	/**
+	 * sets max health
+	 * @param speedCur max health to set
+	 */
 	protected void setHpMax(int hpMax) {
 		this.hpMax = hpMax;
 	}
+	/**
+	 * sets health
+	 * @param speedCur health to set
+	 */
 	protected void setHp(int hp) {
 		this.hp = hp;
 	}
+	/**
+	 * returns whether this object is the player
+	 * @return is it the player
+	 */
 	protected boolean isThisPlayer() {
 		return thisPlayer;
 	}

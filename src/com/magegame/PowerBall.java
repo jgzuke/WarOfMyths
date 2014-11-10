@@ -1,3 +1,6 @@
+/**
+ * behavior for all projectiles
+ */
 package com.magegame;
 abstract public class PowerBall extends DrawnSprite
 {
@@ -8,8 +11,11 @@ abstract public class PowerBall extends DrawnSprite
 	protected double xDif = 0;
 	protected double yDif = 0;
 	protected double realX;
-	protected double realY;@
-	Override
+	protected double realY;
+	/**
+	 * moves ball forward and decreases power
+	 */
+	@ Override
 	protected void frameCall()
 	{
 		realX += xForward;

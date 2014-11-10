@@ -1,12 +1,15 @@
-/*
+/**
  * Handles cooldowns and stats for player and executes spells
  */
 package com.magegame;
 
+import android.graphics.Bitmap;
 import android.util.Log;
 
 public final class Player extends Human
 {
+	protected int transformedTimer = 30000;
+	protected int transformed = 0;
 	protected double touchY;
 	private double damageMultiplier = 1;
 	protected int rollTimer = 0;
@@ -16,12 +19,12 @@ public final class Player extends Human
 	protected double spMod = 1;
 	protected double spChangeForType;
 	private double abilityTimer_roll = 0;
-	private double abilityTimer_teleport = 0;
 	private double abilityTimer_burst = 0;
 	protected double abilityTimer_powerBall = 0;
+	protected double abilityTimerTransformed_pound = 0;
+	protected double abilityTimerTransformed_hit = 0;
 	private double xSave = 0;
 	private double ySave = 0;
-	protected boolean teleporting = false;
 	private boolean usedDionysusWine = false;
 	protected int projectileSpeed = 13;
 	protected double touchX;
@@ -33,6 +36,10 @@ public final class Player extends Human
 	protected int powerID = 0;
 	private int minimumShootTime = 5;
 	private double hpAccurate;
+	/**
+	 * Sets all variables to start, sets image
+	 * @param creator control object
+	 */
 	public Player(Controller creator)
 	{
 		control = creator;
@@ -50,16 +57,23 @@ public final class Player extends Human
 			projectileSpeed = 17;
 		}*/
 	}
+	/**
+	 * resets all variables to the start of a match or round
+	 */
 	public void resetVariables()
 	{
+		if(transformed != 0)
+		{
+			transformed = 0;
+			control.imageLibrary.loadPlayerImage();
+		}
+		transformedTimer = 30000;
 		damageMultiplier = 1;
 		rollTimer = 0;
 		sp = 0.5;
-		abilityTimer_roll = 60;
-		abilityTimer_teleport = 175;
+		abilityTimer_roll = 120;
 		abilityTimer_burst = 250;
 		abilityTimer_powerBall = 0;
-		teleporting = false;
 		usedDionysusWine = false;
 		projectileSpeed = 10;
 		touching = false;
@@ -76,14 +90,32 @@ public final class Player extends Human
 		createSpecialGraphicGainCounter = false;
 		powerUpTimer=0;
 	}
-	/*
+	/**
 	 * Counts timers and executes movement and predefined behaviors
-	 * @see com.example.magegame.human#frameCall()
 	 */
 	@
 	Override
 	protected void frameCall()
 	{
+		if(transformedTimer == 0)
+		{
+			control.imageLibrary.loadTrans();
+			if(transformed == 1)
+			{
+				control.imageLibrary.player_Image = control.imageLibrary.loadArray1D(58, "human_playergolem", 80, 80);
+			} else
+			{
+				control.imageLibrary.player_Image = control.imageLibrary.loadArray1D(58, "human_playerhammer", 80, 80);
+			}
+		}
+		transformedTimer++;
+		if(transformedTimer == 500)
+		{
+			transformed = 0;
+			control.imageLibrary.transattack.recycle();
+			control.imageLibrary.loadPlayerImage();
+			control.imageLibrary.recycleArray(10, control.imageLibrary.trans);
+		}
 		if(control.drainHp)
 		{
 			hpAccurate += (double)hp/1000;
@@ -111,49 +143,6 @@ public final class Player extends Human
 		{
 			speedCur += 0.7*(double)control.activity.wZues/10;
 		}
-		double cooldown;
-		cooldown = (double)control.activity.wAthena*(double)control.activity.wHermes/100;
-		if(humanType==1)
-		{
-			cooldown *= spMod;
-		}
-		if(abilityTimer_roll < 120)
-		{
-			abilityTimer_roll += cooldown;
-		}
-		if(abilityTimer_teleport < 350)
-		{			
-			abilityTimer_teleport += cooldown;
-		}
-		cooldown = (double)control.activity.wAthena/10;
-			if(humanType==1)
-			{
-				cooldown *= Math.pow(spMod, 0.7);
-			}
-			if(powerUpTimer>0 && powerID == 1)
-			{
-				cooldown *= 1.5*(double)control.activity.wPoseidon/10;
-			}
-		if(abilityTimer_burst < 500)
-		{
-			abilityTimer_burst += cooldown;
-		}
-		if(abilityTimer_powerBall < 90)
-		{
-			abilityTimer_powerBall += cooldown*3;
-		}
-		if(control.limitSpells)
-		{
-			abilityTimer_teleport = 0;
-			abilityTimer_burst = 0;
-			abilityTimer_roll = 0;
-		}
-		rollTimer--;
-		if(currentFrame == 30)
-		{
-			currentFrame = 0;
-			playing = false;
-		}
 		if(sp > 1)
 		{
 			sp = 1;
@@ -162,67 +151,184 @@ public final class Player extends Human
 		{
 			sp = 0;
 		}
-		super.frameCall();
-		if(rollTimer < 1)
+		if(transformed == 1||transformed == 2)
 		{
-			if(touchingShoot)
-            {
-            	if(abilityTimer_powerBall > 30&&minimumShootTime<1)
-            	{
-	            	if(control.activity.shootTapDirectional)
-		        	{
-		        		double temp1 = rads;
-		            	rads = Math.atan2(touchShootY, touchShootX);
-		        		releasePowerBall();
-		        		control.shootStick.rotation=rads*180/Math.PI;
-		        		rads = temp1;
-		        	} else
-		        	{
-		        		releasePowerBall();
-		        		control.shootStick.rotation=rads*180/Math.PI;
-		        	}
-	            	minimumShootTime = 2;
-            	}
-            }
-            
-			rads = Math.atan2(touchY, touchX);
-			rotation = rads * r2d;
-			if(!deleted)
+			speedCur *= 1.2;	
+			double cooldown;
+			cooldown = (double)control.activity.wAthena/10;
+			abilityTimerTransformed_pound += cooldown;
+			abilityTimerTransformed_hit += cooldown;
+			if(abilityTimerTransformed_pound >= 120)
 			{
-				if(teleporting)
-				{
-					hp -= 10;
-					if(hp < 0)
-					{
-						getHit(1000);
-					}
-				}
-				else
+				abilityTimerTransformed_pound = 120;
+			}
+			if(abilityTimerTransformed_hit >= 20)
+			{
+				abilityTimerTransformed_hit = 20;
+			}
+			super.frameCall();
+			if(currentFrame<21)
+			{
+				rads = Math.atan2(touchY, touchX);
+				rotation = rads * r2d;
+				if(!deleted)
 				{
 					if(!touching || (Math.abs(touchX) < 5 && Math.abs(touchY) < 5))
 					{
 						playing = false;
 						currentFrame = 0;
-					}
-					else
+					} else
 					{
 						movement();
 					}
 				}
-			}
-		}
-		else
-		{			
-				x += xMoveRoll;
-				y += yMoveRoll;
-				if(rollTimer == 2)
+			} else
+			{
+				double distanceFound;
+				if(currentFrame == 28)
 				{
-					weight = 1;
+					for(int i = 0; i < control.enemies.length; i++)
+					{
+						if(control.enemies[i] != null)
+						{
+							distanceFound = checkDistance(x + Math.cos(rotation/r2d) * 35, y + Math.sin(rotation/r2d) * 35, control.enemies[i].x, control.enemies[i].y);
+							if(distanceFound < 50)
+							{
+								control.enemies[i].getHit((int)(400*spMod)+400);
+								control.activity.playEffect("sword2");
+								control.activity.playPlayerEffect();
+							}
+						}
+					}
+					control.activity.playEffect("swordmiss");
 				}
+				if(currentFrame == 53)
+				{
+					double newX = x + Math.cos(rotation/r2d) * 30;
+					double newY = y + Math.sin(rotation/r2d) * 30;
+					if(transformed == 2)
+					{
+						newX = x + Math.cos(rotation/r2d) * 50;
+						newY = y + Math.sin(rotation/r2d) * 50;
+					}
+					for(int i = 0; i<6; i++)
+					{	
+						control.createPowerBallPlayerAOE(newX-20+control.getRandomInt(40), newY-20+control.getRandomInt(40), 130);
+					}
+					control.createPowerBallPlayerBurst(newX, newY, 0);
+					control.activity.playEffect("burst");
+					control.activity.playEffect("burst");
+					control.activity.playEffect("burst");
+					control.activity.playPlayerEffect();
+					control.activity.playEffect("swordmiss");
+				}
+				if(currentFrame == 37)
+				{
+					currentFrame = 0;
+					playing = false;
+				}
+				if(currentFrame == 57)
+				{
+					currentFrame = 0;
+					playing = false;
+				}
+			}
+		} else
+		{
+			double cooldown;
+			cooldown = (double)control.activity.wAthena*(double)control.activity.wHermes/100;
+			if(humanType==1)
+			{
+				cooldown *= spMod;
+			}
+			abilityTimer_roll += cooldown;
+			if(abilityTimer_roll >= 120)
+			{
+				abilityTimer_roll = 120;
+			}
+			cooldown = (double)control.activity.wAthena/10;
+			if(humanType==1)
+			{
+				cooldown *= Math.pow(spMod, 0.7);
+			}
+			if(powerUpTimer>0 && powerID == 1)
+			{
+				cooldown *= 1.5*(double)control.activity.wPoseidon/10;
+			}
+			abilityTimer_burst += cooldown;
+			abilityTimer_powerBall += cooldown*4.5;
+			if(abilityTimer_burst >= 500)
+			{
+				abilityTimer_burst = 500;
+			}
+			if(abilityTimer_powerBall >= 90)
+			{
+				abilityTimer_powerBall = 90;
+			}
+			if(control.limitSpells)
+			{
+				abilityTimer_burst = 0;
+				abilityTimer_roll = 0;
+			}
+			rollTimer--;
+			if(currentFrame == 30)
+			{
+				currentFrame = 0;
+				playing = false;
+			}
+			super.frameCall();
+			if(rollTimer < 1)
+			{
+				if(touchingShoot)
+	            {
+	            	if(abilityTimer_powerBall > 30&&minimumShootTime<1)
+	            	{
+		            	if(control.activity.shootTapDirectional)
+			        	{
+			        		double temp1 = rads;
+			            	rads = Math.atan2(touchShootY, touchShootX);
+			        		releasePowerBall();
+			        		control.shootStick.rotation=rads*180/Math.PI;
+			        		rads = temp1;
+			        	} else
+			        	{
+			        		releasePowerBall();
+			        		control.shootStick.rotation=rads*180/Math.PI;
+			        	}
+		            	minimumShootTime = 2;
+	            	}
+	            }
+				rads = Math.atan2(touchY, touchX);
+				rotation = rads * r2d;
+				if(!deleted)
+				{
+						if(!touching || (Math.abs(touchX) < 5 && Math.abs(touchY) < 5))
+						{
+							playing = false;
+							currentFrame = 0;
+						}
+						else
+						{
+							movement();
+						}
+				}
+			}
+			else
+			{			
+					x += xMoveRoll;
+					y += yMoveRoll;
+					if(rollTimer == 2)
+					{
+						weight = 1;
+					}
+			}
 		}
 		visualImage = control.imageLibrary.player_Image[currentFrame];
 		setImageDimensions();
 	}
+	/**
+	 * moves player at a set speed, direction is based of move stick
+	 */
 	protected void movement()
 	{
 		playing = true;
@@ -231,11 +337,14 @@ public final class Player extends Human
 		x += Math.cos(rads) * speedCur;
 		y += Math.sin(rads) * speedCur;
 	}
+	/**
+	 * shoots a power ball
+	 */
 	protected void releasePowerBall()
 	{
 		if(abilityTimer_powerBall > 30)
 		{
-			if(teleporting == false && rollTimer < 0)
+			if(rollTimer < 0)
 			{
 					control.createPowerBallPlayer(rads*r2d, Math.cos(rads) * projectileSpeed, Math.sin(rads) * projectileSpeed, 130, x, y);
 					abilityTimer_powerBall -= 30;
@@ -246,101 +355,74 @@ public final class Player extends Human
 			//control.coolDown();
 		}
 	}
+	/**
+	 * rolls forward
+	 */
 	protected void roll()
 	{
 		if(abilityTimer_roll > 50)
 		{
-			if(teleporting == false && rollTimer < 0)
+			if(rollTimer < 0)
 			{
-				double speed;
-				if(humanType==2)
-				{
-					speed = 4*Math.pow(spMod, 0.5)*Math.pow((double)control.activity.wHermes/10, 0.5);
-				} else
-				{
-					speed = 4*Math.pow((double)control.activity.wHermes/10, 0.5);
-				}
 				rollTimer = 11;
 				playing = true;
 				currentFrame = 21;
-				xMoveRoll = Math.cos(rads) * Math.pow(speed, 0.5)*4;
-				yMoveRoll = Math.sin(rads) * Math.pow(speed, 0.5)*4;
+				xMoveRoll = Math.cos(rads) * 8;
+				yMoveRoll = Math.sin(rads) * 8;
 				abilityTimer_roll -= 50;
-				weight = 10;
 			}
 		} else
 		{
-			control.coolDown();
+			control.startWarning("Cool Down");
 		}
 	}
-	protected void teleport(double X, double Y)
+	/**
+	 * When player is transformed this pounds the ground or shield to create explosion
+	 */
+	protected void pound()
 	{
-		if(abilityTimer_teleport > 250)
+		if(abilityTimerTransformed_pound > 100)
 		{
-			if(rollTimer < 0)
+			if(currentFrame<21)
 			{
-				//control.teleportStart(x, y);
-				double newX = x + Math.cos(rads)*50;
-				double newY = y + Math.sin(rads)*50;
-				double centreX = newX;
-				double centreY = newY;
-				if(!control.checkHitBack(newX, newY))
-				{
-					x = newX;
-					y = newY;
-				} else if(!control.checkHitBack(newX+20, newY))
-				{
-					x = newX+20;
-					y = newY;
-				} else if(!control.checkHitBack(newX, newY+20))
-				{
-					x = newX;
-					y = newY+20;
-				} else if(!control.checkHitBack(newX-20, newY))
-				{
-					x = newX-20;
-					y = newY;
-				} else if(!control.checkHitBack(newX, newY-20))
-				{
-					x = newX;
-					y = newY-20;
-				} else
-				{
-					abilityTimer_teleport+=250;
-				}
-				//control.teleportFinish(x, y);
-				abilityTimer_teleport -= 250;
-				control.createTeleport(x - Math.cos(rads)*25, y - Math.sin(rads)*25, rotation);
-				control.activity.playEffect("teleport");
-				/*if(teleporting == false)
-				{
-						xSave = x;
-						ySave = y;
-						teleporting = true;
-						control.teleportStart(x, y);
-						x = 999999999;
-				} else
-				{
-					x = X;
-					y = Y;
-					teleporting = false;
-					control.teleportFinish(x, y);
-					abilityTimer_teleport -= 250;
-				}*/
+				playing = true;
+				currentFrame = 39;
+				abilityTimerTransformed_pound -= 100;
 			}
 		} else
 		{
-			control.coolDown();
+			control.startWarning("Cool Down");
 		}
 	}
+	/**
+	 * When player is transformed this swings sword or hammer
+	 */
+	protected void hit()
+	{
+		if(abilityTimerTransformed_hit > 10)
+		{
+			if(currentFrame<21)
+			{
+				playing = true;
+				currentFrame = 21;
+				abilityTimerTransformed_hit -= 15;
+			}
+		} else
+		{
+			control.startWarning("Cool Down");
+		}
+	}
+	/**
+	 * players burst attack
+	 */
 	protected void burst()
 	{
 		if(abilityTimer_burst > 400)
 		{
-			if(teleporting == false && rollTimer < 0)
+			if(rollTimer < 0)
 			{
 				for(int i = 0; i<6; i++)
-				{
+				{	
 					control.createPowerBallPlayerAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130);
 				}
 				control.createPowerBallPlayerBurst(x, y, 0);
@@ -348,37 +430,37 @@ public final class Player extends Human
 				control.activity.playEffect("burst");
 				control.activity.playEffect("burst");
 				control.activity.playEffect("burst");
-				if(control.playerType==0)
-				{
-					control.activity.playEffect("burn");
-				} else if(control.playerType==1)
-				{
-					control.activity.playEffect("water");
-				} else if(control.playerType==2)
-				{
-					control.activity.playEffect("electric");
-				} else
-				{
-					control.activity.playEffect("earth");
-				}
+				control.activity.playPlayerEffect();
 			}
 		} else
 		{
-			control.coolDown();
+			control.startWarning("Cool Down");
 		}
 	}
+	/**
+	 * stuns player
+	 */
 	protected void stun()
 	{
-		rotation = rads * r2d + 180;
-        roll();
-        currentFrame = 0;
-        xMoveRoll /= 3;
-        yMoveRoll /= 3;
-        abilityTimer_roll += 20;
+		if(transformed == 0)
+		{
+			rotation = rads * r2d + 180;
+	        roll();
+	        currentFrame = 0;
+	        xMoveRoll /= 3;
+	        yMoveRoll /= 3;
+	        abilityTimer_roll += 20;
+	        control.startWarning("Stunned!");
+		}
 	}
+	/**
+	 * reduces and amplifies damage based on sheilds etc.
+	 */
 	@Override
-	protected void getHit(int damage)
+	protected void getHit(double damage)
 	{
+		if(transformed == 1) damage *= 0.2;
+		if(transformed == 2) damage *= 0.3;
 		damage *= 0.7;
 		if(powerUpTimer>0 && powerID == 2)
 		{
@@ -391,28 +473,16 @@ public final class Player extends Human
 			}
 			super.getHit(damage);
 			sp -= sp*damage/1500;
-			if(deleted)
-			{
-				/*if(control.activity.useAmbrosia>0)
-				{
-					control.activity.useAmbrosia --;
-					hp = getHpMax()/2;
-					deleted = false;
-				} else if(control.activity.useDionysusWine>0)
-				{
-					control.activity.useDionysusWine --;
-					hp = getHpMax();
-					usedDionysusWine = true;
-					damageMultiplier = 0;
-					deleted = false;
-				} else
-				{*/
-					control.activity.loseFight();
-				//}
-			}
+			if(deleted) control.activity.loseFight();
 	}
+	/**
+	 * gives player a benefit, ranging from health to transformation
+	 * @param PowerID id of power received
+	 */
 	protected void getPowerUp(int PowerID)
 	{
+		if(PowerID<7||PowerID>10) control.activity.playEffect("powerup");
+		if(PowerID>6&&PowerID<11) control.activity.playMoney();
 		switch(PowerID)
 		{
 		case 1:
@@ -421,7 +491,7 @@ public final class Player extends Human
 			break;
 		case 2:
 			abilityTimer_roll = 120;
-			abilityTimer_teleport = 350;
+			abilityTimer_powerBall = 90;
 			abilityTimer_burst = 500;
 			break;
 		case 3:
@@ -455,47 +525,102 @@ public final class Player extends Human
 			control.moneyMade += 20*control.moneyMultiplier;
 			control.activity.gameCurrency += 20*control.moneyMultiplier;
 			break;
+		case 11:
+			transformedTimer = 0;
+			transformed = 1;
+			break;
+		case 12:
+			transformedTimer = 0;
+			transformed = 2;
+			break;
 		}
 	}
+	/**
+	 * returns roll timer
+	 * @return roll timer
+	 */
 	protected double getAbilityTimer_roll() {
 		return abilityTimer_roll;
 	}
+	/**
+	 * returns last x
+	 * @return last x
+	 */
 	protected double getXSave() {
 		return xSave;
 	}
+	/**
+	 * returns last y
+	 * @return last y
+	 */
 	protected double getYSave() {
 		return ySave;
 	}
-	protected boolean isTeleporting() {
-		return teleporting;
+	/**
+	 * checks distance between two points
+	 * @param fromX point one x
+	 * @param fromY point one y
+	 * @param toX point 2 x
+	 * @param toY point 2 y
+	 * @return distance between points
+	 */
+	private double checkDistance(double fromX, double fromY, double toX, double toY)
+	{
+		return Math.sqrt((Math.pow(fromX - toX, 2)) + (Math.pow(fromY - toY, 2)));
 	}
-	protected double getAbilityTimer_teleport() {
-		return abilityTimer_teleport;
-	}
+	/**
+	 * returns burst timer
+	 * @return burst timer
+	 */
 	protected double getAbilityTimer_burst() {
 		return abilityTimer_burst;
 	}
+	/**
+	 * returns power ball timer
+	 * @return power ball timer
+	 */
 	protected double getAbilityTimer_powerBall() {
 		return abilityTimer_powerBall;
 	}
+	/**
+	 * returns roll timer
+	 * @return roll timer
+	 */
 	protected int getRollTimer() {
 		return rollTimer;
 	}
+	/**
+	 * sets rolling timer
+	 * @param rollTimer time to set
+	 */
 	protected void setRollTimer(int rollTimer) {
 		this.rollTimer = rollTimer;
 	}
+	/**
+	 * sets roll cooldown timer
+	 * @param abilityTimer_roll time to set
+	 */
 	protected void setAbilityTimer_roll(int abilityTimer_roll) {
 		this.abilityTimer_roll = abilityTimer_roll;
 	}
-	protected void setAbilityTimer_teleport(int abilityTimer_teleport) {
-		this.abilityTimer_teleport = abilityTimer_teleport;
-	}
+	/**
+	 * sets power ball timer
+	 * @param abilityTimer_powerBall time to set
+	 */
 	protected void setAbilityTimer_burst(int abilityTimer_burst) {
 		this.abilityTimer_burst = abilityTimer_burst;
 	}
+	/**
+	 * sets burst timer
+	 * @param abilityTimer_powerBall time to set
+	 */
 	protected void setAbilityTimer_powerBall(int abilityTimer_powerBall) {
 		this.abilityTimer_powerBall = abilityTimer_powerBall;
 	}
+	/**
+	 * returns special
+	 * @return special
+	 */
 	protected double getSp() {
 		return sp;
 	}

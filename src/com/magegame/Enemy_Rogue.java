@@ -1,5 +1,5 @@
-/*
- * Object behavior and ai for enemies with sheilds
+/**
+ * AI and variables for rogues
  */
 package com.magegame;
 public final class Enemy_Rogue extends Enemy_Muggle
@@ -9,6 +9,12 @@ public final class Enemy_Rogue extends Enemy_Muggle
 	private double xMoveRoll;
 	private double yMoveRoll;
 	private boolean charged = false;
+	/**
+	 * Sets health, worth, and image
+	 * @param creator control object
+	 * @param setX starting x position
+	 * @param setY starting y position
+	 */
 	public Enemy_Rogue(Controller creator, double setX, double setY)
 	{
 		super(creator, setX, setY);
@@ -16,7 +22,7 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		currentFrame = 49;
 		visualImage = control.imageLibrary.rogue_Image[53];
 		setImageDimensions();
-		hp = (int)(5000 * control.getDifficultyLevelMultiplier());
+		hp = (int)(4000);//  * control.getDifficultyLevelMultiplier());
 		setHpMax(hp);
 		worth = 7;
 		weight = 0.8;
@@ -44,7 +50,7 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		super.frameCall();
 	}
 	@	Override
-	protected void getHit(int damage)
+	protected void getHit(double damage)
 	{
 		if(currentFrame > 46 && currentFrame<53)
 		{
@@ -54,6 +60,9 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		}
 		super.getHit(damage);
 	}
+	/**
+	 * rolls forward for 11 frames
+	 */
 	protected void roll()
 	{
 		rollTimer = 11;
@@ -62,6 +71,9 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		xMoveRoll = Math.cos(rads) * 8;
 		yMoveRoll = Math.sin(rads) * 8;
 	}
+	/**
+	 * rolls sideways for 11 frames
+	 */
 	protected boolean rollSideways()
 	{
 		boolean rolledSideways = true;
@@ -107,6 +119,9 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		}
 		return rolledSideways;
 	}
+	/**
+	 * rolls towards player for 11 frames
+	 */
 	protected void rollTowards()
 	{
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
@@ -137,9 +152,9 @@ public final class Enemy_Rogue extends Enemy_Muggle
 			}
 		} else
 		{
-			rads = Math.atan2((control.getPlayerY() - y), (control.getPlayerX() - x));
+			rads = Math.atan2(( control.player.y - y), (control.player.x - x));
 			rotation = rads * r2d;
-			distanceFound = checkDistance(x, y, control.getPlayerX(), control.getPlayerY());
+			distanceFound = checkDistance(x, y, control.player.x,  control.player.y);
 			if(distanceFound < 30)
 			{
 				attacking = true;
@@ -175,9 +190,9 @@ public final class Enemy_Rogue extends Enemy_Muggle
 	{
 		if(discovered)
 		{
-			rads = Math.atan2((control.getPlayerY() - y), (control.getPlayerX() - x));
+			rads = Math.atan2(( control.player.y - y), (control.player.x - x));
 			rotation = rads * r2d;
-			distanceFound = checkDistance(x, y, control.getPlayerX(), control.getPlayerY());
+			distanceFound = checkDistance(x, y, control.player.x,  control.player.y);
 			if(distanceFound < 30)
 			{
 				attacking = true;
@@ -192,9 +207,9 @@ public final class Enemy_Rogue extends Enemy_Muggle
 			}
 		} else
 		{
-			rads = Math.atan2((control.getPlayerY() - y), (control.getPlayerX() - x));
+			rads = Math.atan2(( control.player.y - y), (control.player.x - x));
 			rotation = rads * r2d;
-			distanceFound = checkDistance(x, y, control.getPlayerX(), control.getPlayerY());
+			distanceFound = checkDistance(x, y, control.player.x,  control.player.y);
 			if(distanceFound < 30)
 			{
 				attacking = true;

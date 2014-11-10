@@ -1,45 +1,37 @@
-//@author (classes and interfaces only, required)
-//@version (classes and interfaces only, required. See footnote 1)
-//@param (methods and constructors only)
-//@return (methods only)
-//@exception (@throws is a synonym added in Javadoc 1.2)
-//@see
-//@since
-//@serial (or @serialField or @serialData)
-//@deprecated (see How and When To Deprecate APIs)
-/* Controls running of battle, calls objects frameCalls, draws and handles all objects, edge hit detection
-* @param DifficultyLevel Chosen difficulty setting which dictates enemy reaction time and DifficultyLevelMultiplier
-* @param DifficultyLevelMultiplier Function of DifficultyLevel which changes enemy health, mana, speed
-* @param EnemyType Mage type of enemy
-* @param PlayerType Mage type of player
-* @param LevelNum Level chosen to fight on
-* @param player Player object that has health etc and generates movement handler
-* @param enemy Enemy object with health etc and ai
-* @param enemies Array of all enemies currently on screen excluding main mage enemy
-* @param powerBalls Array of all enemy or player powerBalls
-* @param powerBallAOEs Array of all enemy or player powerBall explosions
-* @param spGraphicEnemy Handles the changing of main enemy's sp
-* @param spGraphicPlayer Handles the changing of player's sp
-* @param oRectX1 Array of all walls left x value
-* @param oRectX2 Array of all walls right x value
-* @param oRectY1 Array of all walls top y value
-* @param oRectY2 Array of all walls bottom x value
-* @param oCircX Array of all pillars middle x value
-* @param oCircY Array of all pillars middle y value
-* @param oCircRadius Array of all pillars radius
-* @param currentCircle Current index of oCircX to write to
-* @param currentRectangle Current index of oRectX1 to write to
-* @param teleportSpots Array of levels four teleport spots x and y for enemy mage
-* @param game Game object holding imageLibrary
-* @param context Main activity context for returns
-* @param aoeRect Rectangle to draw sized bitmaps
-* @param mHandler Timer for frameCaller
-* @param handleMovement Handles players movement attacks etc
-* @param screenMinX Start of game on screen horizontally
-* @param screenMinY Start of game on screen vertically
-* @param screenDimensionMultiplier
-* @param frameCaller Calls objects and controllers frameCalls
-*/
+
+/** Controls running of battle, calls objects frameCalls, draws and handles all objects, edge hit detection
+ * @param DifficultyLevel Chosen difficulty setting which dictates enemy reaction time and DifficultyLevelMultiplier
+ * @param DifficultyLevelMultiplier Function of DifficultyLevel which changes enemy health, mana, speed
+ * @param EnemyType Mage type of enemy
+ * @param PlayerType Mage type of player
+ * @param LevelNum Level chosen to fight on
+ * @param player Player object that has health etc and generates movement handler
+ * @param enemy Enemy object with health etc and ai
+ * @param enemies Array of all enemies currently on screen excluding main mage enemy
+ * @param powerBalls Array of all enemy or player powerBalls
+ * @param powerBallAOEs Array of all enemy or player powerBall explosions
+ * @param spGraphicEnemy Handles the changing of main enemy's sp
+ * @param spGraphicPlayer Handles the changing of player's sp
+ * @param oRectX1 Array of all walls left x value
+ * @param oRectX2 Array of all walls right x value
+ * @param oRectY1 Array of all walls top y value
+ * @param oRectY2 Array of all walls bottom x value
+ * @param oCircX Array of all pillars middle x value
+ * @param oCircY Array of all pillars middle y value
+ * @param oCircRadius Array of all pillars radius
+ * @param currentCircle Current index of oCircX to write to
+ * @param currentRectangle Current index of oRectX1 to write to
+ * @param teleportSpots Array of levels four teleport spots x and y for enemy mage
+ * @param game Game object holding imageLibrary
+ * @param context Main activity context for returns
+ * @param aoeRect Rectangle to draw sized bitmaps
+ * @param mHandler Timer for frameCaller
+ * @param handleMovement Handles players movement attacks etc
+ * @param screenMinX Start of game on screen horizontally
+ * @param screenMinY Start of game on screen vertically
+ * @param screenDimensionMultiplier
+ * @param frameCaller Calls objects and controllers frameCalls
+ */
 package com.magegame;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -72,7 +64,6 @@ public final class Controller extends View
 	private PowerBall[] powerBalls = new PowerBall[30];
 	private PowerBallAOE[] powerBallAOEs = new PowerBallAOE[30];
 	private Wall_Rectangle[] walls = new Wall_Rectangle[30];
-	private Graphic_Teleport[] graphic_Teleport = new Graphic_Teleport[30];
 	private Wall_Circle[] wallCircles = new Wall_Circle[30];
 	private Wall_Ring[] wallRings = new Wall_Ring[30];
 	private Wall_Pass[] wallPasses = new Wall_Pass[30];
@@ -88,7 +79,7 @@ public final class Controller extends View
 	protected int playerType = 0;
 	protected int levelNum = 10;
 	private int warningTimer;
-	private int warningType;
+	private String warningText = "";
 	private int[] oPassageX1;
 	private int[] oPassageX2;
 	private int[] oPassageY1;
@@ -136,8 +127,8 @@ public final class Controller extends View
 	protected boolean lowerHp = false;
 	protected boolean limitSpells = false;
 	protected boolean enemyRegen = false;
-	protected int moneyMultiplier = 0;
-	protected int moneyMade = 0;
+	protected double moneyMultiplier = 0;
+	protected double moneyMade = 0;
 	private int savedEnemies = 0;
 	private int[][] saveEnemyInformation = new int[30][5];
 	public boolean hasKey = false;
@@ -147,9 +138,15 @@ public final class Controller extends View
 	private int curYShift;
 	private int goldColor = Color.rgb(216, 200, 28);
 	private int platinumColor = Color.rgb(196, 204, 204);
+	private int healthColor = Color.rgb(150, 0, 0);
+	private int specialColor = Color.rgb(0, 0, 150);
+	private int cooldownColor = Color.rgb(190, 190, 0);
 	protected DrawnSprite shootStick = new Graphic_shootStick();
 	private Runnable frameCaller = new Runnable()
 	{
+		/**
+		 * calls everyones 'frameCall' method
+		 */
 		public void run()
 		{
 			if(!gamePaused && activity.gameRunning)
@@ -158,8 +155,8 @@ public final class Controller extends View
 			}
 			mHandler.postDelayed(this, 50);
 		}
-	};
-	/* 
+	};	
+	/** 
 	 * Initializes all undecided variables, loads level, creates player and enemy objects, and starts frameCaller
 	 */
 	public Controller(Context startSet, StartActivity activitySet)
@@ -188,6 +185,9 @@ public final class Controller extends View
 		changePlayOptions();
 		changePlayerType(activity.playerType);
 	}
+	/**
+	 * ends a round of fighting and resets variables
+	 */
 	protected void endFighting()
 	{
 		player.resetVariables();
@@ -197,7 +197,6 @@ public final class Controller extends View
 		powerBalls = new PowerBall[30];
 		powerBallAOEs = new PowerBallAOE[30];
 		powerUps = new PowerUp[30];
-		graphic_Teleport = new Graphic_Teleport[30];
 		walls = new Wall_Rectangle[30];
 		wallCircles = new Wall_Circle[30];
 		wallRings = new Wall_Ring[30];
@@ -214,18 +213,30 @@ public final class Controller extends View
 		saveEnemyInformation = new int[30][5];
 		activity.saveGame();
 	}
+	/**
+	 * starts a new round of fighting
+	 * @param levelNumSet level to start
+	 */
 	protected void startFighting(int levelNumSet)
 	{
 		endFighting();
 		levelNum = levelNumSet;
+		difficultyLevelMultiplier *= 0.5+(Math.pow(getLevelWinningsMultiplier(levelNum), 0.6)/2);
 		loadLevel();
 	}
+	/**
+	 * changes difficulty of level
+	 * @param difficultyLevelSet new difficulty to set
+	 */
 	protected void changeDifficulty(int difficultyLevelSet)
 	{
 		difficultyLevel = difficultyLevelSet;
 		difficultyLevelMultiplier = 15 / (double)(difficultyLevel + 5);
 		activity.saveGame();
 	}
+	/**
+	 * changes look of background when options are changed
+	 */
 	protected void changePlayOptions()
 	{
 		detect.getSide();
@@ -233,7 +244,8 @@ public final class Controller extends View
 		{
 			shootStick.x = 53;
 			shootStick.y = 268;
-		} else
+		}
+		else
 		{
 			shootStick.x = 426;
 			shootStick.y = 268;
@@ -242,6 +254,10 @@ public final class Controller extends View
 		invalidate();
 		activity.saveGame();
 	}
+	/**
+	 * changes visuals and behavior when player changes type
+	 * @param playerTypeSet new player type
+	 */
 	protected void changePlayerType(int playerTypeSet)
 	{
 		playerType = playerTypeSet;
@@ -251,50 +267,88 @@ public final class Controller extends View
 		background = drawStart();
 		activity.saveGame();
 	}
+	/**
+	 * changes player behavior when player changes type
+	 */
 	protected void changePlayerType()
 	{
 		switch(playerType)
 		{
 		case 0:
-			player.spChangeForType = (double)activity.wApollo / 10;
-			shootStick.visualImage = imageLibrary.loadImage("shootfire", 65, 30);
+			player.spChangeForType = (double) activity.wApollo / 10;
+			shootStick.visualImage = imageLibrary.loadImage("shootfire", 70, 35);
 			break;
 		case 1:
-			player.spChangeForType = (double)activity.wPoseidon / 10;
-			shootStick.visualImage = imageLibrary.loadImage("shootwater", 65, 30);
+			player.spChangeForType = (double) activity.wPoseidon / 10;
+			shootStick.visualImage = imageLibrary.loadImage("shootwater", 70, 35);
 			break;
 		case 2:
-			player.spChangeForType = (double)activity.wZues / 10;
-			shootStick.visualImage = imageLibrary.loadImage("shootair", 65, 30);
+			player.spChangeForType = (double) activity.wZues / 10;
+			shootStick.visualImage = imageLibrary.loadImage("shootelectric", 70, 35);
 			break;
 		case 3:
-			player.spChangeForType = (double)activity.wHades / 10;
-			shootStick.visualImage = imageLibrary.loadImage("shootearth", 65, 30);
+			player.spChangeForType = (double) activity.wHades / 10;
+			shootStick.visualImage = imageLibrary.loadImage("shootearth", 70, 35);
 			break;
 		}
 	}
-	/*
-	 * Loads the level the user picked and initializes teleport and wall array variables
+	/**
+	 * creates a rectangle wall object
+	 * @param x x position
+	 * @param y y position
+	 * @param width wall width
+	 * @param height wall height
+	 * @param HitPlayer whether wall interacts with player
+	 * @param tall whether wall is tall enough to block projectiles
+	 * @return wall object
 	 */
 	protected Wall_Rectangle makeWall_Rectangle(int x, int y, int width, int height, boolean HitPlayer, boolean tall)
 	{
 		Wall_Rectangle wall1 = new Wall_Rectangle(this, x - 2, y - 2, width + 4, height + 4, HitPlayer, tall);
 		return wall1;
 	}
+	/**
+	 * creates a ring wall object
+	 * @param x x position
+	 * @param y y position
+	 * @param radIn inner radius
+	 * @param radOut outer radius
+	 * @return wall object
+	 */
 	protected Wall_Ring makeWall_Ring(int x, int y, int radIn, int radOut)
 	{
 		Wall_Ring wall1 = new Wall_Ring(this, x, y, radIn - 2, radOut + 2);
 		return wall1;
 	}
+	/**
+	 * creates a passage through a ring
+	 * @param x x position
+	 * @param y y position
+	 * @param width passage width
+	 * @param height passage height
+	 */
 	protected void makeWall_Pass(int x, int y, int width, int height)
 	{
 		Wall_Pass wall1 = new Wall_Pass(this, x - 2, y - 2, width + 4, height + 4);
 	}
+	/**
+	 * creates circular wall object
+	 * @param x x position
+	 * @param y y position
+	 * @param rad radius
+	 * @param ratio ratio between width and height
+	 * @param tall whether object is tall enough to block projectiles
+	 * @return wall object
+	 */
 	protected Wall_Circle makeWall_Circle(int x, int y, int rad, double ratio, boolean tall)
 	{
 		Wall_Circle wall1 = new Wall_Circle(this, x, y, rad + 2, ratio, tall);
 		return wall1;
 	}
+	/**
+	 * creates an empty array of rectangular wall variables
+	 * @param length desired length of arrays
+	 */
 	protected void createWallRectangleValueArrays(int length)
 	{
 		oRectX1 = new int[length];
@@ -302,6 +356,10 @@ public final class Controller extends View
 		oRectY1 = new int[length];
 		oRectY2 = new int[length];
 	}
+	/**
+	 * creates an empty array of circular wall variables
+	 * @param length desired length of arrays
+	 */
 	protected void createWallCircleValueArrays(int length)
 	{
 		oCircX = new int[length];
@@ -309,6 +367,10 @@ public final class Controller extends View
 		oCircRadius = new int[length];
 		oCircRatio = new double[length];
 	}
+	/**
+	 * creates an empty array of tall rectangular wall variables
+	 * @param length desired length of arrays
+	 */
 	protected void createWallRectangleValueArraysAll(int length)
 	{
 		oRectX1All = new int[length];
@@ -316,6 +378,10 @@ public final class Controller extends View
 		oRectY1All = new int[length];
 		oRectY2All = new int[length];
 	}
+	/**
+	 * creates an empty array of tall circular wall variables
+	 * @param length desired length of arrays
+	 */
 	protected void createWallCircleValueArraysAll(int length)
 	{
 		oCircXAll = new int[length];
@@ -323,6 +389,10 @@ public final class Controller extends View
 		oCircRadiusAll = new int[length];
 		oCircRatioAll = new double[length];
 	}
+	/**
+	 * creates an empty array of ringular wall variables
+	 * @param length desired length of arrays
+	 */
 	protected void createWallRingValueArrays(int length)
 	{
 		oRingX = new int[length];
@@ -330,6 +400,10 @@ public final class Controller extends View
 		oRingInner = new int[length];
 		oRingOuter = new int[length];
 	}
+	/**
+	 * creates an empty array of passage variables
+	 * @param length desired length of arrays
+	 */
 	protected void createWallPassageValueArrays(int length)
 	{
 		oPassageX1 = new int[length];
@@ -337,6 +411,9 @@ public final class Controller extends View
 		oPassageY1 = new int[length];
 		oPassageY2 = new int[length];
 	}
+	/**
+	 * loads a new level, creates walls enemies etc.
+	 */
 	protected void loadLevel()
 	{
 		if(levelNum == 10)
@@ -344,7 +421,7 @@ public final class Controller extends View
 			imageLibrary.changeArrayLoaded("swordsman", true);
 			createWallRectangleValueArrays(16);
 			createWallRectangleValueArraysAll(17);
-			createWallCircleValueArraysAll(4);
+			createWallCircleValueArraysAll(5);
 			levelWidth = 500;
 			levelHeight = 300;
 			player.x = 150;
@@ -352,7 +429,8 @@ public final class Controller extends View
 			wallCircles[0] = makeWall_Circle(56, 189, 8, 1, false);
 			wallCircles[1] = makeWall_Circle(58, 242, 8, 1, false);
 			wallCircles[2] = makeWall_Circle(103, 273, 8, 1, false);
-			wallCircles[3] = makeWall_Circle(162, 150, 5, 1, false);
+			wallCircles[3] = makeWall_Circle(167, 150, 5, 1, false);
+			wallCircles[2] = makeWall_Circle(164, 262, 8, 1, false);
 			walls[0] = makeWall_Rectangle(-20, 0, 30, 40, true, true);
 			walls[1] = makeWall_Rectangle(-20, 66, 30, 44, true, true);
 			walls[2] = makeWall_Rectangle(-20, 137, 30, 300, true, true);
@@ -368,7 +446,7 @@ public final class Controller extends View
 			walls[12] = makeWall_Rectangle(329, -20, 36, 30, true, true);
 			walls[13] = makeWall_Rectangle(395, -20, 36, 30, true, true);
 			walls[14] = makeWall_Rectangle(461, -20, 39, 30, true, true);
-			walls[15] = makeWall_Rectangle(0, 290, 500, 10, true, true);			
+			walls[15] = makeWall_Rectangle(0, 290, 500, 10, true, true);
 			walls[16] = makeWall_Rectangle(8, 194, 36, 100, true, false);
 		}
 		if(levelNum == 20)
@@ -401,26 +479,23 @@ public final class Controller extends View
 			imageLibrary.changeArrayLoaded("archer", true);
 			createWallRectangleValueArrays(5);
 			createWallRectangleValueArraysAll(7);
-			levelWidth = 400;
-			levelHeight = 300;
-			player.x = 376;
+			levelWidth = 480;
+			levelHeight = 310;
+			player.x = 436;
 			player.y = 112;
-			exitX = 27;
-			exitY = 105;
-			enemies[0] = new Enemy_Archer(this, 278, 35);
-			enemies[1] = new Enemy_Swordsman(this, 215, 85);
-			enemies[2] = new Enemy_Archer(this, 30, 192);
-			enemies[3] = new Enemy_Swordsman(this, 50, 249);
-			enemies[2].keyHolder = true;
-			walls[0] = makeWall_Rectangle(-35, 8, 100, 70, true, true);
-			walls[1] = makeWall_Rectangle(53, -9, 141, 153, true, true);
-			walls[2] = makeWall_Rectangle(69, 125, 108, 59, true, true);
-			
-			walls[3] = makeWall_Rectangle(281, 67, 96, 1210, true, true);
-			walls[4] = makeWall_Rectangle(270, 175, 1220, 1350, true, true);
-			
-			walls[5] = makeWall_Rectangle(86, 177, 13, 80, true, false);
-			walls[6] = makeWall_Rectangle(86, 245, 56, 13, true, false);
+			exitX = 40;
+			exitY = 112;
+			enemies[0] = new Enemy_Swordsman(this, 245, 85);
+			enemies[1] = new Enemy_Archer(this, 60, 192);
+			enemies[2] = new Enemy_Swordsman(this, 80, 249);
+			enemies[1].keyHolder = true;
+			walls[0] = makeWall_Rectangle(-5, 8, 100, 70, true, true);
+			walls[1] = makeWall_Rectangle(83, -9, 141, 153, true, true);
+			walls[2] = makeWall_Rectangle(99, 125, 108, 59, true, true);
+			walls[3] = makeWall_Rectangle(311, 67, 96, 1210, true, true);
+			walls[4] = makeWall_Rectangle(300, 175, 1220, 1350, true, true);
+			walls[5] = makeWall_Rectangle(116, 177, 13, 80, true, false);
+			walls[6] = makeWall_Rectangle(116, 245, 56, 13, true, false);
 		}
 		if(levelNum == 40)
 		{
@@ -454,7 +529,6 @@ public final class Controller extends View
 			walls[1] = makeWall_Rectangle(224, 320, 32, 196, true, false);
 			walls[2] = makeWall_Rectangle(316, 49, 21, 19, true, true);
 			walls[3] = makeWall_Rectangle(65, 326, 20, 20, true, true);
-			
 			walls[4] = makeWall_Rectangle(131, 144, 18, 110, true, true);
 			walls[5] = makeWall_Rectangle(250, 145, 18, 108, true, true);
 			walls[6] = makeWall_Rectangle(140, 144, 36, 19, true, true);
@@ -629,15 +703,22 @@ public final class Controller extends View
 		if(levelNum == 90)
 		{
 			imageLibrary.changeArrayLoaded("swordsman", true);
+			imageLibrary.changeArrayLoaded("archer", true);
 			createWallRectangleValueArrays(6);
 			createWallRectangleValueArraysAll(6);
 			levelWidth = 400;
 			levelHeight = 410;
-			player.x = 379;
-			player.y = 250;
+			player.x = 329;
+			player.y = 205;
 			exitX = -1000;
 			exitY = -1000;
-			enemies[0] = new Enemy_Swordsman(this, 379, 250);
+			enemies[0] = new Enemy_Swordsman(this, 100, 50);
+			enemies[1] = new Enemy_Swordsman(this, 300, 50);
+			enemies[2] = new Enemy_Swordsman(this, 100, 360);
+			enemies[3] = new Enemy_Swordsman(this, 300, 360);
+			enemies[4] = new Enemy_Mage(this, 200, 180);
+			enemies[5] = new Enemy_Mage(this, 200, 230);
+			enemies[4].keyHolder = true;
 			walls[0] = makeWall_Rectangle(43, -48, 10, 240, true, true);
 			walls[1] = makeWall_Rectangle(43, 223, 10, 240, true, true);
 			walls[2] = makeWall_Rectangle(346, -48, 10, 240, true, true);
@@ -645,16 +726,16 @@ public final class Controller extends View
 			walls[4] = makeWall_Rectangle(88, 43, 10, 322, true, true);
 			walls[5] = makeWall_Rectangle(302, 43, 10, 322, true, true);
 			int[] toSave0 = {
-				1, 50, 50, 0, 0
+				1, 200, 50, 0, 0
 			};
 			int[] toSave1 = {
-				1, 50, 50, 0, 0
+				1, 200, 360, 0, 0
 			};
 			int[] toSave2 = {
-				1, 50, 50, 0, 1
+				5, 100, 205, 0, 0
 			};
 			int[] toSave3 = {
-				1, 50, 50, 0, 0
+				5, 300, 205, 0, 0
 			};
 			saveEnemyInformation[0] = toSave0;
 			saveEnemyInformation[1] = toSave1;
@@ -664,10 +745,14 @@ public final class Controller extends View
 		}
 		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
 	}
+	/**
+	 * loads a new section of the current level
+	 * @param level id of new section to load
+	 */
 	protected void loadLevelSection(int level)
 	{
 		levelNum = level;
-		if(levelNum>29)
+		if(levelNum > 29)
 		{
 			int tempEnemies = savedEnemies;
 			int[][] tempSave = new int[tempEnemies][5];
@@ -699,7 +784,8 @@ public final class Controller extends View
 				}
 			}
 			endFightSection(tempSave, tempEnemies);
-		} else
+		}
+		else
 		{
 			endFightSection();
 		}
@@ -729,21 +815,20 @@ public final class Controller extends View
 		}
 		if(levelNum == 21)
 		{
-			
 			createWallRectangleValueArrays(7);
 			createWallRectangleValueArraysAll(7);
 			player.x = 25;
-			enemies[0] = new Enemy_Target(this, 653-506, 125, 180, false);
-			enemies[1] = new Enemy_Target(this, 653-506, 176, 180, false);
-			enemies[2] = new Enemy_Target(this, 670-506, 150, 180, false);
-			enemies[3] = new Enemy_Target(this, 1014-506, 150, 180, false);
-			walls[0] = makeWall_Rectangle(503-506, -100, 15, 500, true, true);
-			walls[1] = makeWall_Rectangle(665-506, -77, 15, 205, true, true);
-			walls[2] = makeWall_Rectangle(665-506, 172, 15, 205, true, true);
-			walls[3] = makeWall_Rectangle(825-506, -77, 15, 205, true, true);
-			walls[4] = makeWall_Rectangle(825-506, 172, 15, 205, true, true);
-			walls[5] = makeWall_Rectangle(1014-506, -77, 15, 205, true, true);
-			walls[6] = makeWall_Rectangle(1014-506, 172, 15, 205, true, true);
+			enemies[0] = new Enemy_Target(this, 653 - 506, 125, 180, false);
+			enemies[1] = new Enemy_Target(this, 653 - 506, 176, 180, false);
+			enemies[2] = new Enemy_Target(this, 670 - 506, 150, 180, false);
+			enemies[3] = new Enemy_Target(this, 1014 - 506, 150, 180, false);
+			walls[0] = makeWall_Rectangle(503 - 506, -100, 15, 500, true, true);
+			walls[1] = makeWall_Rectangle(665 - 506, -77, 15, 205, true, true);
+			walls[2] = makeWall_Rectangle(665 - 506, 172, 15, 205, true, true);
+			walls[3] = makeWall_Rectangle(825 - 506, -77, 15, 205, true, true);
+			walls[4] = makeWall_Rectangle(825 - 506, 172, 15, 205, true, true);
+			walls[5] = makeWall_Rectangle(1014 - 506, -77, 15, 205, true, true);
+			walls[6] = makeWall_Rectangle(1014 - 506, 172, 15, 205, true, true);
 		}
 		if(levelNum == 22)
 		{
@@ -753,18 +838,23 @@ public final class Controller extends View
 			player.x = 25;
 			exitX = 582;
 			exitY = 150;
-			enemies[0] = new Enemy_Target(this, 1204-1017, 150, 180, false);
-			enemies[1] = new Enemy_Target(this, 1400-1017, 150, 180, false);
-			enemies[2] = new Enemy_Target(this, 1522-1017, 150, 180, false);
-			enemies[2].keyHolder=true;
-			walls[0] = makeWall_Rectangle(1014-1017, -100, 15, 500, true, true);
-			walls[1] = makeWall_Rectangle(1198-1017, -77, 15, 205, true, true);
-			walls[2] = makeWall_Rectangle(1198-1017, 172, 15, 205, true, true);
-			walls[3] = makeWall_Rectangle(1393-1017, -77, 15, 205, true, true);
-			walls[4] = makeWall_Rectangle(1393-1017, 172, 15, 205, true, true);
+			enemies[0] = new Enemy_Target(this, 1204 - 1017, 150, 180, false);
+			enemies[1] = new Enemy_Target(this, 1400 - 1017, 150, 180, false);
+			enemies[2] = new Enemy_Target(this, 1522 - 1017, 150, 180, false);
+			enemies[2].keyHolder = true;
+			walls[0] = makeWall_Rectangle(1014 - 1017, -100, 15, 500, true, true);
+			walls[1] = makeWall_Rectangle(1198 - 1017, -77, 15, 205, true, true);
+			walls[2] = makeWall_Rectangle(1198 - 1017, 172, 15, 205, true, true);
+			walls[3] = makeWall_Rectangle(1393 - 1017, -77, 15, 205, true, true);
+			walls[4] = makeWall_Rectangle(1393 - 1017, 172, 15, 205, true, true);
 		}
 		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
 	}
+	/**
+	 * creates an enemy based off of saved info
+	 * @param info array of stored values
+	 * @param index which spot in enemy array to populate
+	 */
 	private void createEnemy(int[] info, int index)
 	{
 		switch(info[0])
@@ -797,13 +887,17 @@ public final class Controller extends View
 			enemies[index].keyHolder = true;
 		}
 	}
+	/**
+	 * end a section of a fight, stored enemies in current states
+	 * @param enemyData enemies to create
+	 * @param tempEnemies number of enemies to create
+	 */
 	private void endFightSection(int[][] enemyData, int tempEnemies)
 	{
 		enemies = new Enemy[30];
 		powerBalls = new PowerBall[30];
 		powerBallAOEs = new PowerBallAOE[30];
 		powerUps = new PowerUp[30];
-		graphic_Teleport = new Graphic_Teleport[30];
 		walls = new Wall_Rectangle[30];
 		wallCircles = new Wall_Circle[30];
 		wallRings = new Wall_Ring[30];
@@ -819,13 +913,15 @@ public final class Controller extends View
 			createEnemy(enemyData[i], i);
 		}
 	}
+	/**
+	 * ends a fight section with no saved enemies
+	 */
 	private void endFightSection()
 	{
 		enemies = new Enemy[30];
 		powerBalls = new PowerBall[30];
 		powerBallAOEs = new PowerBallAOE[30];
 		powerUps = new PowerUp[30];
-		graphic_Teleport = new Graphic_Teleport[30];
 		walls = new Wall_Rectangle[30];
 		wallCircles = new Wall_Circle[30];
 		wallRings = new Wall_Ring[30];
@@ -837,6 +933,12 @@ public final class Controller extends View
 		currentRing = 0;
 		currentPassage = 0;
 	}
+	/**
+	 * fixes hp bar so it is on screen
+	 * @param minX small x value of bar
+	 * @param maxX large x value of bar
+	 * @return offset so bar is on screen
+	 */
 	protected int fixXBoundsHpBar(int minX, int maxX)
 	{
 		int offset = 0;
@@ -850,6 +952,12 @@ public final class Controller extends View
 		}
 		return offset;
 	}
+	/**
+	 * fixes hp bar so it is on screen
+	 * @param minY small y value of bar
+	 * @param maxY large y value of bar
+	 * @return offset so bar is on screen
+	 */
 	protected int fixYBoundsHpBar(int minY, int maxY)
 	{
 		int offset = 0;
@@ -863,6 +971,10 @@ public final class Controller extends View
 		}
 		return offset;
 	}
+	/**
+	 * draws all enemy health bars
+	 * @param g canvas to draw to
+	 */
 	protected void drawHealthBars(Canvas g)
 	{
 		int minX;
@@ -876,10 +988,10 @@ public final class Controller extends View
 			{
 				if(!enemies[i].rogue || enemies[i].currentFrame != 49)
 				{
-					minX = (int) enemies[i].getX() - 20;
-					maxX = (int) enemies[i].getX() + 20;
-					minY = (int) enemies[i].getY() - 30;
-					maxY = (int) enemies[i].getY() - 20;
+					minX = (int) enemies[i].x - 20;
+					maxX = (int) enemies[i].x + 20;
+					minY = (int) enemies[i].y - 30;
+					maxY = (int) enemies[i].y - 20;
 					/*offset = fixXBoundsHpBar(minX, maxX);
 					minX += offset;
 					maxX += offset;
@@ -902,8 +1014,9 @@ public final class Controller extends View
 			}
 		}
 	}
-	/*
+	/**
 	 * Draws hp, mp, sp, and cooldown bars for player and enemies
+	 * @param g canvas to draw to
 	 */
 	protected void drawContestantStats(Canvas g)
 	{
@@ -914,9 +1027,9 @@ public final class Controller extends View
 		paint.setColor(Color.WHITE);
 		//drawRect(395, 240, 475, 316, g);
 		//drawRect(5, 240, 85, 316, g);
-		paint.setColor(Color.RED);
+		paint.setColor(healthColor);
 		drawRect(400 - fix, 148, 400 - fix + (70 * player.getHp() / (int)(700 * activity.wHephaestus)), 164, g);
-		paint.setColor(Color.GREEN);
+		paint.setColor(specialColor);
 		drawRect(400 - fix, 192, 400 - fix + (int)(70 * player.getSp()), 208, g);
 		paint.setColor(Color.BLACK);
 		paint.setStyle(Paint.Style.STROKE);
@@ -929,70 +1042,87 @@ public final class Controller extends View
 		drawText(Integer.toString((int)(3500 * player.getSp())), 435 - fix, 204, g);
 		//drawText(Integer.toString(activity.gameCurrency), 435 - fix, 205, g);
 		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(Color.YELLOW);
-		drawRect(12 + fix, 68, 12 + fix + (int)((66 * player.getAbilityTimer_burst()) / 500), 78, g);
-		drawRect(12 + fix, 200, 12 + fix + (int)((66 * player.getAbilityTimer_roll()) / 120), 210, g);
-		drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.getAbilityTimer_powerBall()) / 90), 310, g);
+		paint.setColor(cooldownColor);
+		if(player.transformed==0)
+		{
+			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.getAbilityTimer_burst()) / 500), 111, g);
+			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.getAbilityTimer_roll()) / 120), 215, g);
+			drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.getAbilityTimer_powerBall()) / 90), 310, g);
+		} else if(player.transformed==1)
+		{
+			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimerTransformed_pound) / 120), 111, g);
+			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.abilityTimerTransformed_hit) / 20), 215, g);
+			drawRect(90, 300, 90 + (int)((500 - player.transformedTimer) *3/5), 310, g);
+		} else
+		{
+			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimerTransformed_pound) / 120), 111, g);
+			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.abilityTimerTransformed_hit) / 20), 215, g);
+			drawRect(90, 300, 90 + (int)((500 - player.transformedTimer) *3/5), 310, g);
+		}
 		//drawRect(12 + fix, 134, 12 + fix + (int)((66 * player.getAbilityTimer_teleport()) / 350), 144, g);
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setColor(Color.BLACK);
-		drawRect(12 + fix, 68, 78 + fix, 78, g);
-		drawRect(12 + fix, 300, 78 + fix, 310, g);
-		drawRect(12 + fix, 200, 78 + fix, 210, g);
+		drawRect(12 + fix, 101, 78 + fix, 111, g);
+		if(player.transformed==0) drawRect(12 + fix, 300, 78 + fix, 310, g);
+		drawRect(12 + fix, 205, 78 + fix, 215, g);
 		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(Color.GRAY);
+		paint.setColor(Color.BLACK);
 		paint.setAlpha(151);
-		if(player.teleporting || player.rollTimer > 0)
+		if(player.rollTimer > 0 && player.transformed==0)
 		{
-			drawRect(12 + fix, 33, 78 + fix, 99, g);
-			drawRect(12 + fix, 118, 78 + fix, 184, g);
-			//drawRect(12 + fix, 78, 78 + fix, 144, g);
-		}
-		else
+			drawRect(12 + fix, 45, 78 + fix, 111, g);
+			drawRect(12 + fix, 149, 78 + fix, 215, g);
+		} else
 		{
-			if(player.getAbilityTimer_burst() < 400)
+			if(player.transformed==0)
 			{
-				drawRect(12 + fix, 33, 78 + fix, 99, g);
-			}
-			if(player.getAbilityTimer_roll() < 50)
+				if(player.getAbilityTimer_burst() < 400)
+				{
+					drawRect(12 + fix, 45, 78 + fix, 111, g);
+				}
+				if(player.getAbilityTimer_roll() < 50)
+				{
+					drawRect(12 + fix, 149, 78 + fix, 215, g);
+				}
+			} else if(player.transformed==0)
 			{
-				drawRect(12 + fix, 118, 78 + fix, 184, g);
-			}
-			if(player.getAbilityTimer_teleport() < 250)
+				if(player.abilityTimerTransformed_pound < 100)
+				{
+					drawRect(12 + fix, 45, 78 + fix, 111, g);
+				}
+				if(player.abilityTimerTransformed_hit < 15)
+				{
+					drawRect(12 + fix, 149, 78 + fix, 215, g);
+				}
+			} else
 			{
-				//drawRect(12 + fix, 78, 78 + fix, 144, g);
+				if(player.abilityTimerTransformed_pound < 100)
+				{
+					drawRect(12 + fix, 45, 78 + fix, 111, g);
+				}
+				if(player.abilityTimerTransformed_hit < 15)
+				{
+					drawRect(12 + fix, 149, 78 + fix, 215, g);
+				}
 			}
 		}
-		drawBitmapRotated(shootStick, g);
 		paint.setAlpha(255);
+		if(player.transformed==0) drawBitmapRotated(shootStick, g);
 	}
-	/*
+	/**
 	 * Sets deleted objects to null to be gc'd and tests player and enemy hitting arena bounds
 	 */
 	protected void frameCall()
 	{
-		for(int i = 0; i < graphic_Teleport.length; i++)
-		{
-			if(graphic_Teleport[i] != null)
-			{
-				if(graphic_Teleport[i].isDeleted())
-				{
-					graphic_Teleport[i] = null;
-				}
-				else
-				{
-					graphic_Teleport[i].frameCall();
-				}
-			}
-		}
 		for(int i = 0; i < powerBalls.length; i++)
 		{
 			if(powerBalls[i] != null)
 			{
-				if(powerBalls[i].isDeleted())
+				if(powerBalls[i].deleted)
 				{
 					powerBalls[i] = null;
-				} else
+				}
+				else
 				{
 					powerBalls[i].frameCall();
 				}
@@ -1002,7 +1132,7 @@ public final class Controller extends View
 		{
 			if(powerBallAOEs[i] != null)
 			{
-				if(powerBallAOEs[i].isDeleted())
+				if(powerBallAOEs[i].deleted)
 				{
 					powerBallAOEs[i] = null;
 				}
@@ -1016,7 +1146,7 @@ public final class Controller extends View
 		{
 			if(powerUps[i] != null)
 			{
-				if(powerUps[i].isDeleted())
+				if(powerUps[i].deleted)
 				{
 					powerUps[i] = null;
 				}
@@ -1030,7 +1160,7 @@ public final class Controller extends View
 		{
 			if(enemies[i] != null)
 			{
-				if(enemies[i].isDeleted())
+				if(enemies[i].deleted)
 				{
 					enemies[i] = null;
 				}
@@ -1043,10 +1173,10 @@ public final class Controller extends View
 						enemies[i].frameCall();
 						if(enemies[i] != null)
 						{
-							if(enemies[i].getX() < 10) enemies[i].setX(10);
-							if(enemies[i].getX() > levelWidth - 10) enemies[i].setX(levelWidth - 10);
-							if(enemies[i].getY() < 10) enemies[i].setY(10);
-							if(enemies[i].getY() > levelHeight - 10) enemies[i].setY(levelHeight - 10);
+							if(enemies[i].x < 10) enemies[i].x = 10;
+							if(enemies[i].x > levelWidth - 10) enemies[i].x = (levelWidth - 10);
+							if(enemies[i].y < 10) enemies[i].y = 10;
+							if(enemies[i].y > levelHeight - 10) enemies[i].y = (levelHeight - 10);
 						}
 					}
 				}
@@ -1058,27 +1188,24 @@ public final class Controller extends View
 		}
 		else
 		{
-			if(!player.isDeleted())
+			if(!player.deleted)
 			{
 				player.frameCall();
-				if(!player.isTeleporting())
-				{
-					if(player.getX() < 10) player.setX(10);
-					if(player.getX() > levelWidth - 10) player.setX(levelWidth - 10);
-					if(player.getY() < 10) player.setY(10);
-					if(player.getY() > levelHeight - 10) player.setY(levelHeight - 10);
-				}
+					if(player.x < 10) player.x = (10);
+					if(player.x > levelWidth - 10) player.x = (levelWidth - 10);
+					if(player.y < 10) player.y = (10);
+					if(player.y > levelHeight - 10) player.y = (levelHeight - 10);
 			}
 		}
 		if(activity.gameRunning)
 		{
 			if(levelNum == 10)
 			{
-				if(imageLibrary.directionsTutorial == null && distSquared(player.getX(), player.getY(), 162, 150) < 400)
+				if(imageLibrary.directionsTutorial == null && distSquared(player.x, player.y, 162, 150) < 400)
 				{
 					imageLibrary.directionsTutorial = imageLibrary.loadImage("menu_directions", 200, 180);
 				}
-				else if(imageLibrary.directionsTutorial != null && distSquared(player.getX(), player.getY(), 162, 150) > 400)
+				else if(imageLibrary.directionsTutorial != null && distSquared(player.x, player.y, 162, 150) > 400)
 				{
 					imageLibrary.directionsTutorial.recycle();
 					imageLibrary.directionsTutorial = null;
@@ -1104,7 +1231,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.y < 15 && player.x > 42 && player.x < 66)
@@ -1119,7 +1246,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.y < 15 && player.x > 107 && player.x < 131)
@@ -1134,7 +1261,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.y < 15 && player.x > 173 && player.x < 197)
@@ -1149,7 +1276,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.y < 15 && player.x > 237 && player.x < 260)
@@ -1164,7 +1291,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.y < 15 && player.x > 304 && player.x < 326)
@@ -1179,7 +1306,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.y < 15 && player.x > 369 && player.x < 392)
@@ -1194,7 +1321,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.y < 15 && player.x > 433 && player.x < 457)
@@ -1209,7 +1336,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.x > 485 && player.y > 42 && player.y < 62)
@@ -1224,7 +1351,7 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 				else if(player.x > 485 && player.y > 113 && player.y < 134)
@@ -1239,15 +1366,15 @@ public final class Controller extends View
 					}
 					else
 					{
-						levelLocked();
+						startWarning("Level Locked");
 					}
 				}
 			}
-			if(levelNum == 20||levelNum == 21)
+			if(levelNum == 20 || levelNum == 21)
 			{
 				if(player.x > 504 && player.y > 140 && player.y < 160)
 				{
-					loadLevelSection(levelNum+1);
+					loadLevelSection(levelNum + 1);
 				}
 			}
 			if(levelNum == 90)
@@ -1274,7 +1401,7 @@ public final class Controller extends View
 			{
 				if(walls[i] != null)
 				{
-					if(inView(walls[i].oRX1, walls[i].oRY1, walls[i].oRX2-walls[i].oRX1, walls[i].oRY2-walls[i].oRY1))
+					if(inView(walls[i].oRX1, walls[i].oRY1, walls[i].oRX2 - walls[i].oRX1, walls[i].oRY2 - walls[i].oRY1))
 					{
 						walls[i].frameCall();
 					}
@@ -1285,7 +1412,7 @@ public final class Controller extends View
 				if(wallCircles[i] != null)
 				{
 					int width = wallCircles[i].oCR;
-					if(inView((int)wallCircles[i].oCX-(width/2), (int)wallCircles[i].oCY-(width/2), width, width))
+					if(inView((int) wallCircles[i].oCX - (width / 2), (int) wallCircles[i].oCY - (width / 2), width, width))
 					{
 						wallCircles[i].frameCall();
 					}
@@ -1296,7 +1423,7 @@ public final class Controller extends View
 				if(wallRings[i] != null)
 				{
 					int width = wallRings[i].oCROut;
-					if(inView((int)wallRings[i].oCX-(width/2), (int)wallRings[i].oCY-(width/2), width, width))
+					if(inView((int) wallRings[i].oCX - (width / 2), (int) wallRings[i].oCY - (width / 2), width, width))
 					{
 						wallRings[i].frameCall();
 					}
@@ -1305,10 +1432,22 @@ public final class Controller extends View
 			invalidate();
 		}
 	}
+	/**
+	 * returns distance squared between two objects
+	 * @param x1 first x position
+	 * @param y1 first y position
+	 * @param x2 second x position
+	 * @param y2 second y position
+	 * @return distance between points squared
+	 */
 	protected double distSquared(double x1, double y1, double x2, double y2)
 	{
 		return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
 	}
+	/**
+	 * draws background of play screen
+	 * @return bitmap of play screen
+	 */
 	protected Bitmap drawStart()
 	{
 		paint.setAlpha(255);
@@ -1316,14 +1455,18 @@ public final class Controller extends View
 		Canvas g = new Canvas(drawTo);
 		if(activity.stickOnRight)
 		{
-			drawBitmap(imageLibrary.loadImage("screen000"+Integer.toString(playerType+5), 480, 320), 0, 0, g);
+			drawBitmap(imageLibrary.loadImage("screen000" + Integer.toString(playerType + 5), 480, 320), 0, 0, g);
 		}
 		else
 		{
-			drawBitmap(imageLibrary.loadImage("screen000"+Integer.toString(playerType+1), 480, 320), 0, 0, g);
+			drawBitmap(imageLibrary.loadImage("screen000" + Integer.toString(playerType + 1), 480, 320), 0, 0, g);
 		}
 		return drawTo;
 	}
+	/**
+	 * draws the level and objects in it
+	 * @return bitmap of level and objects
+	 */
 	protected Bitmap drawLevel()
 	{
 		Bitmap drawTo = Bitmap.createBitmap(levelWidth, levelHeight, Config.ARGB_8888);
@@ -1347,7 +1490,7 @@ public final class Controller extends View
 		}
 		if(levelNum == 10)
 		{
-			if(imageLibrary.directionsTutorial!= null) drawBitmapLevel(imageLibrary.directionsTutorial, 45, 65, g);
+			if(imageLibrary.directionsTutorial != null) drawBitmapLevel(imageLibrary.directionsTutorial, 45, 65, g);
 			if(activity.levelBeaten < 1) drawBitmapLevel(imageLibrary.levelLocked, 12, 33, g);
 			if(activity.levelBeaten < 2) drawBitmapLevel(imageLibrary.levelLocked, 39, 10, g);
 			if(activity.levelBeaten < 3) drawBitmapLevel(imageLibrary.levelLocked, 104, 10, g);
@@ -1363,6 +1506,15 @@ public final class Controller extends View
 		if(player != null)
 		{
 			drawBitmapRotatedLevel(player, g);
+			if(player.transformedTimer>1&&player.transformedTimer<500)
+			{
+				int frame = player.transformedTimer;
+				while(frame>9)
+				{
+					frame -= 10;
+				}
+				drawBitmapLevel(imageLibrary.trans[frame], (int)player.x - 60, (int)player.y - 60, g);
+			}
 		}
 		for(int i = 0; i < enemies.length; i++)
 		{
@@ -1386,27 +1538,20 @@ public final class Controller extends View
 		{
 			if(powerBallAOEs[i] != null)
 			{
-				aoeRect.top = (int)(powerBallAOEs[i].getY() - (powerBallAOEs[i].getHeight() / 2.5));
-				aoeRect.bottom = (int)(powerBallAOEs[i].getY() + (powerBallAOEs[i].getHeight() / 2.5));
-				aoeRect.left = (int)(powerBallAOEs[i].getX() - (powerBallAOEs[i].getWidth() / 2.5));
-				aoeRect.right = (int)(powerBallAOEs[i].getX() + (powerBallAOEs[i].getWidth() / 2.5));
+				aoeRect.top = (int)(powerBallAOEs[i].y - (powerBallAOEs[i].getHeight() / 2.5));
+				aoeRect.bottom = (int)(powerBallAOEs[i].y + (powerBallAOEs[i].getHeight() / 2.5));
+				aoeRect.left = (int)(powerBallAOEs[i].x - (powerBallAOEs[i].getWidth() / 2.5));
+				aoeRect.right = (int)(powerBallAOEs[i].x + (powerBallAOEs[i].getWidth() / 2.5));
 				paint.setAlpha(powerBallAOEs[i].getAlpha());
 				drawBitmapRectLevel(powerBallAOEs[i].getVisualImage(), aoeRect, g);
 			}
 		}
 		paint.setAlpha(255);
-		for(int i = 0; i < graphic_Teleport.length; i++)
-		{
-			if(graphic_Teleport[i] != null)
-			{
-				drawBitmapRotatedLevel(graphic_Teleport[i], g);
-			}
-		}
 		for(int i = 0; i < powerUps.length; i++)
 		{
 			if(powerUps[i] != null)
 			{
-				drawBitmapLevel(powerUps[i].getVisualImage(), (int) powerUps[i].getX() - 15, (int) powerUps[i].getY() - 15, g);
+				drawBitmapLevel(powerUps[i].getVisualImage(), (int) powerUps[i].x - 15, (int) powerUps[i].y - 15, g);
 			}
 		}
 		if(imageLibrary.currentLevelTop != null)
@@ -1420,6 +1565,14 @@ public final class Controller extends View
 		drawHealthBars(g);
 		return drawTo;
 	}
+	/**
+	 * checks whether object is in view
+	 * @param lowx objects low x
+	 * @param lowy objects low y
+	 * @param width objects width
+	 * @param height objects height
+	 * @return whether object is in view
+	 */
 	private boolean inView(int lowx, int lowy, int width, int height)
 	{
 		lowx += curXShift;
@@ -1428,13 +1581,19 @@ public final class Controller extends View
 		int highy = lowy + height;
 		return !(lowx > 300 || highx < 0 || lowy > 300 || highy < 0);
 	}
+	/**
+	 * checks whether enemy is in view
+	 * @param x enemy x
+	 * @param y enemy y
+	 * @return whether enemy is in view
+	 */
 	protected boolean enemyInView(double x, double y)
 	{
-		return !(x+curXShift > 380 || x+curXShift < -80 || y+curYShift > 380 || y+curYShift < -80);
+		return !(x + curXShift > 400 || x + curXShift < -100 || y + curYShift > 400 || y + curYShift < -100);
 	}
-	/*
-	 * Draws objects and calls other drawing functions (background and stats)
-	 * @see android.view.View#onDraw(android.graphics.Canvas)
+	/**
+	 * draw start fight screen
+	 * @param g canvas to draw to
 	 */
 	protected void drawStartFight(Canvas g)
 	{
@@ -1463,7 +1622,7 @@ public final class Controller extends View
 			moneyMultiplier = 20;
 			drawRect(350, 104, 450, 144, g);
 		}
-		moneyMultiplier = (int)((double)moneyMultiplier*getLevelWinningsMultiplier(startingLevel));
+		moneyMultiplier *= getLevelWinningsMultiplier(startingLevel);
 		if(drainHp)
 		{
 			moneyMultiplier *= 1.4;
@@ -1489,8 +1648,13 @@ public final class Controller extends View
 		paint.setTextSize(40);
 		drawText("Level " + Integer.toString(startingLevel), 240, 113, g);
 		paint.setTextSize(25);
-		drawText("Gold Multiplier: " + Integer.toString(moneyMultiplier), 240, 153, g);
+		drawText("Gold Multiplier: " + Integer.toString((int)moneyMultiplier), 240, 153, g);
 	}
+	/**
+	 * returns winning multiplier for level
+	 * @param level level to return multiplier for
+	 * @return multiplier for level
+	 */
 	protected double getLevelWinningsMultiplier(int level)
 	{
 		switch(level)
@@ -1498,23 +1662,27 @@ public final class Controller extends View
 		case 0:
 			return 0;
 		case 1:
-			return 1.05;
+			return 1;
 		case 2:
 			return 1.1;
 		case 3:
-			return 1.25;
+			return 1.2;
 		case 4:
-			return 1.6;
+			return 1.3;
 		case 5:
-			return 1.65;
+			return 1.4;
 		case 6:
 			return 1.5;
 		case 7:
-			return 1.65;
+			return 1.6;
 		default:
 			return 1;
 		}
 	}
+	/**
+	 * draw buy powerups screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawBlessing(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1530,7 +1698,6 @@ public final class Controller extends View
 		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
 		paint.setColor(goldColor);
 		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
-		
 		paint.setTextSize(25);
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(goldColor);
@@ -1540,7 +1707,6 @@ public final class Controller extends View
 		drawText(Integer.toString(activity.buy("Hades' Helm", 9999999, false)), 357, 220, g);
 		drawText(Integer.toString(activity.buy("Zues's Armor", 9999999, false)), 147, 294, g);
 		drawText(Integer.toString(activity.buy("Posiedon's Shell", 9999999, false)), 357, 294, g);
-		
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(120);
@@ -1551,6 +1717,10 @@ public final class Controller extends View
 		if(!activity.canBuyGame("Zues's Armor")) drawRect(60, 268, 210, 303, g);
 		if(!activity.canBuyGame("Posiedon's Shell")) drawRect(270, 268, 420, 303, g);
 	}
+	/**
+	 * draw buy worship screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawWorship(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1566,7 +1736,6 @@ public final class Controller extends View
 		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
 		paint.setColor(goldColor);
 		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
-		
 		paint.setTextSize(25);
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(goldColor);
@@ -1592,6 +1761,68 @@ public final class Controller extends View
 		if(!activity.canBuyGame("Worship Hephaestus")) drawRect(180, 268, 300, 303, g);
 		if(!activity.canBuyGame("Worship Hera")) drawRect(330, 268, 450, 303, g);
 	}
+	/**
+	 * draw buy skins screen
+	 * @param g canvas to draw to
+	 */
+	protected void drawBuySkins(Canvas g)
+	{
+		drawBehindPause(g);
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(Color.BLACK);
+		paint.setAlpha(100);
+		drawRect(0, 0, 480, 40, g);
+		paint.setAlpha(255);
+		drawBitmap(imageLibrary.loadImage("menu_buyskins", 480, 320), 0, 0, g);
+		paint.setTextSize(20);
+		paint.setTextAlign(Align.LEFT);
+		paint.setColor(platinumColor);
+		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
+		paint.setColor(goldColor);
+		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(Color.BLACK);
+		paint.setAlpha(120);
+		if(!activity.ownSkin1)
+		{
+			drawRect(0, 133, 160, 227, g);
+			if(!activity.canBuyReal("skin1")) drawRect(0, 133, 160, 173, g);
+		}
+		if(!activity.ownSkin2)
+		{
+			if(!activity.canBuyReal("skin2")) drawRect(0, 227, 160, 267, g);
+			drawRect(0, 227, 160, 320, g);
+		}
+		if(!activity.ownSkin3)
+		{
+			if(!activity.canBuyReal("skin3")) drawRect(160, 133, 320, 173, g);
+			drawRect(160, 133, 320, 227, g);
+		}
+		if(!activity.ownSkin4)
+		{
+			if(!activity.canBuyReal("skin4")) drawRect(160, 227, 320, 267, g);
+			drawRect(160, 227, 320, 320, g);
+		}
+		if(!activity.ownSkin5)
+		{
+			if(!activity.canBuyReal("skin5")) drawRect(320, 40, 480, 80, g);
+			drawRect(320, 40, 480, 133, g);
+		}
+		if(!activity.ownSkin6)
+		{
+			if(!activity.canBuyReal("skin6")) drawRect(320, 133, 480, 173, g);
+			drawRect(320, 133, 480, 227, g);
+		}
+		if(!activity.ownSkin7)
+		{
+			if(!activity.canBuyReal("skin7")) drawRect(320, 227, 480, 267, g);
+			drawRect(320, 227, 480, 320, g);
+		}
+	}
+	/**
+	 * draw buy specific cash item screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawBuyItemCash(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1625,6 +1856,10 @@ public final class Controller extends View
 			drawRect(150, 240, 330, 282, g);
 		}
 	}
+	/**
+	 * draw buy cash items screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawBuyPremium(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1640,7 +1875,6 @@ public final class Controller extends View
 		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
 		paint.setColor(goldColor);
 		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
-		
 		paint.setTextSize(25);
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(goldColor);
@@ -1666,6 +1900,10 @@ public final class Controller extends View
 		if(!activity.canBuyReal("Worship Hephaestus")) drawRect(180, 268, 300, 303, g);
 		if(!activity.canBuyReal("Worship Hera")) drawRect(330, 268, 450, 303, g);
 	}
+	/**
+	 * draw buy specific item screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawBuy(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1699,6 +1937,10 @@ public final class Controller extends View
 			drawRect(150, 240, 330, 282, g);
 		}
 	}
+	/**
+	 * draw choose deity screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawChooseGod(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1724,6 +1966,10 @@ public final class Controller extends View
 		}
 		paint.setAlpha(255);
 	}
+	/**
+	 * draw pause screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawPaused(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1738,6 +1984,8 @@ public final class Controller extends View
 		drawText(Integer.toString(activity.pEarth), 148, 173, g);
 		drawText(Integer.toString(activity.pAir), 48, 273, g);
 		drawText(Integer.toString(activity.pFire), 148, 273, g);
+		drawText(Integer.toString(activity.pGolem), 239, 123, g);
+		drawText(Integer.toString(activity.pHammer), 239, 223, g);
 		paint.setAlpha(151);
 		if(activity.pHeal == 0)
 		{
@@ -1763,7 +2011,19 @@ public final class Controller extends View
 		{
 			drawCircle(160, 260, 37, g);
 		}
+		if(activity.pGolem == 0)
+		{
+			drawCircle(251, 110, 37, g);
+		}
+		if(activity.pHammer == 0)
+		{
+			drawCircle(251, 210, 37, g);
+		}
 	}
+	/**
+	 * draw screen behind pause or menus
+	 * @param g canvas to draw to
+	 */
 	protected void drawBehindPause(Canvas g)
 	{
 		drawNotPaused(g);
@@ -1776,12 +2036,17 @@ public final class Controller extends View
 			drawBitmap(imageLibrary.loadImage("menu_pauseback0002", 480, 320), 0, 0, g);
 		}
 	}
+	/**
+	 * draw options screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawOptions(Canvas g)
 	{
 		drawBehindPause(g);
 		drawBitmap(imageLibrary.loadImage("menu_options", 480, 320), 0, 0, g);
-		paint.setColor(Color.BLACK);
-		paint.setAlpha(127);
+		paint.setAlpha(255);
+		paint.setColor(Color.GRAY);
+		paint.setStyle(Style.FILL);
 		drawCircle(264 + (int)(Math.pow(activity.volumeMusic * 16129, 0.3333333333333333333333)), 103, 15, g);
 		drawCircle(264 + (int)(Math.pow(activity.volumeEffect * 16129, 0.3333333333333333333333)), 130, 15, g);
 		float systemVolume = activity.audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -1820,6 +2085,10 @@ public final class Controller extends View
 			drawBitmap(check, 259, 228, g);
 		}
 	}
+	/**
+	 * draw death screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawLost(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1827,9 +2096,14 @@ public final class Controller extends View
 		paint.setTextSize(20);
 		paint.setTextAlign(Align.LEFT);
 		paint.setColor(Color.BLACK);
-		drawText(Integer.toString(activity.gameCurrency) + " (+" + Integer.toString(moneyMade) + ")", 153, 146, g);
+		activity.gameCurrency -= (int)(moneyMade/2);
+		drawText(Integer.toString(activity.gameCurrency) + " (+" + Integer.toString((int)moneyMade) + "-"+Integer.toString((int)(moneyMade/2))+")", 153, 146, g);
 		drawText(Integer.toString(activity.realCurrency), 153, 193, g);
 	}
+	/**
+	 * draw buy real money screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawBuyCash(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1846,6 +2120,10 @@ public final class Controller extends View
 		paint.setColor(goldColor);
 		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
 	}
+	/**
+	 * draw win fight screen
+	 * @param g canvas to draw to
+	 */
 	protected void drawWon(Canvas g)
 	{
 		drawBehindPause(g);
@@ -1853,10 +2131,14 @@ public final class Controller extends View
 		paint.setTextSize(20);
 		paint.setTextAlign(Align.LEFT);
 		paint.setColor(Color.BLACK);
-		drawText(Integer.toString(activity.gameCurrency) + " (+" + Integer.toString(moneyMade) + ")", 153, 146, g);
+		drawText(Integer.toString(activity.gameCurrency) + " (+" + Integer.toString((int)moneyMade) + ")", 153, 146, g);
 		drawText(Integer.toString(activity.realCurrency), 153, 193, g);
-	}@
-	Override
+	}
+	/**
+	 * chooses what to draw
+	 * @param g canvas to draw to
+	 */
+	@Override
 	protected void onDraw(Canvas g)
 	{
 		if(activity.gameRunning)
@@ -1893,21 +2175,30 @@ public final class Controller extends View
 				else if(currentPause.equals("chooseGod"))
 				{
 					drawChooseGod(g);
-				} else if(currentPause.equals("worship"))
+				}
+				else if(currentPause.equals("worship"))
 				{
 					drawWorship(g);
-				} else if(currentPause.equals("blessing"))
+				}
+				else if(currentPause.equals("blessing"))
 				{
 					drawBlessing(g);
-				} else if(currentPause.equals("buycash"))
+				}
+				else if(currentPause.equals("buycash"))
 				{
 					drawBuyCash(g);
-				} else if(currentPause.equals("buyitemcash"))
+				}
+				else if(currentPause.equals("buyitemcash"))
 				{
 					drawBuyItemCash(g);
-				} else if(currentPause.equals("buypremium"))
+				}
+				else if(currentPause.equals("buypremium"))
 				{
 					drawBuyPremium(g);
+				}
+				else if(currentPause.equals("buyskins"))
+				{
+					drawBuySkins(g);
 				}
 			}
 			else
@@ -1916,14 +2207,16 @@ public final class Controller extends View
 			}
 		}
 	}
+	/**
+	 * draw normal unpaused screen
+	 * @param g canvas to draw to
+	 */
 	private void drawNotPaused(Canvas g)
 	{
 		paint.setTextAlign(Align.LEFT);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.GRAY);
 		drawRect(90, 10, 390, 310, g);
-		if(!player.teleporting)
-		{
 			xShiftLevel = 150 - (int) player.x;
 			yShiftLevel = 150 - (int) player.y;
 			if(player.x < 150)
@@ -1942,7 +2235,6 @@ public final class Controller extends View
 			{
 				yShiftLevel = 300 - levelHeight;
 			}
-		}
 		curXShift = xShiftLevel;
 		curYShift = yShiftLevel;
 		drawBitmap(drawLevel(), xShiftLevel + 90, yShiftLevel + 10, g);
@@ -1956,36 +2248,49 @@ public final class Controller extends View
 		if(warningTimer > 0)
 		{
 			warningTimer--;
-			paint.setAlpha((byte)(warningTimer * 7));
-			drawBitmap(imageLibrary.warnings[warningType], 240 - (imageLibrary.warnings[warningType].getWidth() / 2), 160 - (imageLibrary.warnings[warningType].getHeight() / 2), g);
+			paint.setColor(Color.BLACK);
+			if(warningTimer<25)
+			{
+				paint.setAlpha((byte)(warningTimer * 7));
+			} else
+			{
+				paint.setAlpha(255);
+			}
+			paint.setTextAlign(Align.CENTER);
+			paint.setTextSize(64-(warningText.length()*2));
+			drawText(warningText, 240, 160, g);
 		}
 		paint.setAlpha(255);
 		drawBitmap(background, 0, 0, g);
+		if(player.transformedTimer>1&&player.transformedTimer<500)
+		{
+			drawBitmap(imageLibrary.transattack, 402, 149, g);
+		}
 		drawContestantStats(g);
 		paint.setStyle(Paint.Style.STROKE);
 		if(player.powerUpTimer > 0)
 		{
 			if(activity.stickOnRight)
 			{
-				drawBitmap(imageLibrary.powerUpBigs[player.powerID - 1], 410, 25, g);
+				drawBitmap(imageLibrary.powerUpBigs[player.powerID - 1], 400, 25, g);
 			}
 			else
 			{
-				drawBitmap(imageLibrary.powerUpBigs[player.powerID - 1], 20, 25, g);
+				drawBitmap(imageLibrary.powerUpBigs[player.powerID - 1], 10, 25, g);
 			}
 		}
 		if(hasKey)
 		{
 			if(activity.stickOnRight)
 			{
-				drawBitmap(imageLibrary.powerUpBigs[4], 410, 25, g);
+				drawBitmap(imageLibrary.powerUpBigs[4], 400, 25, g);
 			}
 			else
 			{
-				drawBitmap(imageLibrary.powerUpBigs[4], 20, 25, g);
+				drawBitmap(imageLibrary.powerUpBigs[4], 10, 25, g);
 			}
 		}
-		if(levelNum == 10 || levelNum == 11)
+		if(levelNum == 10)
 		{
 			paint.setStyle(Paint.Style.FILL);
 			paint.setColor(Color.BLACK);
@@ -1993,7 +2298,7 @@ public final class Controller extends View
 			paint.setAlpha(180);
 			if(!activity.stickOnRight)
 			{
-				drawRect(402, 12, 468, 210, g);
+				drawRect(395, 5, 475, 220, g);
 				paint.setAlpha(255);
 				drawBitmap(imageLibrary.coins[0], 420, 30, g);
 				drawBitmap(imageLibrary.coins[1], 420, 130, g);
@@ -2005,7 +2310,7 @@ public final class Controller extends View
 			}
 			else
 			{
-				drawRect(12, 12, 78, 210, g);
+				drawRect(5, 5, 85, 220, g);
 				paint.setAlpha(255);
 				drawBitmap(imageLibrary.coins[0], 30, 30, g);
 				drawBitmap(imageLibrary.coins[1], 30, 130, g);
@@ -2017,73 +2322,145 @@ public final class Controller extends View
 			}
 		}
 	}
+	/**
+	 * creates an enemy power ball
+	 * @param rotation rotation of powerball
+	 * @param xVel horizontal velocity of ball
+	 * @param yVel vertical velocity of ball
+	 * @param power power of ball
+	 * @param x x position
+	 * @param y y position
+	 */
 	protected void createPowerBallEnemy(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
-		PowerBall_Enemy ballEnemy = new PowerBall_Enemy(this, (int) x, (int) y, power, xVel, yVel, rotation);
+		PowerBall_Enemy ballEnemy = new PowerBall_Enemy(this, (int) (x+xVel*2), (int) (y+yVel*2), power, xVel, yVel, rotation);
 		powerBalls[lowestPositionEmpty(powerBalls)] = ballEnemy;
 	}
+	/**
+	 * creates an enemy crossbow bolt
+	 * @param rotation rotation of bolt
+	 * @param xVel horizontal velocity of bolt
+	 * @param yVel vertical velocity of bolt
+	 * @param power power of bolt
+	 * @param x x position
+	 * @param y y position
+	 */
 	protected void createCrossbowBolt(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
-		CrossbowBolt boltEnemy = new CrossbowBolt(this, (int) x, (int) y, power, xVel, yVel, rotation);
+		CrossbowBolt boltEnemy = new CrossbowBolt(this, (int) (x+xVel), (int) (y+yVel), power, xVel, yVel, rotation);
 		powerBalls[lowestPositionEmpty(powerBalls)] = boltEnemy;
 	}
+	/**
+	 * creates a powerup object the player can pick up
+	 * @param X x position
+	 * @param Y y position
+	 */
 	protected void createPowerUp(double X, double Y)
 	{
 		PowerUp powerUp = new PowerUp(this, X, Y, 0);
 		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
 	}
+	/**
+	 * creates a small coin the player can pick up
+	 * @param X x position
+	 * @param Y y position
+	 */
 	protected void createCoin1(double X, double Y)
 	{
 		PowerUp powerUp = new PowerUp(this, X, Y, 7);
 		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
 	}
+	/**
+	 * creates a medium coin the player can pick up
+	 * @param X x position
+	 * @param Y y position
+	 */
 	protected void createCoin5(double X, double Y)
 	{
 		PowerUp powerUp = new PowerUp(this, X, Y, 9);
 		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
 	}
+	/**
+	 * creates a large coin the player can pick up
+	 * @param X x position
+	 * @param Y y position
+	 */
 	protected void createCoin20(double X, double Y)
 	{
 		PowerUp powerUp = new PowerUp(this, X, Y, 10);
 		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
 	}
+	/**
+	 * creates a key the player can pick up
+	 * @param X x position
+	 * @param Y y position
+	 */
 	protected void createKey(double X, double Y)
 	{
 		PowerUp powerUp = new PowerUp(this, X, Y, 8);
 		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
 	}
+	/**
+	 * creates a player power ball
+	 * @param rotation rotation of bolt
+	 * @param xVel horizontal velocity of bolt
+	 * @param yVel vertical velocity of bolt
+	 * @param power power of bolt
+	 * @param x x position
+	 * @param y y position
+	 */
 	protected void createPowerBallPlayer(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
-		PowerBall_Player ballPlayer = new PowerBall_Player(this, (int) x, (int) y, power, xVel, yVel, rotation);
+		PowerBall_Player ballPlayer = new PowerBall_Player(this, (int) (x+xVel*2), (int) (y+yVel*2), power, xVel, yVel, rotation);
 		powerBalls[lowestPositionEmpty(powerBalls)] = ballPlayer;
 	}
+	/**
+	 * creates an emeny AOE explosion
+	 * @param x x position
+	 * @param y y position
+	 * @param power power of explosion
+	 * @param damaging whether it damages player
+	 */
 	protected void createPowerBallEnemyAOE(double x, double y, double power, boolean damaging)
 	{
 		PowerBallAOE_Enemy ballAOEEnemy = new PowerBallAOE_Enemy(this, (int) x, (int) y, power, true);
 		if(!damaging) ballAOEEnemy.damaging = false;
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEEnemy;
 	}
+	/**
+	 * creates a player AOE explosion
+	 * @param x x position
+	 * @param y y position
+	 * @param power power of explosion
+	 */
 	protected void createPowerBallPlayerAOE(double x, double y, double power)
 	{
 		PowerBallAOE_Player ballAOEPlayer = new PowerBallAOE_Player(this, (int) x, (int) y, power, true);
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEPlayer;
 	}
+	/**
+	 * creates an enemy burst
+	 * @param x x position
+	 * @param y y position
+	 * @param power power of explosion
+	 */
 	protected void createPowerBallEnemyBurst(double x, double y, double power)
 	{
 		PowerBallAOE_Enemy ballAOEEnemy = new PowerBallAOE_Enemy(this, (int) x, (int) y, power, false);
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEEnemy;
 	}
+	/**
+	 * creates a player burst
+	 * @param x x position
+	 * @param y y position
+	 * @param power power of explosion
+	 */
 	protected void createPowerBallPlayerBurst(double x, double y, double power)
 	{
 		PowerBallAOE_Player ballAOEPlayer = new PowerBallAOE_Player(this, (int) x, (int) y, power, false);
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEPlayer;
 	}
-	protected void createTeleport(double x, double y, double rotation)
-	{
-		Graphic_Teleport teleportStart = new Graphic_Teleport(this, x, y, rotation);
-		graphic_Teleport[lowestPositionEmpty(graphic_Teleport)] = teleportStart;
-	}
-	/*
+	/**
 	 * Tests an array to find lowest null index
 	 * @ param array Array to check in for null indexes
 	 * @ return Returns lowest index that equals null
@@ -2101,41 +2478,23 @@ public final class Controller extends View
 		}
 		return lowest;
 	}
-	/*
-	 * Starts 'not enough mana' warning
+	/**
+	 * Starts warning label
+	 * @param warning
 	 */
-	protected void notEnoughMana()
+	protected void startWarning(String warning)
 	{
-		warningTimer = 30;
-		warningType = 1;
+		warningTimer = 50;
+		warningText = warning;
+		//TODO
 	}
-	/*
-	 * Starts 'cooldown' warning
-	 */
-	protected void coolDown()
-	{
-		warningTimer = 30;
-		warningType = 0;
-	}
-	protected void levelLocked()
-	{
-		warningTimer = 30;
-		warningType = 1;
-	}
-	protected void alreadyWorshipping()
-	{
-		//warningTimer = 30;
-		//warningType = 1;
-	}
-	/*
-	 * Checks for a clear line starting at set coordinates and going for a set distance at set velocity
-	 * @param fromX Starting x coordinate
-	 * @param fromY Starting y coordinate
-	 * @param moveX X velocity
-	 * @param moveY Y velocity
-	 * @param distance Interval at which to check whether line is clear
-	 * @param distance Distance to extend line
-	 * @return Returns whether line is clear
+	/**
+	 * checks whether a projectile could travel between two points
+	 * @param x1 first x
+	 * @param y1 first y
+	 * @param x2 second x
+	 * @param y2 second y
+	 * @return whether it could travel between points
 	 */
 	protected boolean checkObstructionsPointTall(float x1, float y1, float x2, float y2)
 	{
@@ -2257,6 +2616,14 @@ public final class Controller extends View
 		}
 		return hitBack;
 	}
+	/**
+	 * checks whether a human could travel between two points
+	 * @param x1 first x
+	 * @param y1 first y
+	 * @param x2 second x
+	 * @param y2 second y
+	 * @return whether the human could travel between points
+	 */
 	protected boolean checkObstructionsPointAll(float x1, float y1, float x2, float y2)
 	{
 		boolean hitBack = false;
@@ -2401,22 +2768,52 @@ public final class Controller extends View
 		}
 		return hitBack;
 	}
+	/**
+	 * returns distance between two points
+	 *  @param x1 first x
+	 * @param y1 first y
+	 * @param x2 second x
+	 * @param y2 second y
+	 * @return distance between points
+	 */
 	protected double getDistance(double x1, double y1, double x2, int y2)
 	{
 		return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 	}
+	/**
+	 * checks whether a projectile could travel along a given line
+	 * @param x1 start x
+	 * @param y1 start y
+	 * @param rads direction to travel
+	 * @param distance distance to travel
+	 * @return whether it could travel along the given line
+	 */
 	protected boolean checkObstructionsTall(double x1, double y1, double rads, int distance)
 	{
 		double x2 = x1 + (Math.cos(rads) * distance);
 		double y2 = y1 + (Math.sin(rads) * distance);
 		return checkObstructionsPointTall((float) x1, (float) y1, (float) x2, (float) y2);
 	}
+	/**
+	 * checks whether a human could travel along a given line
+	 * @param x1 start x
+	 * @param y1 start y
+	 * @param rads direction to travel
+	 * @param distance distance to travel
+	 * @return whether the human could travel along the given line
+	 */
 	protected boolean checkObstructionsAll(double x1, double y1, double rads, int distance)
 	{
 		double x2 = x1 + (Math.cos(rads) * distance);
 		double y2 = y1 + (Math.sin(rads) * distance);
 		return checkObstructionsPointAll((float) x1, (float) y1, (float) x2, (float) y2);
 	}
+	/**
+	 * checks whether a given point hits any obstacles
+	 * @param X x point
+	 * @param Y y point
+	 * @return whether it hits
+	 */
 	protected boolean checkHitBack(double X, double Y)
 	{
 		boolean hitBack = false;
@@ -2473,6 +2870,12 @@ public final class Controller extends View
 		}
 		return hitBack;
 	}
+	/**
+	 * checks whether a given point hits any passages
+	 * @param X x point
+	 * @param Y y point
+	 * @return whether it hits
+	 */
 	protected boolean checkHitBackPass(double X, double Y)
 	{
 		boolean hitBack = false;
@@ -2491,14 +2894,26 @@ public final class Controller extends View
 		}
 		return hitBack;
 	}
+	
 	protected double visualX(double x)
 	{
 		return(x - screenMinX) / screenDimensionMultiplier;
 	}
+	/**
+	 * converts value from click y point to where on the screen it would be
+	 * @param y y value of click
+	 * @return y position of click on screen
+	 */
 	protected double visualY(double y)
 	{
 		return((y - screenMinY) / screenDimensionMultiplier);
 	}
+	/**
+	 * returns whether a point clicked is on  the screen
+	 * @param x x position
+	 * @param y y position
+	 * @return whether it is on screen
+	 */
 	protected boolean pointOnScreen(double x, double y)
 	{
 		x = visualX(x);
@@ -2512,6 +2927,16 @@ public final class Controller extends View
 			return false;
 		}
 	}
+	/**
+	 * returns whether a point is on a given square
+	 * @param x x position
+	 * @param y y position
+	 * @param lowX left hand side of square
+	 * @param lowY top of square
+	 * @param highX right hand side of square
+	 * @param highY bottom of square
+	 * @return whether it is on square
+	 */
 	protected boolean pointOnSquare(double x, double y, double lowX, double lowY, double highX, double highY)
 	{
 		x = visualX(x);
@@ -2525,6 +2950,15 @@ public final class Controller extends View
 			return false;
 		}
 	}
+	/**
+	 * returns whether a point is on a given circle
+	 * @param x x position
+	 * @param y y position
+	 * @param midX x position
+	 * @param midY y position
+	 * @param radius radius of circle
+	 * @return whether it is on circle
+	 */
 	protected boolean pointOnCircle(double x, double y, double midX, double midY, double radius)
 	{
 		x = visualX(x);
@@ -2538,259 +2972,283 @@ public final class Controller extends View
 			return false;
 		}
 	}
+	/**
+	 * returns difficultyLevel
+	 * @return difficultyLevel
+	 */
 	protected int getDifficultyLevel()
 	{
 		return difficultyLevel;
 	}
+	/**
+	 * returns difficultyLevelMultiplier
+	 * @return difficultyLevelMultiplier
+	 */
 	protected double getDifficultyLevelMultiplier()
 	{
 		return difficultyLevelMultiplier;
 	}
+	/**
+	 * returns random integer between 0 and i-1
+	 * @param i returns int between one less than this and 0
+	 * @return random integer between 0 and i-1
+	 */
 	protected int getRandomInt(int i)
 	{
 		return randomGenerator.nextInt(i);
 	}
+	/**
+	 * returns random double between 0 and 1
+	 * @return random double between 0 and 1
+	 */
 	protected double getRandomDouble()
 	{
 		return randomGenerator.nextDouble();
 	}
-	protected int getPlayerType()
-	{
-		return playerType;
-	}
-	protected double getPlayerX()
-	{
-		return player.getX();
-	}
-	protected double getPlayerY()
-	{
-		return player.getY();
-	}
+	/**
+	 * returns levelNum
+	 * @return levelNum
+	 */
 	protected int getLevelNum()
 	{
 		return levelNum;
 	}
-	protected int getORectX1(int i)
-	{
-		return oRectX1[i];
-	}
-	protected int getORectX2(int i)
-	{
-		return oRectX2[i];
-	}
-	protected int getORectY1(int i)
-	{
-		return oRectY1[i];
-	}
-	protected int getORectY2(int i)
-	{
-		return oRectY2[i];
-	}
-	protected int getOCircX(int i)
-	{
-		return oCircX[i];
-	}
-	protected int getOCircY(int i)
-	{
-		return oCircY[i];
-	}
-	protected int getOCircRadius(int i)
-	{
-		return oCircRadius[i];
-	}
+	/**
+	 * returns current spot in wall circle array
+	 * @return current spot in wall circle array
+	 */
 	protected int getCurrentCircle()
 	{
 		return currentCircle;
 	}
+	/**
+	 * returns current spot in wall rectangle array
+	 * @return current spot in wall rectangle array
+	 */
 	protected int getCurrentRectangle()
 	{
 		return currentRectangle;
 	}
+	/**
+	 * returns current spot in wall circle tall array
+	 * @return current spot in wall circle tall array
+	 */
 	protected int getCurrentCircleAll()
 	{
 		return currentCircleAll;
 	}
+	/**
+	 * returns current spot in wall rectangle tall array
+	 * @return current spot in wall rectangle tall array
+	 */
 	protected int getCurrentRectangleAll()
 	{
 		return currentRectangleAll;
 	}
+	/**
+	 * returns current spot in wall ring array
+	 * @return current spot in wall ring array
+	 */
 	protected int getCurrentRing()
 	{
 		return currentRing;
 	}
+	/**
+	 * returns current spot in wall passage array
+	 * @return current spot in wall passage array
+	 */
 	protected int getCurrentPassage()
 	{
 		return currentPassage;
 	}
+	/**
+	 * returns whether game has ended
+	 * @return whether game has ended
+	 */
 	protected boolean getGameEnded()
 	{
 		return gameEnded;
 	}
+	/**
+	 * increases current index of wall rectangle array by 1
+	 */
 	protected void incrementCurrentRectangle()
 	{
 		currentRectangle++;
 	}
+	/**
+	 * increases current index of wall circle array by 1
+	 */
 	protected void incrementCurrentCircle()
 	{
 		currentCircle++;
 	}
+	/**
+	 * increases current index of wall rectangle tall array by 1
+	 */
 	protected void incrementCurrentRectangleAll()
 	{
 		currentRectangleAll++;
 	}
+	/**
+	 * increases current index of wall circle tall array by 1
+	 */
 	protected void incrementCurrentCircleAll()
 	{
 		currentCircleAll++;
 	}
+	/**
+	 * increases current index of wall ring array by 1
+	 */
 	protected void incrementCurrentRing()
 	{
 		currentRing++;
 	}
+	/**
+	 * increases current index of wall passage array by 1
+	 */
 	protected void incrementCurrentPassage()
 	{
 		currentPassage++;
 	}
-	protected void setORectX1All(int i, int oRectX1)
+	/**
+	 * sets values for an index of all rectangle tall wall value arrays
+	 * @param i index to set values to
+	 * @param oRectX1 left x
+	 * @param oRectX2 right x
+	 * @param oRectY1 top y
+	 * @param oRectY2 bottom y
+	 */
+	protected void setORectAll(int i, int oRectX1, int oRectX2, int oRectY1, int oRectY2)
 	{
-		this.oRectX1All[i] = oRectX1;
+		oRectX1All[i] = oRectX1;
+		oRectX2All[i] = oRectX2;
+		oRectY1All[i] = oRectY1;
+		oRectY2All[i] = oRectY2;
 	}
-	protected void setORectX2All(int i, int oRectX2)
+	/**
+	 * sets values for an index of all passage wall value arrays
+	 * @param i index to set values to
+	 * @param oRectX1 left x
+	 * @param oRectX2 right x
+	 * @param oRectY1 top y
+	 * @param oRectY2 bottom y
+	 */
+	protected void setOPassage(int i, int oRectX1, int oRectX2, int oRectY1, int oRectY2)
 	{
-		this.oRectX2All[i] = oRectX2;
+		oPassageX1[i] = oRectX1;
+		oPassageX2[i] = oRectX2;
+		oPassageY1[i] = oRectY1;
+		oPassageY2[i] = oRectY2;
 	}
-	protected void setORectY1All(int i, int oRectY1)
+	/**
+	 * sets values for an index of all tall circle wall value arrays
+	 * @param i index to set values to
+	 * @param oCircX x position
+	 * @param oCircY y position
+	 * @param oCircRadius radius
+	 * @param oCircRatio ratio between width and height
+	 */
+	protected void setOCircAll(int i, int oCircX, int oCircY, int oCircRadius, double oCircRatio)
 	{
-		this.oRectY1All[i] = oRectY1;
+		oCircXAll[i] = oCircX;
+		oCircYAll[i] = oCircY;
+		oCircRadiusAll[i] = oCircRadius;
+		oCircRatioAll[i] = oCircRatio;
 	}
-	protected void setOPassageY2(int i, int oRectY2)
+	/**
+	 * sets values for an index of all ring wall value arrays
+	 * @param i index to set values to
+	 * @param oCircX x position
+	 * @param oCircY y position
+	 * @param oRingIn inner ring radius
+	 * @param oRingOut outer ring radius
+	 */
+	protected void setORing(int i, int oCircX, int oCircY, int oRingIn, int oRingOut)
 	{
-		this.oPassageY2[i] = oRectY2;
+		oRingX[i] = oCircX;
+		oRingY[i] = oCircY;
+		oRingInner[i] = oRingIn;
+		oRingOuter[i] = oRingOut;
 	}
-	protected void setOPassageX1(int i, int oRectX1)
-	{
-		this.oPassageX1[i] = oRectX1;
-	}
-	protected void setOPassageX2(int i, int oRectX2)
-	{
-		this.oPassageX2[i] = oRectX2;
-	}
-	protected void setOPassageY1(int i, int oRectY1)
-	{
-		this.oPassageY1[i] = oRectY1;
-	}
-	protected void setORectY2All(int i, int oRectY2)
-	{
-		this.oRectY2All[i] = oRectY2;
-	}
-	protected void setOCircXAll(int i, int oCircX)
-	{
-		this.oCircXAll[i] = oCircX;
-	}
-	protected void setOCircYAll(int i, int oCircY)
-	{
-		this.oCircYAll[i] = oCircY;
-	}
-	protected void setOCircRadiusAll(int i, int oCircRadius)
-	{
-		this.oCircRadiusAll[i] = oCircRadius;
-	}
-	protected void setOCircRatioAll(int i, double oCircRatio)
-	{
-		this.oCircRatioAll[i] = oCircRatio;
-	}
-	protected void setORingX(int i, int oCircX)
-	{
-		this.oRingX[i] = oCircX;
-	}
-	protected void setORingY(int i, int oCircY)
-	{
-		this.oRingY[i] = oCircY;
-	}
-	protected void setORingInner(int i, int oRingInner)
-	{
-		this.oRingInner[i] = oRingInner;
-	}
-	protected void setORingOuter(int i, int oRingOuter)
-	{
-		this.oRingOuter[i] = oRingOuter;
-	}
-	protected void setORectX1(int i, int oRectX1)
+	/**
+	 * sets values for an index of all rectangle wall value arrays
+	 * @param i index to set values to
+	 * @param oRectX1 left x
+	 * @param oRectX2 right x
+	 * @param oRectY1 top y
+	 * @param oRectY2 bottom y
+	 */
+	protected void setORect(int i, int oRectX1, int oRectX2, int oRectY1, int oRectY2)
 	{
 		this.oRectX1[i] = oRectX1;
-	}
-	protected void setORectX2(int i, int oRectX2)
-	{
 		this.oRectX2[i] = oRectX2;
-	}
-	protected void setORectY1(int i, int oRectY1)
-	{
 		this.oRectY1[i] = oRectY1;
-	}
-	protected void setORectY2(int i, int oRectY2)
-	{
 		this.oRectY2[i] = oRectY2;
 	}
-	protected void setOCircX(int i, int oCircX)
+	/**
+	 * sets values for an index of all circle wall value arrays
+	 * @param i index to set values to
+	 * @param oCircX x position
+	 * @param oCircY y position
+	 * @param oCircRadius radius
+	 * @param oCircRatio ratio between width and height
+	 */
+	protected void setOCirc(int i, int oCircX, int oCircY, int oCircRadius, double oCircRatio)
 	{
 		this.oCircX[i] = oCircX;
-	}
-	protected void setOCircY(int i, int oCircY)
-	{
 		this.oCircY[i] = oCircY;
-	}
-	protected void setOCircRadius(int i, int oCircRadius)
-	{
 		this.oCircRadius[i] = oCircRadius;
-	}
-	protected void setOCircRatio(int i, double oCircRatio)
-	{
 		this.oCircRatio[i] = oCircRatio;
 	}
-	/*
+	/**
 	 * Replaces canvas.drawRect(int, int, int, int, Paint) and auto scales
 	 */
 	protected void drawRect(int x, int y, int x2, int y2, Canvas g)
 	{
 		g.drawRect(x, y, x2, y2, paint);
 	}
-	/*
+	/**
 	 * Replaces canvas.drawCircle(int, int, int paint) and auto scales
 	 */
 	protected void drawCircle(int x, int y, int radius, Canvas g)
 	{
 		g.drawCircle(x, y, radius, paint);
 	}
-	/*
+	/**
 	 * Replaces canvas.drawBitmap(Bitmap, int, int, paint) and auto scales
 	 */
 	protected void drawBitmap(Bitmap picture, int x, int y, Canvas g)
 	{
 		g.drawBitmap(picture, x, y, paint);
 	}
-	/*
+	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
 	 */
 	protected void drawBitmapRotated(DrawnSprite sprite, Canvas g)
 	{
 		rotateImages.reset();
 		rotateImages.postTranslate(-sprite.getVisualImage().getWidth() / 2, -sprite.getVisualImage().getHeight() / 2);
-		rotateImages.postRotate((float) sprite.getRotation());
-		rotateImages.postTranslate((float) sprite.getX(), (float) sprite.getY());
+		rotateImages.postRotate((float) sprite.rotation);
+		rotateImages.postTranslate((float) sprite.x, (float) sprite.y);
 		g.drawBitmap(sprite.getVisualImage(), rotateImages, paint);
 		sprite = null;
 	}
-	/*
+	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Rect, Rect, Paint) and auto scales
 	 */
 	protected void drawBitmapRect(Bitmap picture, Rect rectangle, Canvas g)
 	{
 		g.drawBitmap(picture, null, rectangle, paint);
 	}
+	/**
+	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and only draws object if it is in view
+	 */
 	protected void drawBitmapLevel(Bitmap picture, int x, int y, Canvas g)
 	{
 		if(inView(x, y, picture.getWidth(), picture.getHeight())) g.drawBitmap(picture, x, y, paint);
 	}
-	/*
+	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
 	 */
 	protected void drawBitmapRotatedLevel(DrawnSprite sprite, Canvas g)
@@ -2801,13 +3259,13 @@ public final class Controller extends View
 		{
 			rotateImages.reset();
 			rotateImages.postTranslate(-width / 2, -height / 2);
-			rotateImages.postRotate((float) sprite.getRotation());
-			rotateImages.postTranslate((float) sprite.getX(), (float) sprite.getY());
+			rotateImages.postRotate((float) sprite.rotation);
+			rotateImages.postTranslate((float) sprite.x, (float) sprite.y);
 			g.drawBitmap(sprite.getVisualImage(), rotateImages, paint);
 			sprite = null;
 		}
 	}
-	/*
+	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Rect, Rect, Paint) and auto scales
 	 */
 	protected void drawBitmapRectLevel(Bitmap picture, Rect rectangle, Canvas g)
@@ -2817,7 +3275,7 @@ public final class Controller extends View
 			g.drawBitmap(picture, null, rectangle, paint);
 		}
 	}
-	/*
+	/**
 	 * Replaces canvas.drawText(String, int, int, Paint) and auto scales
 	 */
 	protected void drawText(String text, int x, int y, Canvas g)
