@@ -2,10 +2,9 @@ package com.example.magegame;
 public class SpControl
 {
 	private int gainTimer = 15;
-	public boolean gaining = false;
+	private boolean gaining = false;
 	private Controller mainController;
 	private boolean player;
-	public boolean deleted;
 	public SpControl(Controller creator, boolean Player)
 	{
 		mainController = creator;
@@ -14,7 +13,7 @@ public class SpControl
 	public void frameCall()
 	{
 		gainTimer--;
-		if(gaining)
+		if(isGaining())
 		{
 			if(gainTimer < 1)
 			{
@@ -22,19 +21,25 @@ public class SpControl
 				gainTimer = 8;
 			}
 		}
-		gaining = false;
+		setGaining(false);
 	}
 	public void drawSp(boolean Player)
 	{
+		SpGraphic spGraphicDraw;
 		if(Player)
 		{
-			SpGraphic spGraphicDraw = new SpGraphic(mainController, mainController.player.x, mainController.player.y, true);
-			mainController.spGraphic[mainController.lowestPositionEmpty(mainController.spGraphic)] = spGraphicDraw;
+			spGraphicDraw = new SpGraphic(mainController, mainController.player.x, mainController.player.y, true);
 		}
 		else
 		{
-			SpGraphic spGraphicDraw = new SpGraphic(mainController, mainController.enemy.x, mainController.enemy.y, false);
-			mainController.spGraphic[mainController.lowestPositionEmpty(mainController.spGraphic)] = spGraphicDraw;
+			spGraphicDraw = new SpGraphic(mainController, mainController.enemy.x, mainController.enemy.y, false);
 		}
+		mainController.setSpGraphic(mainController.lowestPositionEmpty(mainController.getSpGraphic()), spGraphicDraw);
+	}
+	public boolean isGaining() {
+		return gaining;
+	}
+	public void setGaining(boolean gaining) {
+		this.gaining = gaining;
 	}
 }

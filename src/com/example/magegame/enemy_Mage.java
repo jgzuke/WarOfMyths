@@ -1,16 +1,22 @@
+/*
+ * Main enemy ai, cooldowns stats etc
+ * @param reactionTimeRating how many frames the enemy takes to react to certain scenarios
+ * @param playerAreaProtected whether or not the player is in a mostly enclosed area
+ * @param enemyAreaProtected whether or not the main enemy is in a mostly enclosed area
+ */
 package com.example.magegame;
-public final class enemy_Mage extends Enemy
-{        
-	private int reactionTimeRating;        
-	public int reactTimer = 0;        
+public final class Enemy_Mage extends Enemy
+{
+	private int reactTimer = 0;
+	private double xMoveRoll;
+	private double yMoveRoll;
+	private int mp = 1750;
+	private int sp = 0;
+	private int mpMax = 3500;
+	private int spMax = 3500;
+	private int rollTimer = 0;
+	private int reactionTimeRating;
 	private String reaction;
-	public int rollTimer = 0;
-	public double xMoveRoll;
-	public double yMoveRoll;
-	public int Mp = 1750;
-	public int Sp = 0;
-	public int MpMax = 3500;
-	public int SpMax = 3500;
 	private double abilityTimer_roll = 400;
 	private double abilityTimer_teleport = 350;
 	private double abilityTimer_burst = 500;
@@ -26,47 +32,49 @@ public final class enemy_Mage extends Enemy
 	private double teleportAwayChooseDistance;
 	private double teleportAwayChooseX;
 	private double teleportAwayChooseY;
-	public enemy_Mage(Controller creator)
+	public Enemy_Mage(Controller creator)
 	{
+		super();
 		mainController = creator;
-		humanType = mainController.EnemyType;
-		visualImage = mainController.game.imageLibrary.mage_Image[0];
+		humanType = mainController.getEnemyType();
+		visualImage = mainController.imageLibrary.mage_Image[0];
 		setImageDimensions();
 		width = 30;
 		height = 30;
 		x = 110;
 		y = 160;
-		danger[0] = levelX;
-		danger[1] = levelY;
-		danger[2] = levelXForward;
-		danger[3] = levelYForward;
-	}@
+	}
+	/*
+	 * Replenishes stats, counts down timers, and checks los etc
+	 * @see com.example.magegame.Enemy#frameCall()
+	 */
+	@
 	Override
 	public void frameCall()
 	{
-                reactionTimeRating = mainController.DifficultyLevel;
-		reactTimer--;                
+		reactionTimeRating = mainController.getDifficultyLevel();
+		reactTimer--;
 		if(abilityTimer_roll < 400)
 		{
-			abilityTimer_roll += mainController.DifficultyLevelMultiplier;
+			abilityTimer_roll += mainController.getDifficultyLevelMultiplier();
 		}
 		if(abilityTimer_teleport < 350)
 		{
-			abilityTimer_teleport += mainController.DifficultyLevelMultiplier;
+			abilityTimer_teleport += mainController.getDifficultyLevelMultiplier();
 		}
 		if(abilityTimer_burst < 500)
 		{
-			abilityTimer_burst += mainController.DifficultyLevelMultiplier;
+			abilityTimer_burst += mainController.getDifficultyLevelMultiplier();
 		}
 		if(abilityTimer_powerBall < 90)
 		{
-			abilityTimer_powerBall += mainController.DifficultyLevelMultiplier;
+			abilityTimer_powerBall += mainController.getDifficultyLevelMultiplier();
 		}
-		if(isPlayer)
+		if(isThisPlayer())
 		{
-			if(createSpecialGraphicGainCounter == true)
+			if(createSpecialGraphicGainCounter)
 			{
-				mainController.spGraphicPlayer.gaining = true;
+				mainController.spGraphicPlayer.setGaining(true);
 				createSpecialGraphicGainCounter = false;
 			}
 		}
@@ -74,39 +82,39 @@ public final class enemy_Mage extends Enemy
 		{
 			if(createSpecialGraphicGainCounter == true)
 			{
-				mainController.spGraphicEnemy.gaining = true;
+				mainController.spGraphicEnemy.setGaining(true);
 				createSpecialGraphicGainCounter = false;
 			}
 		}
 		rollTimer--;
-		Mp += 5 * mainController.DifficultyLevelMultiplier;
+		mp += 5 * mainController.getDifficultyLevelMultiplier();
 		if(currentFrame == 58)
 		{
 			currentFrame = 0;
 			playing = false;
 		}
-		if(Mp > MpMax)
+		if(mp > mpMax)
 		{
-			Mp = MpMax;
+			mp = mpMax;
 		}
-		if(Sp > SpMax)
+		if(sp > spMax)
 		{
-			Sp = SpMax;
+			sp = spMax;
 		}
-		if(checkLOSTimer < 1)
+		if(getCheckLOSTimer() < 1)
 		{
 			enemyAreaProtected = checkAreaProtected(x, y);
 			playerAreaProtected = checkAreaProtected(mainController.player.x, mainController.player.y);
 		}
-		if(rollTimer < 1 && runTimer < 1 && reactTimer < 1)
+		if(rollTimer < 1 && getRunTimer() < 1 && reactTimer < 1)
 		{
-			if(checkLOSTimer < 1)
+			if(getCheckLOSTimer() < 1)
 			{
 				checkLOS();
-				checkLOSTimer = 10;
+				resetCheckLOSTimer();
 			}
 			checkDanger();
-			if(pathedToHitLength > 0)
+			if(getPathedToHitLength() > 0)
 			{
 				if(LOS == true)
 				{
@@ -133,13 +141,13 @@ public final class enemy_Mage extends Enemy
 		{
 			if(reactTimer < 1)
 			{
-				if(runTimer < 1)
+				if(getRunTimer() < 1)
 				{
-					if(humanType == 2 && Sp > 45)
+					if(humanType == 2 && sp > 45)
 					{
 						x += xMoveRoll * 1.5;
 						y += yMoveRoll * 1.5;
-						Sp -= 45;
+						sp -= 45;
 					}
 					else
 					{
@@ -149,11 +157,11 @@ public final class enemy_Mage extends Enemy
 				}
 				else
 				{
-					if(humanType == 2 && Sp > 30)
+					if(humanType == 2 && sp > 30)
 					{
 						x += Math.cos(rads) * (speedCur * 1.5);
 						y += Math.sin(rads) * (speedCur * 1.5);
-						Sp -= 30;
+						sp -= 30;
 					}
 					else
 					{
@@ -161,7 +169,7 @@ public final class enemy_Mage extends Enemy
 						y += Math.sin(rads) * speedCur;
 					}
 				}
-				if(rollTimer == 1 || runTimer == 1)
+				if(rollTimer == 1 || getRunTimer() == 1)
 				{
 					playing = false;
 					currentFrame = 0;
@@ -179,9 +187,12 @@ public final class enemy_Mage extends Enemy
 		}
 		super.frameCall();
 	}
-        public void setReactTimer()
+	/*
+	 * Starts counting timer until the specific reaction is performed
+	 */
+	public void setReactTimer()
 	{
-                if(Math.random() > (reactionTimeRating / 10))
+		if(Math.random() > (reactionTimeRating / 10))
 		{
 			reactTimer = Math.round(reactionTimeRating / 2) + 2;
 		}
@@ -190,6 +201,10 @@ public final class enemy_Mage extends Enemy
 			reactTimer = reactionTimeRating + 10;
 		}
 	}
+	/*
+	 * Converts reactions from Strings to integers so they can be switched through (strings were used to make code more understandable)
+	 * @return Returns reaction as an integer
+	 */
 	public int convertReactionToInt(String reaction)
 	{
 		int react = 0;
@@ -268,16 +283,16 @@ public final class enemy_Mage extends Enemy
 		{
 			if(playerAreaProtected == true)
 			{
-				if(Mp > 2510 && abilityTimer_powerBall >= 400)
+				if(mp > 2510 && abilityTimer_powerBall >= 400)
 				{
 					setReactTimer();
 					reaction = "Power Burst";
 				}
 				else
 				{
-					if(Mp < 2300)
+					if(mp < 2300)
 					{
-						if(Mp > 650 && abilityTimer_teleport >= 250)
+						if(mp > 650 && abilityTimer_teleport >= 250)
 						{
 							setReactTimer();
 							reaction = "Teleport Away";
@@ -306,7 +321,7 @@ public final class enemy_Mage extends Enemy
 			}
 			else
 			{
-				if(Mp > 400 && abilityTimer_powerBall >= 50)
+				if(mp > 400 && abilityTimer_powerBall >= 50)
 				{
 					setReactTimer();
 					reaction = "Power Ball";
@@ -319,20 +334,24 @@ public final class enemy_Mage extends Enemy
 	{
 		if(playerAreaProtected == true)
 		{
-			if(Mp > 3150 && abilityTimer_teleport >= 250 && abilityTimer_burst >= 400)
+			if(mp > 3150 && abilityTimer_teleport >= 250 && abilityTimer_burst >= 400)
 			{
 				setReactTimer();
 				reaction = "Teleport Towards";
 			}
-			Sp += 5 * mainController.DifficultyLevelMultiplier;
+			sp += 5 * mainController.getDifficultyLevelMultiplier();
 			createSpecialGraphicGainCounter = true;
 		}
 		else
 		{
-			Sp += 5 * mainController.DifficultyLevelMultiplier;
+			sp += 5 * mainController.getDifficultyLevelMultiplier();
 			createSpecialGraphicGainCounter = true;
 		}
 	}
+	/*
+	 * Checks whether the point given is in a mostly enclosed area
+	 * @return returns whether point is protected
+	 */
 	public boolean checkAreaProtected(double X, double Y)
 	{
 		boolean areaProtected = false;
@@ -346,14 +365,17 @@ public final class enemy_Mage extends Enemy
 				areaProtectedCount++;
 			}
 			areaProtectedRotation += 45;
-                        if(areaProtectedCount > 3)
-                        {
-                            areaProtectedRotation = 370;
-                            areaProtected = true;
-                        }
+			if(areaProtectedCount > 3)
+			{
+				areaProtectedRotation = 370;
+				areaProtected = true;
+			}
 		}
 		return areaProtected;
 	}
+	/*
+	 * Rolls away from player
+	 */
 	public void rollAway()
 	{
 		rads = Math.atan2(-(mainController.player.y - y), -(mainController.player.x - x));
@@ -389,12 +411,18 @@ public final class enemy_Mage extends Enemy
 			}
 		}
 	}
+	/*
+	 * Rolls towards player
+	 */
 	public void rollTowards()
 	{
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 		rotation = rads * r2d;
 		roll();
 	}
+	/*
+	 * Rolls as close to perpendicular as possible to the player
+	 */
 	public void rollSideways()
 	{
 		rolledSideways = true;
@@ -439,6 +467,9 @@ public final class enemy_Mage extends Enemy
 			}
 		}
 	}
+	/*
+	 * Rolls in the current direction to enemy is rotated
+	 */
 	public void roll()
 	{
 		rollTimer = 11;
@@ -453,21 +484,24 @@ public final class enemy_Mage extends Enemy
 		x = newX;
 		y = newY;
 		mainController.teleportFinish(x, y);
-		if(humanType == 1 && Sp > 30)
+		if(humanType == 1 && sp > 30)
 		{
-			Mp -= 580;
-			Sp -= 30;
+			mp -= 580;
+			sp -= 30;
 		}
 		else
 		{
-			Mp -= 600;
+			mp -= 600;
 		}
 	}
+	/* 
+	 * Teleports to players position
+	 */
 	public void teleportTowards()
 	{
 		rotation = Math.random() * 360;
 		rads = rotation / r2d;
-		if(mainController.player.teleporting == false)
+		if(!mainController.player.isTeleporting())
 		{
 			teleport((int)(mainController.player.x + Math.cos(rads) * 10), (int)(mainController.player.y + Math.sin(rads) * 10));
 		}
@@ -475,52 +509,58 @@ public final class enemy_Mage extends Enemy
 		reaction = "Power Burst";
 		abilityTimer_teleport -= 250;
 	}
+	/* 
+	 * Teleports to farthest defined teleport spot in Controller
+	 */
 	public void teleportAway()
 	{
-		distanceFound = checkDistance(x, y, mainController.teleportSpots[0][0], mainController.teleportSpots[1][0]);
+		distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 0), mainController.getTeleportSpots(1, 0));
 		teleportAwayChooseDistance = distanceFound;
-		teleportAwayChooseX = mainController.teleportSpots[0][0];
-		teleportAwayChooseY = mainController.teleportSpots[1][0];
-		distanceFound = checkDistance(x, y, mainController.teleportSpots[0][1], mainController.teleportSpots[1][1]);
+		teleportAwayChooseX = mainController.getTeleportSpots(0, 0);
+		teleportAwayChooseY = mainController.getTeleportSpots(1, 0);
+		distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 1), mainController.getTeleportSpots(1, 1));
 		if(distanceFound > teleportAwayChooseDistance)
 		{
 			teleportAwayChooseDistance = distanceFound;
-			teleportAwayChooseX = mainController.teleportSpots[0][1];
-			teleportAwayChooseY = mainController.teleportSpots[1][1];
+			teleportAwayChooseX = mainController.getTeleportSpots(0, 1);
+			teleportAwayChooseY = mainController.getTeleportSpots(1, 1);
 		}
-		distanceFound = checkDistance(x, y, mainController.teleportSpots[0][2], mainController.teleportSpots[1][2]);
+		distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 2), mainController.getTeleportSpots(1, 2));
 		if(distanceFound > teleportAwayChooseDistance)
 		{
 			teleportAwayChooseDistance = distanceFound;
-			teleportAwayChooseX = mainController.teleportSpots[0][2];
-			teleportAwayChooseY = mainController.teleportSpots[1][2];
+			teleportAwayChooseX = mainController.getTeleportSpots(0, 2);
+			teleportAwayChooseY = mainController.getTeleportSpots(1, 2);
 		}
-		distanceFound = checkDistance(x, y, mainController.teleportSpots[0][3], mainController.teleportSpots[1][3]);
+		distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 3), mainController.getTeleportSpots(1, 3));
 		if(distanceFound > teleportAwayChooseDistance)
 		{
 			teleportAwayChooseDistance = distanceFound;
-			teleportAwayChooseX = mainController.teleportSpots[0][3];
-			teleportAwayChooseY = mainController.teleportSpots[1][3];
+			teleportAwayChooseX = mainController.getTeleportSpots(0, 3);
+			teleportAwayChooseY = mainController.getTeleportSpots(1, 3);
 		}
 		teleport((int) teleportAwayChooseX, (int) teleportAwayChooseY);
 		abilityTimer_teleport -= 250;
 	}
+	/*
+	 * Releases stored powerBall towards player
+	 */
 	public void releasePowerBall()
 	{
-		if(humanType == 1 && Sp > 30)
+		if(humanType == 1 && sp > 30)
 		{
-			Mp -= 280;
-			Sp -= 30;
+			mp -= 280;
+			sp -= 30;
 		}
 		else
 		{
-			Mp -= 300;
+			mp -= 300;
 		}
 		playing = false;
 		currentFrame = 0;
-		if(mainController.player.teleporting == true)
+		if(mainController.player.isTeleporting())
 		{
-			rads = Math.atan2((mainController.player.XSave - y), (mainController.player.YSave - x));
+			rads = Math.atan2((mainController.player.getXSave() - y), (mainController.player.getYSave() - x));
 		}
 		else
 		{
@@ -532,14 +572,14 @@ public final class enemy_Mage extends Enemy
 	}
 	public void powerBurst()
 	{
-		if(humanType == 1 && Sp > 30)
+		if(humanType == 1 && sp > 30)
 		{
-			Mp -= 2480;
-			Sp -= 30;
+			mp -= 2480;
+			sp -= 30;
 		}
 		else
 		{
-			Mp -= 2500;
+			mp -= 2500;
 		}
 		mainController.createPowerBallEnemy(0, 10, 0, 170, x, y);
 		mainController.createPowerBallEnemy(45, 7, 7, 170, x, y);
@@ -551,6 +591,9 @@ public final class enemy_Mage extends Enemy
 		mainController.createPowerBallEnemy(315, 7, -7, 170, x, y);
 		abilityTimer_burst -= 400;
 	}
+	/*
+	 * Acts out stored reaction
+	 */
 	public void react()
 	{
 		switch(convertReactionToInt(reaction))
@@ -577,7 +620,7 @@ public final class enemy_Mage extends Enemy
 			rollSideways();
 			if(rolledSideways == false)
 			{
-				if(Mp > 650)
+				if(mp > 650)
 				{
 					teleportAway();
 				}
@@ -595,5 +638,56 @@ public final class enemy_Mage extends Enemy
 			powerBurst();
 			break;
 		}
+	}
+	public void stun()
+	{
+        rotation =rads * r2d + 180;
+        roll();                                    
+        currentFrame = 1;
+        xMoveRoll /= 3;
+        yMoveRoll /= 3;                                    
+        reactTimer = 0;
+	}
+	public int getReactTimer() {
+		return reactTimer;
+	}
+	public double getXMoveRoll() {
+		return xMoveRoll;
+	}
+	public double getYMoveRoll() {
+		return yMoveRoll;
+	}
+	public int getMp() {
+		return mp;
+	}
+	public int getSp() {
+		return sp;
+	}
+	public int getMpMax() {
+		return mpMax;
+	}
+	public int getSpMax() {
+		return spMax;
+	}
+	public int getRollTimer() {
+		return rollTimer;
+	}
+	public void setRollTimer(int rollTimer) {
+		this.rollTimer = rollTimer;
+	}
+	public void lowerSp(int lowered) {
+		sp -= lowered;
+	}
+	public void setMp(int mp) {
+		this.mp = mp;
+	}
+	public void setSp(int sp) {
+		this.sp = sp;
+	}
+	public void setMpMax(int mpMax) {
+		this.mpMax = mpMax;
+	}
+	public void setSpMax(int spMax) {
+		this.spMax = spMax;
 	}
 }

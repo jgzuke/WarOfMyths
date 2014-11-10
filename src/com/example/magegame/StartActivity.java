@@ -8,8 +8,8 @@ import android.view.Window;
 import android.view.WindowManager;
 public class StartActivity extends Activity
 {
-	public Controller control;
-	public Game game;
+	private Controller control;
+	private Game game;
 	private double screenDimensionMultiplier;
 	private int screenMinX;
 	private int screenMinY;
@@ -19,7 +19,7 @@ public class StartActivity extends Activity
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setScreenDimensions();
-		game = new Game(this, screenDimensionMultiplier);
+		game = new Game(this);
     	control = new Controller(this, game, 2, 3, 4, screenDimensionMultiplier, screenMinX, screenMinY);
     	control.setBackgroundColor(Color.WHITE);
         setContentView(control);
@@ -61,4 +61,34 @@ public class StartActivity extends Activity
         getMenuInflater().inflate(R.menu.start, menu);
         return true;
     }
+    @Override
+    public void onStart() {
+        super.onStart();
+        control.gameRunning = true;
+    }
+
+   @Override
+    public void onResume() {
+        super.onResume();
+        control.gameRunning = true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        control.gameRunning = false;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        control.gameRunning = false;
+    }
+
+   @Override
+    public void onDestroy() {
+        super.onDestroy();
+        control.gameRunning = false;
+    }
+   
 }

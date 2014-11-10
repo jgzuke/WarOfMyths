@@ -1,24 +1,24 @@
 package com.example.magegame;
-public class wall_Circle extends wall
+public class Wall_Circle extends Wall
 {
-	private double Xdif;
-	private double Ydif;
-	private int OCX;
-	private int OCY;
-	private int OCR;
-	private double OCRS;
+	private double xdif;
+	private double ydif;
+	private int oCX;
+	private int oCY;
+	private int oCR;
+	private double oCRS;
 	private double rads;
-	public wall_Circle(Controller creator, int oCX, int oCY, int oCR)
+	public Wall_Circle(Controller creator, int OCX, int OCY, int OCR)
 	{
-		OCX = oCX;
-		OCY = oCY;
-		OCR = oCR;
-		OCRS = Math.pow(OCR, 2);
+		oCX = OCX;
+		oCY = OCY;
+		oCR = OCR;
+		oCRS = Math.pow(oCR, 2);
 		mainController = creator;
-		mainController.obstaclesCirclesX[mainController.currentCircle] = OCX;
-		mainController.obstaclesCirclesY[mainController.currentCircle] = OCY;
-		mainController.obstaclesCirclesRadius[mainController.currentCircle] = OCR;
-		mainController.currentCircle++;
+		mainController.setObstaclesCirclesX(mainController.getCurrentCircle(), OCX);
+		mainController.setObstaclesCirclesY(mainController.getCurrentCircle(), OCY);
+		mainController.setObstaclesCirclesRadius(mainController.getCurrentCircle(), OCR);
+		mainController.incrementCurrentCircle();
 	}
 	@ Override
 	public void frameCall()
@@ -27,13 +27,13 @@ public class wall_Circle extends wall
 		Sprite hold = mainController.player;
 		while(hold != null)
 		{
-			Xdif = OCX - hold.x;
-			Ydif = OCY - hold.y;
-			rads = Math.atan2(Ydif, Xdif);
-			if(Math.pow(Xdif, 2) + Math.pow(Ydif, 2) < OCRS)
+			xdif = oCX - hold.x;
+			ydif = oCY - hold.y;
+			rads = Math.atan2(ydif, xdif);
+			if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < oCRS)
 			{
-				hold.x = OCX - (Math.cos(rads) * OCR);
-				hold.y = OCY - (Math.sin(rads) * OCR);
+				hold.x = oCX - (Math.cos(rads) * oCR);
+				hold.y = oCY - (Math.sin(rads) * oCR);
 			}
 			if(changing)
 			{

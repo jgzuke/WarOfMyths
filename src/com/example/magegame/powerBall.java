@@ -1,19 +1,19 @@
 package com.example.magegame;
-abstract public class powerBall extends drawnSprite
+abstract public class PowerBall extends DrawnSprite
 {
-	public boolean hitBack;
-	public double XForward;
-	public double YForward;
-	public int power;
-	public double xDif = 0;
-	public double yDif = 0;
-	public double realX;
-	public double realY;@
+	protected boolean hitBack;
+	protected double xForward;
+	protected double yForward;
+	protected int power;
+	protected double xDif = 0;
+	protected double yDif = 0;
+	protected double realX;
+	protected double realY;@
 	Override
 	public void frameCall()
 	{
-		realX += XForward;
-		realY += YForward;
+		realX += xForward;
+		realY += yForward;
 		x = (int) realX;
 		y = (int) realY;
 		power--;
@@ -31,13 +31,13 @@ abstract public class powerBall extends drawnSprite
 		}
 		if(hitBack == false)
 		{
-			for(int i = 0; i < mainController.obstaclesRectanglesX1.length; i++)
+			for(int i = 0; i < mainController.getCurrentRectangle(); i++)
 			{
 				if(hitBack == false)
 				{
-					if(X > mainController.obstaclesRectanglesX1[i] && X < mainController.obstaclesRectanglesX2[i])
+					if(X > mainController.getObstaclesRectanglesX1(i) && X < mainController.getObstaclesRectanglesX2(i))
 					{
-						if(Y > mainController.obstaclesRectanglesY1[i] && Y < mainController.obstaclesRectanglesY2[i])
+						if(Y > mainController.getObstaclesRectanglesY1(i) && Y < mainController.getObstaclesRectanglesY2(i))
 						{
 							hitBack = true;
 						}
@@ -47,11 +47,11 @@ abstract public class powerBall extends drawnSprite
 		}
 		if(hitBack == false)
 		{
-			for(int i = 0; i < mainController.obstaclesCirclesX.length; i++)
+			for(int i = 0; i < mainController.getCurrentCircle(); i++)
 			{
 				if(hitBack == false)
 				{
-					if(Math.pow(X - mainController.obstaclesCirclesX[i], 2) + Math.pow(Y - mainController.obstaclesCirclesY[i], 2) < Math.pow(mainController.obstaclesCirclesRadius[i], 2))
+					if(Math.pow(X - mainController.getObstaclesCirclesX(i), 2) + Math.pow(Y - mainController.getObstaclesCirclesY(i), 2) < Math.pow(mainController.getObstaclesCirclesRadius(i), 2))
 					{
 						hitBack = true;
 					}

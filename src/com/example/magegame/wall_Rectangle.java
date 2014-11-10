@@ -1,30 +1,30 @@
 package com.example.magegame;
-public class wall_Rectangle extends wall
+public class Wall_Rectangle extends Wall
 {
 	private int x;
 	private int y;
 	private int width;
 	private int height;
-	private int ORX1;
-	private int ORX2;
-	private int ORY1;
-	private int ORY2;
-	public wall_Rectangle(Controller creator, int oRX1, int oRX2, int oRY1, int oRY2)
+	private int oRX1;
+	private int oRX2;
+	private int oRY1;
+	private int oRY2;
+	public Wall_Rectangle(Controller creator, int ORX1, int ORX2, int ORY1, int ORY2)
 	{
-		ORX1 = oRX1;
-		ORX2 = oRX2;
-		ORY1 = oRY1;
-		ORY2 = oRY2;
+		oRX1 = ORX1;
+		oRX2 = ORX2;
+		oRY1 = ORY1;
+		oRY2 = ORY2;
 		width = Math.abs(oRX1 - oRX2) - 15;
 		height = Math.abs(oRY1 - oRY2) - 15;
 		x = (ORX1 + ORX2) / 2;
 		y = (ORY1 + ORY2) / 2;
 		mainController = creator;
-		mainController.obstaclesRectanglesX1[mainController.currentRectangle] = ORX1;
-		mainController.obstaclesRectanglesX2[mainController.currentRectangle] = ORX2;
-		mainController.obstaclesRectanglesY1[mainController.currentRectangle] = ORY1;
-		mainController.obstaclesRectanglesY2[mainController.currentRectangle] = ORY2;
-		mainController.currentRectangle++;
+		mainController.setObstaclesRectanglesX1(mainController.getCurrentRectangle(), ORX1);
+		mainController.setObstaclesRectanglesX2(mainController.getCurrentRectangle(), ORX2);
+		mainController.setObstaclesRectanglesY1(mainController.getCurrentRectangle(), ORY1);
+		mainController.setObstaclesRectanglesY2(mainController.getCurrentRectangle(), ORY2);
+		mainController.incrementCurrentRectangle();
 	}
         @ Override
 	public void frameCall()
@@ -33,7 +33,7 @@ public class wall_Rectangle extends wall
 		Sprite hold = mainController.player;
 		while(hold != null)
 		{
-			if(hold.x > ORX1 && hold.x < ORX2 && hold.y > ORY1 && hold.y < ORY2)
+			if(hold.x > oRX1 && hold.x < oRX2 && hold.y > oRY1 && hold.y < oRY2)
 			{
 				double holdX = Math.abs(hold.x - x);
 				double holdY = Math.abs(hold.y - y);
@@ -41,22 +41,22 @@ public class wall_Rectangle extends wall
 				{
 					if(hold.x > x)
 					{
-						hold.x = ORX2;
+						hold.x = oRX2;
 					}
 					else
 					{
-						hold.x = ORX1;
+						hold.x = oRX1;
 					}
 				}
 				else
 				{
 					if(hold.y > y)
 					{
-						hold.y = ORY2;
+						hold.y = oRY2;
 					}
 					else
 					{
-						hold.y = ORY1;
+						hold.y = oRY1;
 					}
 				}
 			}

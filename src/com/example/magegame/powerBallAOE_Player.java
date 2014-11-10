@@ -1,20 +1,19 @@
 package com.example.magegame;
-public final class powerBallAOE_Player extends powerBallAOE
+public final class PowerBallAOE_Player extends PowerBallAOE
 {
-	public powerBallAOE_Player(Controller creator, int X, int Y, double Power)
+	public PowerBallAOE_Player(Controller creator, int X, int Y, double Power)
 	{
 		mainController = creator;
 		x = X;
 		y = Y;
-		visualImage = mainController.game.imageLibrary.powerBallAOE_Image[mainController.PlayerType];
+		visualImage = mainController.imageLibrary.powerBallAOE_Image[mainController.getPlayerType()];
 		width = 10;
 		height = 10;
 		timeToDeath = (int) Power / 15;
 		alpha = (byte) 200;
-		if(mainController.player.Sp > 90)
+		if(mainController.player.getSp() > 90)
 		{
-			mainController.enemy.HpMax -= 50;
-			mainController.player.Sp -= 90;
+			mainController.player.lowerSp(90);
 		}
 	}@
 	Override

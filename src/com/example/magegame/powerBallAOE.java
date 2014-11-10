@@ -1,11 +1,11 @@
 package com.example.magegame;
-abstract public class powerBallAOE extends drawnSprite
+abstract public class PowerBallAOE extends DrawnSprite
 {
-	public double widthDone = 0;
-	public double xDif = 0;
-	public double yDif = 0;
-	public byte alpha;
-	public int timeToDeath;@
+	protected double widthDone = 0;
+	protected double xDif = 0;
+	protected double yDif = 0;
+	protected byte alpha;
+	protected int timeToDeath;@
 	Override
 	public void frameCall()
 	{
@@ -18,5 +18,8 @@ abstract public class powerBallAOE extends drawnSprite
 		height += 10;
 		alpha -= 10;
 		widthDone = 7.5 + (width / 2);
+	}
+	public byte getAlpha() {
+		return alpha;
 	}
 }

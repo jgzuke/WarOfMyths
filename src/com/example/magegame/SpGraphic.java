@@ -4,13 +4,12 @@ public final class SpGraphic extends Sprite
 	private double velocity = 0;
 	private double displacement = 50;
 	private double r2d = 180 / Math.PI;
-	private boolean Player;
-	public int alpha = 0;
+	private boolean player;
 	public SpGraphic(Controller creator, double X, double Y, boolean setPlayer)
 	{
 		mainController = creator;
-		Player = setPlayer;
-		if(Player)
+		player = setPlayer;
+		if(player)
 		{
 			x = mainController.player.x + Math.cos(rotation / r2d) * displacement;
 			y = mainController.player.y + Math.sin(rotation / r2d) * displacement;
@@ -20,8 +19,8 @@ public final class SpGraphic extends Sprite
 			x = mainController.enemy.x + Math.cos(rotation / r2d) * displacement;
 			y = mainController.enemy.y + Math.sin(rotation / r2d) * displacement;
 		}
-		width = 20;
-		rotation = mainController.randomGenerator.nextInt(360);
+		width = 10;
+		rotation = mainController.getRandomInt(360);
 	}@
 	Override
 	public void frameCall()
@@ -31,11 +30,10 @@ public final class SpGraphic extends Sprite
 		{
 			deleted = true;
 		}
-		alpha += 15;
 		velocity += 0.4;
 		displacement -= velocity;
 		rotation += 10;
-		if(Player)
+		if(player)
 		{
 			x = mainController.player.x + Math.cos(rotation / r2d) * displacement;
 			y = mainController.player.y + Math.sin(rotation / r2d) * displacement;
@@ -45,6 +43,6 @@ public final class SpGraphic extends Sprite
 			x = mainController.enemy.x + Math.cos(rotation / r2d) * displacement;
 			y = mainController.enemy.y + Math.sin(rotation / r2d) * displacement;
 		}
-		width -= 1;
+		width -= 0.5;
 	}
 }

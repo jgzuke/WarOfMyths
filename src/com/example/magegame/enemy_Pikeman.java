@@ -1,99 +1,104 @@
+/*
+ * Specific object behavior and ai for pikemen
+ */
 package com.example.magegame;
-public final class enemy_Pikeman extends enemy_Muggle
+public final class Enemy_Pikeman extends Enemy_Muggle
 {
-	public enemy_Pikeman(Controller creator, double setX, double setY)
+	public Enemy_Pikeman(Controller creator, double setX, double setY)
 	{
-                super(creator, setX, setY);
-		visualImage = mainController.game.imageLibrary.pikeman_Image[0];
+		super(creator, setX, setY);
+		visualImage = mainController.imageLibrary.pikeman_Image[0];
 		setImageDimensions();
-                HpMax = 4000;
-                Hp = HpMax;
+		setHpMax(4000);
+		hp = 4000;
 	}@
 	Override
 	public void frameCall()
-	{       
-                if(currentFrame == 159)
-                {
-                    currentFrame = 0;
-                    playing = false;
-                    attacking = false;
-                }
-                visualImage = mainController.game.imageLibrary.pikeman_Image[currentFrame];
+	{
+		if(currentFrame == 159)
+		{
+			currentFrame = 0;
+			playing = false;
+			attacking = false;
+		}
+		visualImage = mainController.imageLibrary.pikeman_Image[currentFrame];
 		super.frameCall();
 	}@
 	Override
 	public void frameReactionsDangerLOS()
 	{
-            frameReactionsNoDangerLOS();
-        }@
+		frameReactionsNoDangerLOS();
+	}@
 	Override
 	public void frameReactionsDangerNoLOS()
 	{
-            frameReactionsNoDangerNoLOS();
-        }@
+		frameReactionsNoDangerNoLOS();
+	}@
 	Override
 	public void frameReactionsNoDangerLOS()
 	{
-                rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
+		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 		rotation = rads * r2d;
-                distanceFound = checkDistance(x, y, mainController.player.x, mainController.player.y);
+		distanceFound = checkDistance(x, y, mainController.player.x, mainController.player.y);
 		if(distanceFound < 30)
 		{
-                    currentFrame = 49;
-                    attacking = true;
-                    playing = true;
-                } else
-                {
-                    runToward(lastPlayerX, lastPlayerY);
-                }
-        }@
+			currentFrame = 49;
+			attacking = true;
+			playing = true;
+		}
+		else
+		{
+			runToward(lastPlayerX, lastPlayerY);
+		}
+	}@
 	Override
 	public void frameReactionsNoDangerNoLOS()
 	{
-                distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY);
-		if(checkedPlayerLast || distanceFound < 10)
+		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY);
+		if(isCheckedPlayerLast() || distanceFound < 10)
 		{
-                    Hp += 5;
-                    currentFrame = 0;
-                    playing = false;
-                    if(mainController.randomGenerator.nextInt(20) == 0)
-                    {
-                        runRandom();
-                    }
-                    checkedPlayerLast = true;
-                } else
-                {
-                    rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x));
-                    rotation = rads * r2d;
-                    runToward(lastPlayerX, lastPlayerY);
-                }
-        }@
+			hp += 5;
+			currentFrame = 0;
+			playing = false;
+			if(mainController.getRandomInt(20) == 0)
+			{
+				runRandom();
+			}
+			setCheckedPlayerLast(true);
+		}
+		else
+		{
+			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x));
+			rotation = rads * r2d;
+			runToward(lastPlayerX, lastPlayerY);
+		}
+	}@
 	Override
 	public void attacking()
 	{
-                if(currentFrame == 79)
-                {
-                    distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
-                    if(distanceFound < 30)
-                    {
-                        mainController.player.getHit(700);
-                    }
-                }
-                if(currentFrame == 121)
-                {
-                    distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
-                    if(distanceFound < 30)
-                    {
-                        mainController.player.getHit(400);
-                    }
-                }
-                if(currentFrame == 131)
-                {
-                    distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
-                    if(distanceFound < 30)
-                    {
-                        mainController.player.getHit(400);
-                    }
-                }
+		if(currentFrame == 79)
+		{
+			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
+			if(distanceFound < 30)
+			{
+				mainController.player.getHit(700);
+			}
+		}
+		if(currentFrame == 121)
+		{
+			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
+			if(distanceFound < 30)
+			{
+				mainController.player.getHit(400);
+			}
+		}
+		if(currentFrame == 131)
+		{
+			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
+			if(distanceFound < 30)
+			{
+				mainController.player.getHit(400);
+			}
+		}
 	}
 }

@@ -1,18 +1,24 @@
+/*
+ * Specific variable values for axemen
+ */
 package com.example.magegame;
-public final class enemy_Axeman extends enemy_Shield
+
+import com.example.magegame.Controller;
+
+public final class Enemy_Axeman extends Enemy_Shield
 {
-	public enemy_Axeman(Controller creator, double setX, double setY)
+	public Enemy_Axeman(Controller creator, double setX, double setY)
 	{
-                super(creator, setX, setY);
-		visualImage = mainController.game.imageLibrary.axeman_Image[0];
+		super(creator, setX, setY);
+		visualImage = mainController.imageLibrary.axeman_Image[0];
 		setImageDimensions();
-                HpMax = 6500;
-                Hp = HpMax;
+		setHpMax(6500);
+		hp = 6500;
 	}@
 	Override
 	public void frameCall()
-	{       
+	{
 		super.frameCall();
-                visualImage = mainController.game.imageLibrary.axeman_Image[currentFrame];
+		visualImage = mainController.imageLibrary.axeman_Image[currentFrame];
 	}
 }

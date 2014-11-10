@@ -1,22 +1,28 @@
+/*
+ * Enemies and player, regains health, provides variables and universal getHit method
+ */
 package com.example.magegame;
-abstract public class human extends drawnSprite
+abstract public class Human extends DrawnSprite
 {
-	public int Hp = 7000;
-	public int HpMax = 7000;
-	public double r2d = 180 / Math.PI;
-	public double rads;
-	public double speedCur = 3;
-	public boolean hitBack;
-	public boolean playing = false;
-	public boolean createSpecialGraphicGainCounter = false;
-	public boolean isPlayer = false;
-	public int humanType;
-	public human()
-	{}@
+	protected int hp = 7000;
+	private int hpMax = 7000;
+	protected double r2d = 180 / Math.PI;
+	protected double rads;
+	protected double speedCur = 3;
+	protected boolean hitBack;
+	protected boolean playing = false;
+	protected boolean createSpecialGraphicGainCounter = false;
+	protected boolean thisPlayer = false;
+	protected int humanType;
+	/*
+	 * Regains health
+	 * @see com.example.magegame.Sprite#frameCall()
+	 */
+	@
 	Override
 	public void frameCall()
 	{
-		Hp ++;
+		hp ++;
 		if(currentFrame == 47)
 		{
 			currentFrame = 0;
@@ -25,18 +31,36 @@ abstract public class human extends drawnSprite
 		{
 			currentFrame++;
 		}
-		if(Hp > HpMax)
+		if(hp > hpMax)
 		{
-			Hp = HpMax;
+			hp = hpMax;
 		}
+	}
+	public int getHp() {
+		return hp;
 	}
 	public void getHit(int damage)
 	{
-		Hp -= damage;
-		if(Hp < 1)
+		hp -= damage;
+		if(hp < 1)
 		{
-			Hp = 0;
+			hp = 0;
 			deleted = true;
 		}
+	}
+	public int getHpMax() {
+		return hpMax;
+	}
+	public void setSpeedCur(double speedCur) {
+		this.speedCur = speedCur;
+	}
+	public void setHpMax(int hpMax) {
+		this.hpMax = hpMax;
+	}
+	public void setHp(int hp) {
+		this.hp = hp;
+	}
+	public boolean isThisPlayer() {
+		return thisPlayer;
 	}
 }

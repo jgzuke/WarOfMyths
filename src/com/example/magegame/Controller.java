@@ -1,3 +1,45 @@
+//@author (classes and interfaces only, required)
+//@version (classes and interfaces only, required. See footnote 1)
+//@param (methods and constructors only)
+//@return (methods only)
+//@exception (@throws is a synonym added in Javadoc 1.2)
+//@see
+//@since
+//@serial (or @serialField or @serialData)
+//@deprecated (see How and When To Deprecate APIs)
+/* Controls running of battle, calls objects frameCalls, draws and handles all objects, edge hit detection
+ * @param DifficultyLevel Chosen difficulty setting which dictates enemy reaction time and DifficultyLevelMultiplier
+ * @param DifficultyLevelMultiplier Function of DifficultyLevel which changes enemy health, mana, speed
+ * @param EnemyType Mage type of enemy
+ * @param PlayerType Mage type of player
+ * @param LevelNum Level chosen to fight on
+ * @param player Player object that has health etc and generates movement handler
+ * @param enemy Enemy object with health etc and ai
+ * @param enemies Array of all enemies currently on screen excluding main mage enemy
+ * @param powerBalls Array of all enemy or player powerBalls
+ * @param powerBallAOEs Array of all enemy or player powerBall explosions
+ * @param spGraphicEnemy Handles the changing of main enemy's sp
+ * @param spGraphicPlayer Handles the changing of player's sp
+ * @param obstaclesRectanglesX1 Array of all walls left x value
+ * @param obstaclesRectanglesX2 Array of all walls right x value
+ * @param obstaclesRectanglesY1 Array of all walls top y value
+ * @param obstaclesRectanglesY2 Array of all walls bottom x value
+ * @param obstaclesCirclesX Array of all pillars middle x value
+ * @param obstaclesCirclesY Array of all pillars middle y value
+ * @param obstaclesCirclesRadius Array of all pillars radius
+ * @param currentCircle Current index of obstaclesCirclesX to write to
+ * @param currentRectangle Current index of obstaclesRectanglesX1 to write to
+ * @param teleportSpots Array of levels four teleport spots x and y for enemy mage
+ * @param game Game object holding imageLibrary
+ * @param context Main activity context for returns
+ * @param aoeRect Rectangle to draw sized bitmaps
+ * @param mHandler Timer for frameCaller
+ * @param handleMovement Handles players movement attacks etc
+ * @param screenMinX Start of game on screen horizontally
+ * @param screenMinY Start of game on screen vertically
+ * @param screenDimensionMultiplier
+ * @param frameCaller Calls objects and controllers frameCalls
+ */
 package com.example.magegame;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -9,154 +51,190 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.view.View;
 import java.util.Random;
+import android.view.MotionEvent;
 public final class Controller extends View
-{	
+{
+	protected Player player;
+	protected Enemy_Mage enemy;
+	protected Enemy_Muggle[] enemies = new Enemy_Muggle[30];
+	protected Game game;
+	protected Context context;
+	protected SpControl spGraphicEnemy;
+	protected SpControl spGraphicPlayer;
+	protected ImageLibrary imageLibrary;
+	View.OnTouchListener gestureListener;
+	private SpGraphic[] spGraphic = new SpGraphic[30];
+	private Paint paint = new Paint();
+	private Matrix rotateImages = new Matrix();
+	private Rect aoeRect = new Rect();
+	private Handler mHandler = new Handler();
+	private PowerBall[] powerBalls = new PowerBall[30];
+	private PowerBallAOE[] powerBallAOEs = new PowerBallAOE[30];
+	private Graphic_Teleport[] graphic_Teleport = new Graphic_Teleport[30];
+	private Wall_Rectangle[] walls = new Wall_Rectangle[30];
+	private Wall_Circle[] wallCircles = new Wall_Circle[30];	
+	private Random randomGenerator;
 	private int playerColour;
 	private int enemyColour;
-	private double screenDimensionMultiplier;
-	private int screenMinX;
-	private int screenMinY;
-	public int DifficultyLevel;
-	public double DifficultyLevelMultiplier;
-	public int EnemyType;
-	public int PlayerType;
+	private int difficultyLevel;
+	private double difficultyLevelMultiplier;
+	private int enemyType;
+	private int playerType;
 	private int wallWidth = 10;
-	public int LevelNum;
-	public Player player;
-	public enemy_Mage enemy;
-	public enemy_Muggle[] enemies = new enemy_Muggle[30];
-	private powerBall[] powerBalls = new powerBall[30];
-	private powerBallAOE[] powerBallAOEs = new powerBallAOE[30];
-	private graphic_Teleport[] graphic_Teleport = new graphic_Teleport[30];
-	public SpGraphic[] spGraphic = new SpGraphic[30];
-        public wall[] walls = new wall[30];
-	public SpControl spGraphicEnemy;
-	public SpControl spGraphicPlayer;
-	public int[] obstaclesRectanglesX1;
-	public int[] obstaclesRectanglesX2;
-	public int[] obstaclesRectanglesY1;
-	public int[] obstaclesRectanglesY2;
-	public int[] obstaclesCirclesX;
-	public int[] obstaclesCirclesY;
-	public int[] obstaclesCirclesRadius = new int[0];
-	public int currentCircle = 0;
-	public int currentRectangle = 0;
-	public int[][] teleportSpots = new int[2][4];
-	public Random randomGenerator;
+	private int levelNum;
 	private int warningTimer;
 	private int warningType;
-	public Game game;
-	public Context context;
-        public boolean gameEnded = false;
-        public Paint paint = new Paint();
-        private Matrix rotateImages = new Matrix();
-        private Rect aoeRect = new Rect();  
-        private Handler mHandler = new Handler();
-        private PlayerHandleMove handleMovement;
-        private Runnable frameCaller = new Runnable()
-        {
-        	public void run()
-        	{
-        		frameCall();
-        		mHandler.postDelayed(this, 50);
-        	}
-        };
+	private boolean gameEnded = false;
+	protected int screenMinX;
+	protected int screenMinY;
+	private int currentCircle = 0;
+	private int currentRectangle = 0;
+	private int[] obstaclesRectanglesX1;
+	private int[] obstaclesRectanglesX2;
+	private int[] obstaclesRectanglesY1;
+	private int[] obstaclesRectanglesY2;
+	private int[] obstaclesCirclesX;
+	private int[] obstaclesCirclesY;
+	private int[] obstaclesCirclesRadius;
+	private int[][] teleportSpots = new int[2][4];
+	protected double screenDimensionMultiplier;
+	protected boolean gameRunning = true;
+	private Bitmap background;
+	private Runnable frameCaller = new Runnable()
+	{
+		public void run()
+		{
+			if(gameRunning)
+			{
+				frameCall();
+			}
+			mHandler.postDelayed(this, 50);
+		}
+	};
+	/* 
+	 * Initializes all undecided variables, loads level, creates player and enemy objects, and starts frameCaller
+	 */
 	public Controller(Context startSet, Game gameSet, int PlayerTypeSet, int DifficultyLevelSet, int LevelNumSet, double screenDimensionMultiplierSet, int screenMinXSet, int screenMinYSet)
-	{		
+	{
 		super(startSet);
-		screenDimensionMultiplier = screenDimensionMultiplierSet;
+		game = gameSet;
+		imageLibrary = game.imageLibrary;
 		screenMinX = screenMinXSet;
 		screenMinY = screenMinYSet;
-		game = gameSet;	
-    	PlayerType = PlayerTypeSet;		
-    	DifficultyLevel = DifficultyLevelSet;
-    	LevelNum = LevelNumSet;
-    	DifficultyLevelMultiplier = 20 / (double)(DifficultyLevel + 10);
+		screenDimensionMultiplier = screenDimensionMultiplierSet;
+		paint.setAntiAlias(true);
+		paint.setFilterBitmap(true);
+		paint.setDither(true);
+		playerType = PlayerTypeSet;
+		difficultyLevel = DifficultyLevelSet;
+		levelNum = LevelNumSet;
+		difficultyLevelMultiplier = 20 / (double)(difficultyLevel + 10);
 		context = startSet;
-		paint.setColor(Color.BLACK);		
+		paint.setColor(Color.BLACK);
 		randomGenerator = new Random();
-		EnemyType = randomGenerator.nextInt(4);
+		enemyType = randomGenerator.nextInt(4);
 		spGraphicEnemy = new SpControl(this, false);
 		spGraphicPlayer = new SpControl(this, true);
 		player = new Player(this);
-		player.isPlayer = true;
-		//handleMovement = new PlayerHandleMove(this);
-		enemy = new enemy_Mage(this);
-		switch(EnemyType)
+		enemy = new Enemy_Mage(this);
+		setOnTouchListener(new PlayerGestureDetector(player, this));
+		switch(enemyType)
 		{
 		case 0:
-			game.imageLibrary.powerBallAOE_Image[0] = game.imageLibrary.loadImage("powerballaoe0001");
-			game.imageLibrary.powerBall_Image[0] = game.imageLibrary.loadArray1D(4, "powerball0001_");
-			enemyColour = Color.rgb(255,0,0);
+			imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001");
+			imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(4, "powerball0001_");
+			enemyColour = Color.rgb(255, 0, 0);
 			break;
 		case 1:
-			game.imageLibrary.powerBallAOE_Image[1] = game.imageLibrary.loadImage("powerballaoe0002");
-			game.imageLibrary.powerBall_Image[1] = game.imageLibrary.loadArray1D(4, "powerball0002_");
-			enemyColour = Color.rgb(0,0,255);
-			enemy.Mp = 2250;
-			enemy.MpMax = 4500;
+			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002");
+			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(4, "powerball0002_");
+			enemyColour = Color.rgb(0, 0, 255);
+			enemy.setMp(2250);
+			enemy.setMpMax(4500);
 			break;
 		case 2:
-			game.imageLibrary.powerBallAOE_Image[2] = game.imageLibrary.loadImage("powerballaoe0003");
-			game.imageLibrary.powerBall_Image[2] = game.imageLibrary.loadArray1D(4, "powerball0003_");
-			enemyColour = Color.rgb(170,119,221);
-			enemy.speedCur = 4;
+			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003");
+			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(4, "powerball0003_");
+			enemyColour = Color.rgb(170, 119, 221);
+			enemy.setSpeedCur(4);
 			break;
 		case 3:
-			game.imageLibrary.powerBallAOE_Image[3] = game.imageLibrary.loadImage("powerballaoe0004");
-			game.imageLibrary.powerBall_Image[3] = game.imageLibrary.loadArray1D(4, "powerball0004_");
-			enemyColour = Color.rgb(102,51,0);
-			enemy.Hp = 9000;
-			enemy.HpMax = 9000;
+			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004");
+			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(4, "powerball0004_");
+			enemyColour = Color.rgb(102, 51, 0);
+			enemy.setHp(9000);
+			enemy.setHpMax(9000);
 			break;
 		}
-		switch(PlayerType)
+		switch(playerType)
 		{
 		case 0:
-			game.imageLibrary.powerBallAOE_Image[0] = game.imageLibrary.loadImage("powerballaoe0001");
-			game.imageLibrary.powerBall_Image[0] = game.imageLibrary.loadArray1D(4, "powerball0001_");
-			playerColour = Color.rgb(255,0,0);
+			imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001");
+			imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(4, "powerball0001_");
+			playerColour = Color.rgb(255, 0, 0);
 			break;
 		case 1:
-			game.imageLibrary.powerBallAOE_Image[1] = game.imageLibrary.loadImage("powerballaoe0002");
-			game.imageLibrary.powerBall_Image[1] = game.imageLibrary.loadArray1D(4, "powerball0002_");
-			playerColour = Color.rgb(0,0,255);
-			player.Mp = 2250;
-			player.MpMax = 4500;
+			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002");
+			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(4, "powerball0002_");
+			playerColour = Color.rgb(0, 0, 255);
+			player.setMp(2250);
+			player.setMpMax(4500);
 			break;
 		case 2:
-			game.imageLibrary.powerBallAOE_Image[2] = game.imageLibrary.loadImage("powerballaoe0003");
-			game.imageLibrary.powerBall_Image[2] = game.imageLibrary.loadArray1D(4, "powerball0003_");
-			playerColour = Color.rgb(170,119,221);
-			player.speedCur = 4;
+			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003");
+			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(4, "powerball0003_");
+			playerColour = Color.rgb(170, 119, 221);
+			player.setSpeedCur(4);
 			break;
 		case 3:
-			game.imageLibrary.powerBallAOE_Image[3] = game.imageLibrary.loadImage("powerballaoe0004");
-			game.imageLibrary.powerBall_Image[3] = game.imageLibrary.loadArray1D(4, "powerball0004_");
-			playerColour = Color.rgb(102,51,0);
-			player.Hp = 9000;
-			player.HpMax = 9000;
+			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004");
+			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(4, "powerball0004_");
+			playerColour = Color.rgb(102, 51, 0);
+			player.setHp(9000);
+			player.setHpMax(9000);
 			break;
 		}
 		loadLevel();
-		//game.imageLibrary.changeArrayLoaded("swordsman", true);
-                for(int i = 0; i < 4; i ++)
-                {
-                    //enemies[i] = new enemy_Swordsman(this, teleportSpots[0][i], teleportSpots[1][i]);
-                }
-                frameCaller.run();
+		imageLibrary.changeArrayLoaded("swordsman", true);
+		for(int i = 0; i < 4; i++)
+		{
+			enemies[i] = new Enemy_Swordsman(this, teleportSpots[0][i], teleportSpots[1][i]);
+		}
+		background = drawStart();
+		frameCaller.run();
+	}
+	/*
+	 * Loads the level the user picked and initializes teleport and wall array variables
+	 */
+	public Wall_Rectangle makeWall_Rectangle(int x1, int x2, int y1, int y2)
+	{
+		Wall_Rectangle wall1 = new Wall_Rectangle(this, x1 - wallWidth, x2 + wallWidth, y1 - wallWidth, y2 + wallWidth);
+		return wall1;
+	}
+	public Wall_Circle makeWall_Circle(int x, int y, int rad)
+	{
+		Wall_Circle wall1 = new Wall_Circle(this, x, y, rad + wallWidth);
+		return wall1;
+	}
+	public void createWallRectangleValueArrays(int length)
+	{
+		obstaclesRectanglesX1 = new int[length];
+		obstaclesRectanglesX2 = new int[length];
+		obstaclesRectanglesY1 = new int[length];
+		obstaclesRectanglesY2 = new int[length];
+	}
+	public void createWallCircleValueArrays(int length)
+	{
+		obstaclesCirclesX = new int[length];
+		obstaclesCirclesY = new int[length];
+		obstaclesCirclesRadius = new int[length];
 	}
 	public void loadLevel()
 	{
-		if(LevelNum == 0)
+		if(levelNum == 0)
 		{
-			obstaclesRectanglesX1 = new int[6];
-			obstaclesRectanglesX2 = new int[6];
-			obstaclesRectanglesY1 = new int[6];
-			obstaclesRectanglesY2 = new int[6];
-			obstaclesCirclesX = new int[0];
-			obstaclesCirclesY = new int[0];
-			obstaclesCirclesRadius = new int[0];
+			createWallRectangleValueArrays(6);
+			createWallCircleValueArrays(0);
 			teleportSpots[0][0] = 110;
 			teleportSpots[0][1] = 370;
 			teleportSpots[0][2] = 110;
@@ -165,28 +243,17 @@ public final class Controller extends View
 			teleportSpots[1][1] = 30;
 			teleportSpots[1][2] = 290;
 			teleportSpots[1][3] = 290;
-			wall_Rectangle wall1 = new wall_Rectangle(this, 90 - wallWidth, 220 + wallWidth, 50 - wallWidth, 60 + wallWidth);
-                        walls[0] = wall1;
-			wall_Rectangle wall2 = new wall_Rectangle(this, 260 - wallWidth, 390 + wallWidth, 50 - wallWidth, 60 + wallWidth);
-                        walls[1] = wall2;
-			wall_Rectangle wall3 = new wall_Rectangle(this, 90 - wallWidth, 220 + wallWidth, 260 - wallWidth, 270 + wallWidth);
-                        walls[2] = wall3;
-			wall_Rectangle wall4 = new wall_Rectangle(this, 260 - wallWidth, 390 + wallWidth, 260 - wallWidth, 270 + wallWidth);
-                        walls[3] = wall4;
-			wall_Rectangle wall5 = new wall_Rectangle(this, 130 - wallWidth, 140 + wallWidth, 100 - wallWidth, 220 + wallWidth);
-                        walls[4] = wall5;
-			wall_Rectangle wall6 = new wall_Rectangle(this, 340 - wallWidth, 350 + wallWidth, 100 - wallWidth, 220 + wallWidth);
-                        walls[5] = wall6;
+			walls[0] = makeWall_Rectangle(90, 220, 50, 60);
+			walls[1] = makeWall_Rectangle(260, 390, 50, 60);
+			walls[2] = makeWall_Rectangle(90, 220, 260, 270);
+			walls[3] = makeWall_Rectangle(260, 390, 260, 270);
+			walls[4] = makeWall_Rectangle(130, 140, 100, 220);
+			walls[5] = makeWall_Rectangle(340, 350, 100, 220);
 		}
-		if(LevelNum == 1)
+		if(levelNum == 1)
 		{
-			obstaclesRectanglesX1 = new int[6];
-			obstaclesRectanglesX2 = new int[6];
-			obstaclesRectanglesY1 = new int[6];
-			obstaclesRectanglesY2 = new int[6];
-			obstaclesCirclesX = new int[1];
-			obstaclesCirclesY = new int[1];
-			obstaclesCirclesRadius = new int[1];
+			createWallRectangleValueArrays(6);
+			createWallCircleValueArrays(1);
 			teleportSpots[0][0] = 110;
 			teleportSpots[0][1] = 370;
 			teleportSpots[0][2] = 110;
@@ -195,30 +262,18 @@ public final class Controller extends View
 			teleportSpots[1][1] = 30;
 			teleportSpots[1][2] = 290;
 			teleportSpots[1][3] = 290;
-			wall_Rectangle wall1 = new wall_Rectangle(this, 130 - wallWidth, 220 + wallWidth, 50 - wallWidth, 60 + wallWidth);
-                        walls[0] = wall1;
-			wall_Rectangle wall2 = new wall_Rectangle(this, 260 - wallWidth, 350 + wallWidth, 50 - wallWidth, 60 + wallWidth);
-                        walls[1] = wall2;
-			wall_Rectangle wall3 = new wall_Rectangle(this, 130 - wallWidth, 220 + wallWidth, 260 - wallWidth, 270 + wallWidth);
-                        walls[2] = wall3;
-			wall_Rectangle wall4 = new wall_Rectangle(this, 260 - wallWidth, 350 + wallWidth, 260 - wallWidth, 270 + wallWidth);
-                        walls[3] = wall4;
-			wall_Rectangle wall5 = new wall_Rectangle(this, 130 - wallWidth, 140 + wallWidth, 50 - wallWidth, 270 + wallWidth);
-                        walls[4] = wall5;
-			wall_Rectangle wall6 = new wall_Rectangle(this, 340 - wallWidth, 350 + wallWidth, 50 - wallWidth, 270 + wallWidth);
-                        walls[5] = wall6;
-			wall_Circle wall7 = new wall_Circle(this, 240, 160, 60);
-                        walls[6] = wall7;
+			walls[0] = makeWall_Rectangle(130, 220, 50, 60);
+			walls[1] = makeWall_Rectangle(260, 350, 50, 60);
+			walls[2] = makeWall_Rectangle(130, 220, 260, 270);
+			walls[3] = makeWall_Rectangle(260, 350, 260, 270);
+			walls[4] = makeWall_Rectangle(130, 140, 50, 270);
+			walls[5] = makeWall_Rectangle(340, 350, 50, 270);
+			wallCircles[6] = makeWall_Circle(240, 160, 60);
 		}
-		if(LevelNum == 2)
+		if(levelNum == 2)
 		{
-			obstaclesRectanglesX1 = new int[6];
-			obstaclesRectanglesX2 = new int[6];
-			obstaclesRectanglesY1 = new int[6];
-			obstaclesRectanglesY2 = new int[6];
-			obstaclesCirclesX = new int[0];
-			obstaclesCirclesY = new int[0];
-			obstaclesCirclesRadius = new int[0];
+			createWallRectangleValueArrays(6);
+			createWallCircleValueArrays(0);
 			teleportSpots[0][0] = 160;
 			teleportSpots[0][1] = 320;
 			teleportSpots[0][2] = 160;
@@ -227,28 +282,17 @@ public final class Controller extends View
 			teleportSpots[1][1] = 110;
 			teleportSpots[1][2] = 210;
 			teleportSpots[1][3] = 210;
-			wall_Rectangle wall1 = new wall_Rectangle(this, 130 - wallWidth, 140 + wallWidth, 50 - wallWidth, 140 + wallWidth);
-                        walls[0] = wall1;
-			wall_Rectangle wall2 = new wall_Rectangle(this, 340 - wallWidth, 350 + wallWidth, 50 - wallWidth, 140 + wallWidth);
-                        walls[1] = wall2;
-			wall_Rectangle wall3 = new wall_Rectangle(this, 130 - wallWidth, 140 + wallWidth, 180 - wallWidth, 270 + wallWidth);
-                        walls[2] = wall3;
-			wall_Rectangle wall4 = new wall_Rectangle(this, 340 - wallWidth, 350 + wallWidth, 180 - wallWidth, 270 + wallWidth);
-                        walls[3] = wall4;
-			wall_Rectangle wall5 = new wall_Rectangle(this, 130 - wallWidth, 350 + wallWidth, 130 - wallWidth, 140 + wallWidth);
-                        walls[4] = wall5;
-			wall_Rectangle wall6 = new wall_Rectangle(this, 130 - wallWidth, 350 + wallWidth, 180 - wallWidth, 190 + wallWidth);
-                        walls[5] = wall6;
+			walls[0] = makeWall_Rectangle(130, 140, 50, 60);
+			walls[1] = makeWall_Rectangle(340, 350, 50, 60);
+			walls[2] = makeWall_Rectangle(130, 140, 180, 270);
+			walls[3] = makeWall_Rectangle(340, 350, 180, 270);
+			walls[4] = makeWall_Rectangle(130, 350, 130, 140);
+			walls[5] = makeWall_Rectangle(130, 350, 180, 190);
 		}
-		if(LevelNum == 3)
+		if(levelNum == 3)
 		{
-			obstaclesRectanglesX1 = new int[4];
-			obstaclesRectanglesX2 = new int[4];
-			obstaclesRectanglesY1 = new int[4];
-			obstaclesRectanglesY2 = new int[4];
-			obstaclesCirclesX = new int[0];
-			obstaclesCirclesY = new int[0];
-			obstaclesCirclesRadius = new int[0];
+			createWallRectangleValueArrays(4);
+			createWallCircleValueArrays(0);
 			teleportSpots[0][0] = 190;
 			teleportSpots[0][1] = 290;
 			teleportSpots[0][2] = 190;
@@ -257,24 +301,15 @@ public final class Controller extends View
 			teleportSpots[1][1] = 30;
 			teleportSpots[1][2] = 290;
 			teleportSpots[1][3] = 290;
-			wall_Rectangle wall1 = new wall_Rectangle(this, 185 - wallWidth, 195 + wallWidth, 50 - wallWidth, 270 + wallWidth);
-                        walls[0] = wall1;
-			wall_Rectangle wall2 = new wall_Rectangle(this, 235 - wallWidth, 245 + wallWidth, 10 - wallWidth, 140 + wallWidth);
-                        walls[1] = wall2;
-			wall_Rectangle wall3 = new wall_Rectangle(this, 235 - wallWidth, 245 + wallWidth, 180 - wallWidth, 310 + wallWidth);
-                        walls[2] = wall3;
-			wall_Rectangle wall4 = new wall_Rectangle(this, 285 - wallWidth, 295 + wallWidth, 50 - wallWidth, 270 + wallWidth);
-                        walls[3] = wall4;
+			walls[0] = makeWall_Rectangle(185, 195, 50, 270);
+			walls[1] = makeWall_Rectangle(235, 245, 10, 140);
+			walls[2] = makeWall_Rectangle(235, 245, 180, 310);
+			walls[3] = makeWall_Rectangle(285, 295, 50, 270);
 		}
-		if(LevelNum == 4)
+		if(levelNum == 4)
 		{
-			obstaclesRectanglesX1 = new int[4];
-			obstaclesRectanglesX2 = new int[4];
-			obstaclesRectanglesY1 = new int[4];
-			obstaclesRectanglesY2 = new int[4];
-			obstaclesCirclesX = new int[0];
-			obstaclesCirclesY = new int[0];
-			obstaclesCirclesRadius = new int[0];
+			createWallRectangleValueArrays(4);
+			createWallCircleValueArrays(0);
 			teleportSpots[0][0] = 215;
 			teleportSpots[0][1] = 265;
 			teleportSpots[0][2] = 215;
@@ -283,16 +318,15 @@ public final class Controller extends View
 			teleportSpots[1][1] = 30;
 			teleportSpots[1][2] = 290;
 			teleportSpots[1][3] = 290;
-			wall_Rectangle wall1 = new wall_Rectangle(this, 130 - wallWidth, 350 + wallWidth, 130 - wallWidth, 140 + wallWidth);
-                        walls[0] = wall1;
-			wall_Rectangle wall2 = new wall_Rectangle(this, 235 - wallWidth, 245 + wallWidth, 10 - wallWidth, 140 + wallWidth);
-                        walls[1] = wall2;
-			wall_Rectangle wall3 = new wall_Rectangle(this, 235 - wallWidth, 245 + wallWidth, 180 - wallWidth, 310 + wallWidth);
-                        walls[2] = wall3;
-			wall_Rectangle wall4 = new wall_Rectangle(this, 130 - wallWidth, 350 + wallWidth, 180 - wallWidth, 190 + wallWidth);
-                        walls[3] = wall4;
+			walls[0] = makeWall_Rectangle(130, 350, 130, 140);
+			walls[1] = makeWall_Rectangle(235, 245, 10, 140);
+			walls[2] = makeWall_Rectangle(235, 245, 180, 310);
+			walls[3] = makeWall_Rectangle(130, 350, 180, 190);
 		}
 	}
+	/*
+	 * Draws hp, mp, sp, and cooldown bars for player and enemies
+	 */
 	public void drawContestantStats(Canvas g)
 	{
 		paint.setStyle(Paint.Style.FILL);
@@ -300,14 +334,14 @@ public final class Controller extends View
 		drawRect(395, 240, 475, 316, g);
 		drawRect(5, 240, 85, 316, g);
 		paint.setColor(Color.RED);
-		drawRect(405, 250, 405+(60 * player.Hp / player.HpMax), 266, g);		
-		drawRect(15, 250, 15+(60 * enemy.Hp / enemy.HpMax), 266, g);
+		drawRect(405, 250, 405 + (60 * player.getHp() / player.getHpMax()), 266, g);
+		drawRect(15, 250, 15 + (60 * enemy.getHp() / enemy.getHpMax()), 266, g);
 		paint.setColor(Color.BLUE);
-		drawRect(405, 270, 405+(60 * player.Mp / player.MpMax), 286, g);		
-		drawRect(15, 270, 15+(60 * enemy.Mp / enemy.MpMax), 286, g);
-		paint.setColor(Color.GREEN);		
-		drawRect(405, 290, 405+(60 * player.Sp / player.SpMax), 306, g);		
-		drawRect(15, 290, 15+(60 * enemy.Sp / enemy.SpMax), 306, g);		
+		drawRect(405, 270, 405 + (60 * player.getMp() / player.getMpMax()), 286, g);
+		drawRect(15, 270, 15 + (60 * enemy.getMp() / enemy.getMpMax()), 286, g);
+		paint.setColor(Color.GREEN);
+		drawRect(405, 290, 405 + (60 * player.getSp() / player.getSpMax()), 306, g);
+		drawRect(15, 290, 15 + (60 * enemy.getSp() / enemy.getSpMax()), 306, g);
 		paint.setColor(Color.BLACK);
 		paint.setStyle(Paint.Style.STROKE);
 		drawRect(405, 250, 465, 266, g);
@@ -316,19 +350,18 @@ public final class Controller extends View
 		drawRect(15, 250, 75, 266, g);
 		drawRect(15, 270, 75, 286, g);
 		drawRect(15, 290, 75, 306, g);
-		
-		drawText(Integer.toString(player.Hp), 420, 263, g);
-		drawText(Integer.toString(player.Mp), 420, 283, g);
-		drawText(Integer.toString(player.Sp), 420, 303, g);
-		drawText(Integer.toString(enemy.Hp), 30, 263, g);
-		drawText(Integer.toString(enemy.Mp), 30, 283, g);
-		drawText(Integer.toString(enemy.Sp), 30, 303, g);
+		drawText(Integer.toString(player.getHp()), 420, 263, g);
+		drawText(Integer.toString(player.getMp()), 420, 283, g);
+		drawText(Integer.toString(player.getSp()), 420, 303, g);
+		drawText(Integer.toString(enemy.getHp()), 30, 263, g);
+		drawText(Integer.toString(enemy.getMp()), 30, 283, g);
+		drawText(Integer.toString(enemy.getSp()), 30, 303, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.YELLOW);
-		drawRect(15, 137, 15+((60 * player.abilityTimer_roll) / 400), 147, g);
-		drawRect(15, 202, 15+((60 * player.abilityTimer_teleport) / 350), 212, g);
-		drawRect(405, 137, 405+((60 * player.abilityTimer_burst) / 500), 147, g);
-		drawRect(190, 295, 190+((100 * player.abilityTimer_powerBall) / 90), 310, g);
+		drawRect(15, 137, 15 + ((60 * player.getAbilityTimer_roll()) / 400), 147, g);
+		drawRect(15, 202, 15 + ((60 * player.getAbilityTimer_teleport()) / 350), 212, g);
+		drawRect(405, 137, 405 + ((60 * player.getAbilityTimer_burst()) / 500), 147, g);
+		drawRect(190, 295, 190 + ((100 * player.getAbilityTimer_powerBall()) / 90), 310, g);
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setColor(Color.BLACK);
 		drawRect(15, 137, 75, 147, g);
@@ -337,37 +370,40 @@ public final class Controller extends View
 		drawRect(190, 295, 290, 310, g);
 		paint.setColor(Color.RED);
 		paint.setStyle(Paint.Style.FILL);
-                drawRect((int)enemy.x - 20, (int)enemy.y - 30, (int)enemy.x - 20 + (40 * enemy.Hp/enemy.HpMax), (int)enemy.y - 20, g);   
-                paint.setColor(Color.BLACK);
-                paint.setStyle(Paint.Style.STROKE);
-                drawRect((int)enemy.x - 20, (int)enemy.y - 30, (int)enemy.x + 20, (int)enemy.y - 20, g);
-                for(int i = 0; i < enemies.length; i++)
-                {
-                    if(enemies[i] != null)
+		drawRect((int) enemy.getX() - 20, (int) enemy.getY() - 30, (int) enemy.getX() - 20 + (40 * enemy.getHp() / enemy.getHpMax()), (int) enemy.getY() - 20, g);
+		paint.setColor(Color.BLACK);
+		paint.setStyle(Paint.Style.STROKE);
+		drawRect((int) enemy.getX() - 20, (int) enemy.getY() - 30, (int) enemy.getX() + 20, (int) enemy.getY() - 20, g);
+		for(int i = 0; i < enemies.length; i++)
+		{
+			if(enemies[i] != null)
 			{
-                    	paint.setColor(Color.RED);
-                    	paint.setStyle(Paint.Style.FILL);
-                            drawRect((int)enemies[i].x - 20, (int)enemies[i].y - 30, (int)enemies[i].x - 20+(40 * enemies[i].Hp/enemies[i].HpMax), (int)enemies[i].y - 20, g);   
-                            paint.setColor(Color.BLACK);
-                            paint.setStyle(Paint.Style.STROKE);
-                            drawRect((int)enemies[i].x - 20, (int)enemies[i].y - 30, (int)enemies[i].x + 20, (int)enemies[i].y - 20, g);
-                        }
-                }
+				paint.setColor(Color.RED);
+				paint.setStyle(Paint.Style.FILL);
+				drawRect((int) enemies[i].getX() - 20, (int) enemies[i].getY() - 30, (int) enemies[i].getX() - 20 + (40 * enemies[i].getHp() / enemies[i].getHpMax()), (int) enemies[i].getY() - 20, g);
+				paint.setColor(Color.BLACK);
+				paint.setStyle(Paint.Style.STROKE);
+				drawRect((int) enemies[i].getX() - 20, (int) enemies[i].getY() - 30, (int) enemies[i].getX() + 20, (int) enemies[i].getY() - 20, g);
+			}
+		}
 	}
+	/*
+	 * Sets deleted objects to null to be gc'd and tests player and enemy hitting arena bounds
+	 */
 	public void frameCall()
 	{
-                for(int i = 0; i < walls.length; i++)
+		for(int i = 0; i < walls.length; i++)
 		{
 			if(walls[i] != null)
-			{				
-                            walls[i].frameCall();
+			{
+				walls[i].frameCall();
 			}
 		}
 		for(int i = 0; i < graphic_Teleport.length; i++)
 		{
 			if(graphic_Teleport[i] != null)
 			{
-				if(graphic_Teleport[i].deleted)
+				if(graphic_Teleport[i].isDeleted())
 				{
 					graphic_Teleport[i] = null;
 				}
@@ -381,7 +417,7 @@ public final class Controller extends View
 		{
 			if(powerBalls[i] != null)
 			{
-				if(powerBalls[i].deleted)
+				if(powerBalls[i].isDeleted())
 				{
 					powerBalls[i] = null;
 				}
@@ -395,7 +431,7 @@ public final class Controller extends View
 		{
 			if(powerBallAOEs[i] != null)
 			{
-				if(powerBallAOEs[i].deleted)
+				if(powerBallAOEs[i].isDeleted())
 				{
 					powerBallAOEs[i] = null;
 				}
@@ -409,7 +445,7 @@ public final class Controller extends View
 		{
 			if(spGraphic[i] != null)
 			{
-				if(spGraphic[i].deleted)
+				if(spGraphic[i].isDeleted())
 				{
 					spGraphic[i] = null;
 				}
@@ -419,152 +455,150 @@ public final class Controller extends View
 				}
 			}
 		}
-                for(int i = 0; i < enemies.length; i++)
+		for(int i = 0; i < enemies.length; i++)
 		{
 			if(enemies[i] != null)
 			{
-				if(enemies[i].deleted)
+				if(enemies[i].isDeleted())
 				{
 					enemies[i] = null;
 				}
 				else
 				{
 					enemies[i].frameCall();
-                                        if(enemies[i].x < 100) enemies[i].x = 100;
-                                        if(enemies[i].x > 380) enemies[i].x = 380;
-                                        if(enemies[i].y < 20) enemies[i].y = 20;
-                                        if(enemies[i].y > 300) enemies[i].y = 300;
+					if(enemies[i].getX() < 100) enemies[i].setX(100);
+					if(enemies[i].getX() > 380) enemies[i].setX(380);
+					if(enemies[i].getY() < 20) enemies[i].setY(20);
+					if(enemies[i].getY() > 300) enemies[i].setY(300);
 				}
 			}
 		}
-		if(!player.deleted)
+		if(!player.isDeleted())
 		{
 			player.frameCall();
-			if(!player.teleporting)
+			if(!player.isTeleporting())
 			{
-				if(player.x < 100) player.x = 100;
-				if(player.x > 380) player.x = 380;
-				if(player.y < 20) player.y = 20;
-				if(player.y > 300) player.y = 300;
+				if(player.getX() < 100) player.setX(100);
+				if(player.getX() > 380) player.setX(380);
+				if(player.getY() < 20) player.setY(20);
+				if(player.getY() > 300) player.setY(300);
 			}
 		}
 		else
 		{
 			player = null;
 		}
-		if(!enemy.deleted)
+		if(!enemy.isDeleted())
 		{
 			enemy.frameCall();
-			if(enemy.x < 100) enemy.x = 100;
-			if(enemy.x > 380) enemy.x = 380;
-			if(enemy.y < 20) enemy.y = 20;
-			if(enemy.y > 300) enemy.y = 300;
+			if(enemy.getX() < 100) enemy.setX(100);
+			if(enemy.getX() > 380) enemy.setX(380);
+			if(enemy.getY() < 20) enemy.setY(20);
+			if(enemy.getY() > 300) enemy.setY(300);
 		}
 		else
 		{
 			enemy = null;
 		}
-		if(!spGraphicPlayer.deleted)
-		{
-			spGraphicPlayer.frameCall();
-		}
-		if(!spGraphicEnemy.deleted)
-		{
-			spGraphicEnemy.frameCall();
-		}
+		spGraphicPlayer.frameCall();
+		spGraphicEnemy.frameCall();
 		invalidate();
 	}
+	/*
+	 * Replaces canvas.drawRect(int, int, int, int, Paint) and auto scales
+	 */
 	public void drawRect(int x, int y, int x2, int y2, Canvas g)
 	{
-		x *= screenDimensionMultiplier;
-		y *= screenDimensionMultiplier;
-		x += screenMinX;
-		y += screenMinY;
-		x2 *= screenDimensionMultiplier;
-		y2 *= screenDimensionMultiplier;
-		x2 += screenMinX;
-		y2 += screenMinY;
 		g.drawRect(x, y, x2, y2, paint);
 	}
+	/*
+	 * Replaces canvas.drawCircle(int, int, int paint) and auto scales
+	 */
 	public void drawCircle(int x, int y, int radius, Canvas g)
 	{
-		x *= screenDimensionMultiplier;
-		y *= screenDimensionMultiplier;
-		x += screenMinX;
-		y += screenMinY;
 		g.drawCircle(x, y, radius, paint);
 	}
+	/*
+	 * Replaces canvas.drawBitmap(Bitmap, int, int, paint) and auto scales
+	 */
 	public void drawBitmap(Bitmap picture, int x, int y, Canvas g)
 	{
-		x *= screenDimensionMultiplier;
-		y *= screenDimensionMultiplier;
-		x += screenMinX;
-		y += screenMinY;
 		g.drawBitmap(picture, x, y, paint);
 	}
-	public void drawBitmapRotated(drawnSprite sprite, Canvas g)
+	/*
+	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
+	 */
+	public void drawBitmapRotated(DrawnSprite sprite, Canvas g)
 	{
 		rotateImages.reset();
-		rotateImages.postTranslate(-sprite.visualImage.getWidth() / 2, -sprite.visualImage.getHeight() / 2);
-		rotateImages.postRotate((float)sprite.rotation);
-		rotateImages.postTranslate((float)(sprite.x * screenDimensionMultiplier) + screenMinX, (float)(sprite.y * screenDimensionMultiplier) + screenMinY);
-		g.drawBitmap(sprite.visualImage, rotateImages, paint);
+		rotateImages.postTranslate(-sprite.getVisualImage().getWidth() / 2, -sprite.getVisualImage().getHeight() / 2);
+		rotateImages.postRotate((float) sprite.getRotation());
+		rotateImages.postTranslate((float) sprite.getX(), (float) sprite.getY());
+		g.drawBitmap(sprite.getVisualImage(), rotateImages, paint);
 		sprite = null;
 	}
+	/*
+	 * Replaces canvas.drawBitmap(Bitmap, Rect, Rect, Paint) and auto scales
+	 */
 	public void drawBitmapRect(Bitmap picture, Rect rectangle, Canvas g)
 	{
-		rectangle.top *= screenDimensionMultiplier;
-		rectangle.top += screenMinY;
-		rectangle.bottom *= screenDimensionMultiplier;
-		rectangle.bottom += screenMinY;
-		rectangle.right *= screenDimensionMultiplier;
-		rectangle.right += screenMinX;
-		rectangle.left *= screenDimensionMultiplier;
-		rectangle.left += screenMinX;
 		g.drawBitmap(picture, null, rectangle, paint);
 	}
+	/*
+	 * Replaces canvas.drawText(String, int, int, Paint) and auto scales
+	 */
 	public void drawText(String text, int x, int y, Canvas g)
 	{
-		x *= screenDimensionMultiplier;
-		y *= screenDimensionMultiplier;
-		x += screenMinX;
-		y += screenMinY;
+		// TODO
 		g.drawText(text, x, y, paint);
 	}
-	public void drawStart(Canvas g)
+	/*
+	 * draws background, player screens, level etc (TODO generate bitmap to draw instead)
+	 */
+	public Bitmap drawStart()
 	{
+		Bitmap drawTo = Bitmap.createBitmap(480, 320, Bitmap.Config.ARGB_8888);
+		Canvas toReturn = new Canvas(drawTo);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(playerColour);
-		drawRect(240, 0, 480, 320, g);
+		drawRect(240, 0, 480, 320, toReturn);
 		paint.setColor(enemyColour);
-		drawRect(0, 0, 240, 320, g);
+		drawRect(0, 0, 240, 320, toReturn);
 		paint.setColor(Color.WHITE);
-		drawRect(90, 10, 390, 310, g);
-		drawBitmap(game.imageLibrary.fullScreen1, 15, 87, g);
-		drawBitmap(game.imageLibrary.fullScreen2, 405, 87, g);
+		drawRect(90, 10, 390, 310, toReturn);
+		drawBitmap(imageLibrary.fullScreen1, 15, 87, toReturn);
+		drawBitmap(imageLibrary.fullScreen2, 405, 87, toReturn);
 		paint.setColor(Color.GRAY);
 		for(int i = 0; i < obstaclesRectanglesX1.length; i++)
 		{
-			drawRect(obstaclesRectanglesX1[i]+wallWidth, obstaclesRectanglesY1[i]+wallWidth, obstaclesRectanglesX2[i]-wallWidth, obstaclesRectanglesY2[i]-wallWidth, g);
+			drawRect(obstaclesRectanglesX1[i] + wallWidth, obstaclesRectanglesY1[i] + wallWidth, obstaclesRectanglesX2[i] - wallWidth, obstaclesRectanglesY2[i] - wallWidth, toReturn);
 		}
 		for(int i = 0; i < obstaclesCirclesX.length; i++)
 		{
-			drawCircle(obstaclesCirclesX[i], obstaclesCirclesY[i], obstaclesCirclesRadius[i]-wallWidth, g);
+			drawCircle(obstaclesCirclesX[i], obstaclesCirclesY[i], obstaclesCirclesRadius[i] - wallWidth, toReturn);
 		}
+		return drawTo;
 	}
-	@Override
+	/*
+	 * Draws objects and calls other drawing functions (background and stats)
+	 * @see android.view.View#onDraw(android.graphics.Canvas)
+	 */
+	@ Override
 	public void onDraw(Canvas g)
-	{		
+	{
+		g.translate(screenMinX, screenMinY);
+		g.scale((float) screenDimensionMultiplier, (float) screenDimensionMultiplier);
+		drawBitmap(background, 0, 0, g);
 		drawContestantStats(g);
 		if(player != null)
-		{	
+		{
 			drawBitmapRotated(player, g);
 		}
 		if(enemy != null)
 		{
 			drawBitmapRotated(enemy, g);
 		}
-                for(int i = 0; i < enemies.length; i++)
+		for(int i = 0; i < enemies.length; i++)
 		{
 			if(enemies[i] != null)
 			{
@@ -582,12 +616,12 @@ public final class Controller extends View
 		{
 			if(powerBallAOEs[i] != null)
 			{
-				aoeRect.top = (int)(powerBallAOEs[i].y - (powerBallAOEs[i].height / 2));
-				aoeRect.bottom = (int)(powerBallAOEs[i].y - (powerBallAOEs[i].height / 2)) + powerBallAOEs[i].height;
-				aoeRect.left = (int)(powerBallAOEs[i].x - (powerBallAOEs[i].width / 2));
-				aoeRect.right = (int)(powerBallAOEs[i].x - (powerBallAOEs[i].width / 2)) + powerBallAOEs[i].width;
-				paint.setAlpha(powerBallAOEs[i].alpha);
-				drawBitmapRect(powerBallAOEs[i].visualImage, aoeRect, g);
+				aoeRect.top = (int)(powerBallAOEs[i].getY() - (powerBallAOEs[i].getHeight() / 2));
+				aoeRect.bottom = (int)(powerBallAOEs[i].getY() - (powerBallAOEs[i].getHeight() / 2)) + powerBallAOEs[i].getHeight();
+				aoeRect.left = (int)(powerBallAOEs[i].getX() - (powerBallAOEs[i].getWidth() / 2));
+				aoeRect.right = (int)(powerBallAOEs[i].getX() - (powerBallAOEs[i].getWidth() / 2)) + powerBallAOEs[i].getWidth();
+				paint.setAlpha(powerBallAOEs[i].getAlpha());
+				drawBitmapRect(powerBallAOEs[i].getVisualImage(), aoeRect, g);
 			}
 		}
 		paint.setAlpha(255);
@@ -595,7 +629,7 @@ public final class Controller extends View
 		{
 			if(graphic_Teleport[i] != null)
 			{
-				drawBitmap(graphic_Teleport[i].visualImage, (int)(graphic_Teleport[i].x - (graphic_Teleport[i].imageWidth / 2)), (int)(graphic_Teleport[i].y - (graphic_Teleport[i].imageHeight / 2)), g);
+				drawBitmap(graphic_Teleport[i].getVisualImage(), (int)(graphic_Teleport[i].getX() - (graphic_Teleport[i].getImageWidth() / 2)), (int)(graphic_Teleport[i].getY() - (graphic_Teleport[i].getImageWidth() / 2)), g);
 			}
 		}
 		paint.setStyle(Paint.Style.FILL);
@@ -604,47 +638,52 @@ public final class Controller extends View
 		{
 			if(spGraphic[i] != null)
 			{
-				drawCircle((int)(spGraphic[i].x - (spGraphic[i].width / 2)), (int)(spGraphic[i].y - (spGraphic[i].width / 2)), spGraphic[i].width, g);
+				drawCircle((int)(spGraphic[i].getX() - (spGraphic[i].getWidth() / 2)), (int)(spGraphic[i].getY() - (spGraphic[i].getWidth() / 2)), spGraphic[i].getWidth(), g);
 			}
 		}
 		if(warningTimer > 0)
 		{
 			warningTimer--;
 			paint.setAlpha((byte)(warningTimer * 7));
-			drawBitmap(game.imageLibrary.warnings[warningType], 240 - (game.imageLibrary.warnings[warningType].getWidth() / 2), 160 - (game.imageLibrary.warnings[warningType].getHeight() / 2), g);
+			drawBitmap(imageLibrary.warnings[warningType], 240 - (imageLibrary.warnings[warningType].getWidth() / 2), 160 - (imageLibrary.warnings[warningType].getHeight() / 2), g);
 		}
 		paint.setAlpha(255);
 	}
 	public void createPowerBallEnemy(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
-		powerBall_Enemy ballEnemy = new powerBall_Enemy(this, (int) x, (int) y, power, xVel, yVel, rotation);
+		PowerBall_Enemy ballEnemy = new PowerBall_Enemy(this, (int) x, (int) y, power, xVel, yVel, rotation);
 		powerBalls[lowestPositionEmpty(powerBalls)] = ballEnemy;
 	}
 	public void createPowerBallPlayer(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
-		powerBall_Player ballPlayer = new powerBall_Player(this, (int) x, (int) y, power, xVel, yVel, rotation);
+		PowerBall_Player ballPlayer = new PowerBall_Player(this, (int) x, (int) y, power, xVel, yVel, rotation);
 		powerBalls[lowestPositionEmpty(powerBalls)] = ballPlayer;
 	}
 	public void createPowerBallEnemyAOE(double x, double y, double power)
 	{
-		powerBallAOE_Enemy ballAOEEnemy = new powerBallAOE_Enemy(this, (int) x, (int) y, power);
+		PowerBallAOE_Enemy ballAOEEnemy = new PowerBallAOE_Enemy(this, (int) x, (int) y, power);
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEEnemy;
 	}
 	public void createPowerBallPlayerAOE(double x, double y, double power)
 	{
-		powerBallAOE_Player ballAOEPlayer = new powerBallAOE_Player(this, (int) x, (int) y, power);
+		PowerBallAOE_Player ballAOEPlayer = new PowerBallAOE_Player(this, (int) x, (int) y, power);
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEPlayer;
 	}
 	public void teleportStart(double x, double y)
 	{
-		graphic_Teleport teleportStart = new graphic_Teleport(this, x, y, true);
+		Graphic_Teleport teleportStart = new Graphic_Teleport(this, x, y, true);
 		graphic_Teleport[lowestPositionEmpty(graphic_Teleport)] = teleportStart;
 	}
 	public void teleportFinish(double x, double y)
 	{
-		graphic_Teleport teleportFinish = new graphic_Teleport(this, x, y, false);
+		Graphic_Teleport teleportFinish = new Graphic_Teleport(this, x, y, false);
 		graphic_Teleport[lowestPositionEmpty(graphic_Teleport)] = teleportFinish;
 	}
+	/*
+	 * Tests an array to find lowest null index
+	 * @ param array Array to check in for null indexes
+	 * @ return Returns lowest index that equals null
+	 */
 	public int lowestPositionEmpty(Sprite[] array)
 	{
 		int lowest = 0;
@@ -658,14 +697,150 @@ public final class Controller extends View
 		}
 		return lowest;
 	}
+	/*
+	 * Starts 'not enough mana' warning
+	 */
 	public void notEnoughMana()
 	{
 		warningTimer = 30;
 		warningType = 0;
 	}
+	/*
+	 * Starts 'cooldown' warning
+	 */
 	public void coolDown()
 	{
 		warningTimer = 30;
 		warningType = 1;
-	}	
+	}
+	public boolean pointOnScreen(double x, double y)
+	{
+		x = (x-screenMinX)/screenDimensionMultiplier;
+		y = (y-screenMinY)/screenDimensionMultiplier;
+		if(x > 90 && x < 390 && y > 10 && y < 310)
+        {
+			return true;
+        } else
+        {
+        	return false;
+        }
+	}
+	public boolean pointOnSquare(double x, double y, double lowX, double lowY, double highX, double highY)
+	{
+		x = (x-screenMinX)/screenDimensionMultiplier;
+		y = (y-screenMinY)/screenDimensionMultiplier;
+		if(x > lowX && x < highX && y > lowY && y < highY)
+        {
+			return true;
+        } else
+        {
+        	return false;
+        }
+	}
+	public int getDifficultyLevel() {
+		return difficultyLevel;
+	}
+	public double getDifficultyLevelMultiplier() {
+		return difficultyLevelMultiplier;
+	}
+	public int getRandomInt(int i) {
+		return randomGenerator.nextInt(i);
+	}
+	public double getRandomDouble() {
+		return randomGenerator.nextDouble();
+	}
+	public int getEnemyType() {
+		return enemyType;
+	}
+	public int getPlayerType() {
+		return playerType;
+	}
+	public double getPlayerX()
+	{
+		return player.getX();
+	}
+	public double getPlayerY()
+	{
+		return player.getY();
+	}
+	public int getLevelNum() {
+		return levelNum;
+	}
+	public SpGraphic getSpGraphic(int i) {
+		return spGraphic[i];
+	}
+	public Wall_Rectangle getWalls(int i) {
+		return walls[i];
+	}
+	public Wall_Circle getWallCircless(int i) {
+		return wallCircles[i];
+	}
+	public int getObstaclesRectanglesX1(int i) {
+		return obstaclesRectanglesX1[i];
+	}
+	public int getObstaclesRectanglesX2(int i) {
+		return obstaclesRectanglesX2[i];
+	}
+	public int getObstaclesRectanglesY1(int i) {
+		return obstaclesRectanglesY1[i];
+	}
+	public int getObstaclesRectanglesY2(int i) {
+		return obstaclesRectanglesY2[i];
+	}
+	public int getObstaclesCirclesX(int i) {
+		return obstaclesCirclesX[i];
+	}
+	public int getObstaclesCirclesY(int i) {
+		return obstaclesCirclesY[i];
+	}
+	public void setSpGraphic(int i, SpGraphic spGraphic) {
+		this.spGraphic[i] = spGraphic;
+	}
+	public int getObstaclesCirclesRadius(int i) {
+		return obstaclesCirclesRadius[i];
+	}
+	public int getCurrentCircle() {
+		return currentCircle;
+	}
+	public int getCurrentRectangle() {
+		return currentRectangle;
+	}
+	public int getTeleportSpots(int i, int j) {
+		return teleportSpots[i][j];
+	}
+	public boolean getGameEnded() {
+		return gameEnded;
+	}
+	public SpGraphic[] getSpGraphic() {
+		return spGraphic;
+	}
+	public void incrementCurrentRectangle()
+	{
+		currentRectangle ++;
+	}
+	public void incrementCurrentCircle()
+	{
+		currentCircle ++;
+	}
+	public void setObstaclesRectanglesX1(int i, int obstaclesRectanglesX1) {
+		this.obstaclesRectanglesX1[i] = obstaclesRectanglesX1;
+	}
+	public void setObstaclesRectanglesX2(int i, int obstaclesRectanglesX2) {
+		this.obstaclesRectanglesX2[i] = obstaclesRectanglesX2;
+	}
+	public void setObstaclesRectanglesY1(int i, int obstaclesRectanglesY1) {
+		this.obstaclesRectanglesY1[i] = obstaclesRectanglesY1;
+	}
+	public void setObstaclesRectanglesY2(int i, int obstaclesRectanglesY2) {
+		this.obstaclesRectanglesY2[i] = obstaclesRectanglesY2;
+	}
+	public void setObstaclesCirclesX(int i, int obstaclesCirclesX) {
+		this.obstaclesCirclesX[i] = obstaclesCirclesX;
+	}
+	public void setObstaclesCirclesY(int i, int obstaclesCirclesY) {
+		this.obstaclesCirclesY[i] = obstaclesCirclesY;
+	}
+	public void setObstaclesCirclesRadius(int i, int obstaclesCirclesRadius) {
+		this.obstaclesCirclesRadius[i] = obstaclesCirclesRadius;
+	}
 }

@@ -1,49 +1,52 @@
+/*
+ * All enemies but main mage, defines some variables and starts ai reactions
+ * @param lastPlayerX Last X coordinate the player was seen at
+ * @param lastPlayerY Last Y coordinate the player was seen at
+ */
 package com.example.magegame;
-abstract public class enemy_Muggle extends Enemy
+abstract public class Enemy_Muggle extends Enemy
 {
-	public boolean attacking = false;
-        public double lastPlayerX;
-        public double lastPlayerY;
-        public boolean checkedPlayerLast = false;
-	public enemy_Muggle(Controller creator, double setX, double setY)
+	protected boolean attacking = false;
+	protected double lastPlayerX;
+	protected double lastPlayerY;
+	private boolean checkedPlayerLast = false;
+	public Enemy_Muggle(Controller creator, double setX, double setY)
 	{
-                mainController = creator;
-		humanType = mainController.EnemyType;
-		visualImage = mainController.game.imageLibrary.pikeman_Image[0];
-		setImageDimensions();
+		super();
+		mainController = creator;
+		humanType = mainController.getEnemyType();
 		width = 30;
 		height = 30;
 		x = setX;
 		y = setY;
-                rotation = 0;
-		danger[0] = levelX;
-		danger[1] = levelY;
-		danger[2] = levelXForward;
-		danger[3] = levelYForward;
-                lastPlayerX = x;
-                lastPlayerY = y;       
-                HpMax = 4000;
-                Hp = HpMax;
-                speedCur = 2.5 + mainController.randomGenerator.nextDouble();
-        }@
+		rotation = 0;
+		lastPlayerX = x;
+		lastPlayerY = y;
+		speedCur = 2.5 + mainController.getRandomDouble();
+	}
+	/*
+	 * Calls correct ai method, sets correct los and in danger states
+	 * @see com.example.magegame.Enemy#frameCall()
+	 */
+	@
 	Override
 	public void frameCall()
 	{
-		if(!attacking && runTimer < 1)
+		if(!attacking && getRunTimer() < 1)
 		{
-			if(checkLOSTimer < 1)
+			if(getCheckLOSTimer() < 1)
 			{
 				checkLOS();
-                                if(LOS)
-                                {
-                                    lastPlayerX = mainController.player.x;
-                                    lastPlayerY = mainController.player.y;
-                                    checkedPlayerLast = false;
-                                }
-				checkLOSTimer = 10;
+				if(LOS)
+				{
+					lastPlayerX = mainController.player.x;
+					lastPlayerY = mainController.player.y;
+					checkedPlayerLast = false;
+				}
+				resetCheckLOSTimer();
 			}
 			checkDanger();
-			if(pathedToHitLength > 0)
+			if(getPathedToHitLength() > 0)
 			{
 				if(LOS)
 				{
@@ -68,27 +71,29 @@ abstract public class enemy_Muggle extends Enemy
 		}
 		else
 		{
-			
-				if(runTimer < 1)
-				{
-					attacking();
-				}
-				else
-				{
-					x += Math.cos(rads) * speedCur;
-					y += Math.sin(rads) * speedCur;
-				}
+			if(getRunTimer() < 1)
+			{
+				attacking();
+			}
+			else
+			{
+				x += Math.cos(rads) * speedCur;
+				y += Math.sin(rads) * speedCur;
+			}
 		}
 		super.frameCall();
 	}
-        public void runToward(double towardsX, double towardsY)
+	/*
+	 * Runs towards a specific x, y point for four frames
+	 */
+	public void runToward(double towardsX, double towardsY)
 	{
 		rads = Math.atan2(towardsY - y, towardsX - x);
 		rotation = rads * r2d;
 		if(checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 16, 4))
 		{
-			runPathChooseCounter = 0;
-			runPathChooseRotationStore = rotation;
+			int runPathChooseCounter = 0;
+			double runPathChooseRotationStore = rotation;
 			while(runPathChooseCounter < 180)
 			{
 				runPathChooseCounter += 10;
@@ -109,22 +114,25 @@ abstract public class enemy_Muggle extends Enemy
 				}
 			}
 		}
-                runTimer = 4;
+		setRunTimer(4);
 		playing = true;
-                if(currentFrame > 48)
-                {
-                    currentFrame = 0;
-                }
+		if(currentFrame > 48)
+		{
+			currentFrame = 0;
+		}
 	}
-        public void runRandom()
+	/*
+	 * Runs random direction for 25 or if not enough space 10 frames
+	 */
+	public void runRandom()
 	{
-                boolean canMove = false;
-                rotation = mainController.randomGenerator.nextInt(360);
-                rads = rotation / r2d;
+		boolean canMove = false;
+		rotation = mainController.getRandomInt(360);
+		rads = rotation / r2d;
 		if(checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 100, 4))
 		{
-			runPathChooseCounter = 0;
-			runPathChooseRotationStore = rotation;
+			int runPathChooseCounter = 0;
+			double runPathChooseRotationStore = rotation;
 			while(runPathChooseCounter < 180)
 			{
 				runPathChooseCounter += 10;
@@ -133,7 +141,7 @@ abstract public class enemy_Muggle extends Enemy
 				if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 100, 4))
 				{
 					runPathChooseCounter = 180;
-                                        canMove = true;
+					canMove = true;
 				}
 				else
 				{
@@ -142,15 +150,15 @@ abstract public class enemy_Muggle extends Enemy
 					if(!checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 100, 4))
 					{
 						runPathChooseCounter = 180;
-                                                canMove = true;
+						canMove = true;
 					}
 				}
 			}
 		}
-                if(checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 40, 4))
+		if(checkObstructions(x, y, Math.cos(rads) * 4, Math.sin(rads) * 4, 40, 4))
 		{
-			runPathChooseCounter = 0;
-			runPathChooseRotationStore = rotation;
+			int runPathChooseCounter = 0;
+			double runPathChooseRotationStore = rotation;
 			while(runPathChooseCounter < 180)
 			{
 				runPathChooseCounter += 10;
@@ -171,18 +179,34 @@ abstract public class enemy_Muggle extends Enemy
 				}
 			}
 		}
-                if(canMove)
-                {
-                    runTimer = 25;
-                } else
-                {
-                    runTimer = 10;
-                }
+		if(canMove)
+		{
+			setRunTimer(25);
+		}
+		else
+		{
+			setRunTimer(10);
+		}
 		playing = true;
-                if(currentFrame > 48)
-                {
-                    currentFrame = 0;
-                }
+		if(currentFrame > 48)
+		{
+			currentFrame = 0;
+		}
 	}
+	/*
+	 * How object acts during an attack
+	 */
 	abstract public void attacking();
+	public double getLastPlayerX() {
+		return lastPlayerX;
+	}
+	public double getLastPlayerY() {
+		return lastPlayerY;
+	}
+	public void setCheckedPlayerLast(boolean checkedPlayerLast) {
+		this.checkedPlayerLast = checkedPlayerLast;
+	}
+	public boolean isCheckedPlayerLast() {
+		return checkedPlayerLast;
+	}
 }
