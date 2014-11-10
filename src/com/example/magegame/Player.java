@@ -3,22 +3,18 @@
  */
 package com.example.magegame;
 
-import android.util.Log;
-
 public final class Player extends Human
 {
 	protected double touchY;
 	protected int rollTimer = 0;
 	private double xMoveRoll;
 	private double yMoveRoll;
-	private int mp = 1750;
 	private double sp = 0;
-	private int mpMax = 3500;
 	private double spMax = 1;
-	private double abilityTimer_roll = 400;
-	private double abilityTimer_teleport = 350;
-	private double abilityTimer_burst = 500;
-	private double abilityTimer_powerBall = 90;
+	private double abilityTimer_roll = 0;
+	private double abilityTimer_teleport = 0;
+	private double abilityTimer_burst = 0;
+	private double abilityTimer_powerBall = 0;
 	private double xSave = 0;
 	private double ySave = 0;
 	protected boolean teleporting = false;
@@ -49,7 +45,7 @@ public final class Player extends Human
 		{
 			speedCur = 3.5*(1+sp);
 		}
-		if(abilityTimer_roll < 400)
+		if(abilityTimer_roll < 120)
 		{
 			if(humanType==2)
 			{
@@ -71,7 +67,7 @@ public final class Player extends Human
 		}
 		if(abilityTimer_burst < 500)
 		{
-			if(humanType==2)
+			if(humanType==1)
 			{
 				abilityTimer_burst += 1+sp;
 			} else
@@ -79,9 +75,9 @@ public final class Player extends Human
 				abilityTimer_burst ++;
 			}
 		}
-		if(abilityTimer_powerBall < 90)
+		if(abilityTimer_powerBall < 40)
 		{
-			if(humanType==2)
+			if(humanType==1)
 			{
 				abilityTimer_powerBall += 3*(1+sp);
 			} else
@@ -90,21 +86,10 @@ public final class Player extends Human
 			}
 		}
 		rollTimer--;
-		if(humanType==1)
-		{
-			mp += 5 *(1+(2*sp));
-		} else
-		{
-			mp += 5;
-		}
 		if(currentFrame == 58)
 		{
 			currentFrame = 0;
 			playing = false;
-		}
-		if(mp > mpMax)
-		{
-			mp = mpMax;
 		}
 		if(sp > spMax)
 		{
@@ -119,14 +104,10 @@ public final class Player extends Human
 			{
 				if(teleporting)
 				{
-					mp -= 30;
-					if(mp < 0)
+					hp -= 10;
+					if(hp < 0)
 					{
-						mp = 0;
-						x = xSave;
-						y = ySave;
-						teleporting = false;
-						mainController.teleportFinish(x, y);
+						getHit(1000);
 					}
 				}
 				else
@@ -160,22 +141,14 @@ public final class Player extends Human
 	}
 	public void releasePowerBall()
 	{
-		if(abilityTimer_powerBall > 50)
+		if(abilityTimer_powerBall > 30)
 		{
 			if(teleporting == false && rollTimer < 0)
 			{
-				if(mp > 300)
-				{					
-						mp -= 300;
 					playing = false;
 					currentFrame = 0;
 					mainController.createPowerBallPlayer(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 170, x, y);
-					abilityTimer_powerBall -= 50;
-				}
-				else
-				{
-					mainController.notEnoughMana();
-				}
+					abilityTimer_powerBall -= 30;
 			}
 		} else
 		{
@@ -184,7 +157,7 @@ public final class Player extends Human
 	}
 	public void roll()
 	{
-		if(abilityTimer_roll > 100)
+		if(abilityTimer_roll > 50)
 		{
 			if(teleporting == false && rollTimer < 0)
 			{
@@ -193,7 +166,7 @@ public final class Player extends Human
 				currentFrame = 48;
 				xMoveRoll = Math.cos(rads) * speedCur * 2.2;
 				yMoveRoll = Math.sin(rads) * speedCur * 2.2;
-				abilityTimer_roll -= 100;
+				abilityTimer_roll -= 50;
 			}
 		} else
 		{
@@ -202,25 +175,17 @@ public final class Player extends Human
 	}
 	public void teleport(double X, double Y)
 	{
-		if(abilityTimer_teleport > 150)
+		if(abilityTimer_teleport > 250)
 		{
 			if(rollTimer < 0)
 			{
 				if(teleporting == false)
 				{
-					if(mp > 700)
-					{
 						xSave = x;
 						ySave = y;
 						teleporting = true;
-							mp -= 600;
 						mainController.teleportStart(x, y);
 						x = 999999999;
-					}
-					else
-					{
-						mainController.notEnoughMana();
-					}
 				}
 				else
 				{
@@ -228,7 +193,7 @@ public final class Player extends Human
 					y = Y;
 					teleporting = false;
 					mainController.teleportFinish(x, y);
-					abilityTimer_teleport -= 150;
+					abilityTimer_teleport -= 250;
 				}
 			}
 		} else
@@ -238,12 +203,10 @@ public final class Player extends Human
 	}
 	public void burst()
 	{
-		if(abilityTimer_burst > 300)
+		if(abilityTimer_burst > 400)
 		{
 			if(teleporting == false && rollTimer < 0)
 			{
-				if(mp > 2500)
-				{
 					mainController.createPowerBallPlayer(0, 10, 0, 130, x, y);
 					mainController.createPowerBallPlayer(45, 7, 7, 130, x, y);
 					mainController.createPowerBallPlayer(90, 0, 10, 130, x, y);
@@ -252,13 +215,7 @@ public final class Player extends Human
 					mainController.createPowerBallPlayer(225, -7, -7, 130, x, y);
 					mainController.createPowerBallPlayer(270, 0, -10, 130, x, y);
 					mainController.createPowerBallPlayer(315, 7, -7, 130, x, y);
-					abilityTimer_burst -= 300;
-						mp -= 2500;
-				}
-				else
-				{
-					mainController.notEnoughMana();
-				}
+					abilityTimer_burst -= 400;
 			}
 		} else
 		{
@@ -325,18 +282,6 @@ public final class Player extends Human
 	}
 	public void setAbilityTimer_powerBall(int abilityTimer_powerBall) {
 		this.abilityTimer_powerBall = abilityTimer_powerBall;
-	}
-	public int getMp() {
-		return mp;
-	}
-	public void setMp(int mp) {
-		this.mp = mp;
-	}
-	public int getMpMax() {
-		return mpMax;
-	}
-	public void setMpMax(int mpMax) {
-		this.mpMax = mpMax;
 	}
 	public double getSp() {
 		return sp;

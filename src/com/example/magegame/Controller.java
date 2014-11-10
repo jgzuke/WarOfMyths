@@ -47,7 +47,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.util.Log;
 
 import java.util.Random;
 public final class Controller extends AllViews
@@ -310,6 +309,76 @@ public final class Controller extends AllViews
 			walls[3] = makeWall_Rectangle(130, 350, 180, 190);
 		}
 	}
+	public int fixXBoundsHpBar(int minX, int maxX)
+	{
+		int offset = 0;
+		if(minX<90)
+		{
+			offset = 90-minX;
+		} else if(maxX>390)
+		{
+			offset = 390-maxX;
+		}
+		return offset;
+	}
+	public int fixYBoundsHpBar(int minY, int maxY)
+	{
+		int offset = 0;
+		if(minY<10)
+		{
+			offset = 10-minY;
+		} else if(maxY>310)
+		{
+			offset = 310-maxY;
+		}
+		return offset;
+	}
+	public void drawHealthBars(Canvas g)
+	{
+		int minX;
+		int maxX;
+		int minY;
+		int maxY;
+		int offset;
+		paint.setColor(Color.RED);
+		paint.setStyle(Paint.Style.FILL);
+		minX = (int) enemy.getX() - 20;
+		maxX = (int) enemy.getX() + 20;
+		minY = (int) enemy.getY() - 30;
+		maxY = (int) enemy.getY() - 20;
+		offset = fixXBoundsHpBar(minX, maxX);
+		minX += offset;
+		maxX += offset;
+		offset = fixYBoundsHpBar(minY, maxY);
+		minY += offset;
+		maxY += offset;
+		drawRect(minX, minY, minX + (40 * enemy.getHp() / enemy.getHpMax()), maxY, g);
+		paint.setColor(Color.BLACK);
+		paint.setStyle(Paint.Style.STROKE);
+		drawRect(minX, minY, maxX, maxY, g);
+		for(int i = 0; i < enemies.length; i++)
+		{
+			if(enemies[i] != null)
+			{
+				minX = (int) enemies[i].getX() - 20;
+				maxX = (int) enemies[i].getX() + 20;
+				minY = (int) enemies[i].getY() - 30;
+				maxY = (int) enemies[i].getY() - 20;
+				offset = fixXBoundsHpBar(minX, maxX);
+				minX += offset;
+				maxX += offset;
+				offset = fixYBoundsHpBar(minY, maxY);
+				minY += offset;
+				maxY += offset;
+				paint.setColor(Color.RED);
+				paint.setStyle(Paint.Style.FILL);
+				drawRect(minX, minY, minX + (40 * enemies[i].getHp() / enemies[i].getHpMax()), maxY, g);
+				paint.setColor(Color.BLACK);
+				paint.setStyle(Paint.Style.STROKE);
+				drawRect(minX, minY, maxX, maxY, g);
+			}
+		}
+	}
 	/*
 	 * Draws hp, mp, sp, and cooldown bars for player and enemies
 	 */
@@ -322,48 +391,26 @@ public final class Controller extends AllViews
 		//drawRect(5, 240, 85, 316, g);
 		paint.setColor(Color.RED);
 		drawRect(400, 116, 400 + (70 * player.getHp() / player.getHpMax()), 132, g);
-		paint.setColor(Color.BLUE);
-		drawRect(400, 157, 400 + (70 * player.getMp() / player.getMpMax()), 173, g);
 		paint.setColor(Color.GREEN);
 		drawRect(400, 203, 400 + (int)(70 * player.getSp()), 219, g);
 		paint.setColor(Color.BLACK);
 		paint.setStyle(Paint.Style.STROKE);
 		drawRect(400, 116, 470, 132, g);
-		drawRect(400, 157, 470, 173, g);
 		drawRect(400, 203, 470, 219, g);
 		drawText(Integer.toString(player.getHp()), 417, 129, g);
-		drawText(Integer.toString(player.getMp()), 417, 170, g);
 		drawText(Integer.toString((int)(3500*player.getSp())), 417, 216, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.YELLOW);
 		drawRect(10, 70, 10 + (int)((70 * player.getAbilityTimer_burst()) / 500), 80, g);
-		drawRect(10, 223, 10 + (int)((70 * player.getAbilityTimer_roll()) / 400), 233, g);
+		drawRect(10, 223, 10 + (int)((70 * player.getAbilityTimer_roll()) / 120), 233, g);
 		drawRect(10, 300, 10 + (int)((70 * player.getAbilityTimer_teleport()) / 350), 310, g);
-		drawRect(150, 305, 150 + (int)((180 * player.getAbilityTimer_powerBall()) / 90), 320, g);
+		drawRect(150, 305, 150 + (int)((180 * player.getAbilityTimer_powerBall()) / 40), 320, g);
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setColor(Color.BLACK);
 		drawRect(10, 70, 80, 80, g);
 		drawRect(10, 223, 80, 233, g);
 		drawRect(10, 300, 80, 310, g);
 		drawRect(150, 305, 330, 320, g);
-		paint.setColor(Color.RED);
-		paint.setStyle(Paint.Style.FILL);
-		drawRect((int) enemy.getX() - 20, (int) enemy.getY() - 30, (int) enemy.getX() - 20 + (40 * enemy.getHp() / enemy.getHpMax()), (int) enemy.getY() - 20, g);
-		paint.setColor(Color.BLACK);
-		paint.setStyle(Paint.Style.STROKE);
-		drawRect((int) enemy.getX() - 20, (int) enemy.getY() - 30, (int) enemy.getX() + 20, (int) enemy.getY() - 20, g);
-		for(int i = 0; i < enemies.length; i++)
-		{
-			if(enemies[i] != null)
-			{
-				paint.setColor(Color.RED);
-				paint.setStyle(Paint.Style.FILL);
-				drawRect((int) enemies[i].getX() - 20, (int) enemies[i].getY() - 30, (int) enemies[i].getX() - 20 + (40 * enemies[i].getHp() / enemies[i].getHpMax()), (int) enemies[i].getY() - 20, g);
-				paint.setColor(Color.BLACK);
-				paint.setStyle(Paint.Style.STROKE);
-				drawRect((int) enemies[i].getX() - 20, (int) enemies[i].getY() - 30, (int) enemies[i].getX() + 20, (int) enemies[i].getY() - 20, g);
-			}
-		}
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.GRAY);
 		paint.setAlpha(151);
@@ -374,19 +421,19 @@ public final class Controller extends AllViews
 			drawRect(10, 240, 80, 310, g);
 			drawRect(150, 305, 330, 320, g);
 		}
-		if(player.getAbilityTimer_burst() < 300 || player.getMp()<2500)
+		if(player.getAbilityTimer_burst() < 400)
 		{
 			drawRect(10, 10, 80, 80, g);
 		}
-		if(player.getAbilityTimer_roll() < 100)
+		if(player.getAbilityTimer_roll() < 50)
 		{
 			drawRect(10, 163, 80, 233, g);
 		}
-		if(player.getAbilityTimer_teleport() < 150 || player.getMp()<700)
+		if(player.getAbilityTimer_teleport() < 250)
 		{
 			drawRect(10, 240, 80, 310, g);
 		}
-		if(player.getAbilityTimer_powerBall() < 50 || player.getMp()<300)
+		if(player.getAbilityTimer_powerBall() < 30)
 		{
 			drawRect(150, 305, 330, 320, g);
 		}
@@ -592,6 +639,7 @@ public final class Controller extends AllViews
 				drawBitmap(graphic_Teleport[i].getVisualImage(), (int)(graphic_Teleport[i].getX() - (graphic_Teleport[i].getImageWidth() / 2)), (int)(graphic_Teleport[i].getY() - (graphic_Teleport[i].getImageWidth() / 2)), g);
 			}
 		}
+		drawHealthBars(g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.GREEN);
 		if(warningTimer > 0)

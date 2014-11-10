@@ -6,24 +6,19 @@
  */
 package com.example.magegame;
 
-import android.util.Log;
-
 public final class Enemy_Mage extends Enemy
 {
 	private int reactTimer = 0;
 	private double xMoveRoll;
 	private double yMoveRoll;
-	private int mp = 1750;
 	private double sp = 0;
-	private int mpMax = 3500;
 	private double spMax = 1;
 	private int rollTimer = 0;
 	private int reactionTimeRating;
 	private String reaction;
-	private double abilityTimer_roll = 400;
-	private double abilityTimer_teleport = 350;
-	private double abilityTimer_burst = 500;
-	private double abilityTimer_powerBall = 90;
+	private double abilityTimer_teleport = 0;
+	private double abilityTimer_burst = 0;
+	private double abilityTimer_powerBall = 0;
 	private boolean rolledSideways;
 	private boolean playerAreaProtected = true;
 	private boolean enemyAreaProtected = true;
@@ -56,7 +51,6 @@ public final class Enemy_Mage extends Enemy
 	Override
 	public void frameCall()
 	{
-		Log.e("game", "enemy" + Integer.toString(humanType));
 		sp += 0.001;
 		if(humanType==2)
 		{
@@ -64,16 +58,6 @@ public final class Enemy_Mage extends Enemy
 		}
 		reactionTimeRating = mainController.getDifficultyLevel();
 		reactTimer--;
-		if(abilityTimer_roll < 400)
-		{
-			if(humanType==2)
-			{
-				abilityTimer_roll += mainController.getDifficultyLevelMultiplier()*(1+sp);
-			} else
-			{
-				abilityTimer_roll += mainController.getDifficultyLevelMultiplier();
-			}
-		}
 		if(abilityTimer_teleport < 350)
 		{
 			if(humanType==2)
@@ -86,7 +70,7 @@ public final class Enemy_Mage extends Enemy
 		}
 		if(abilityTimer_burst < 500)
 		{
-			if(humanType==2)
+			if(humanType==1)
 			{
 				abilityTimer_burst += mainController.getDifficultyLevelMultiplier()*(1+sp);
 			} else
@@ -94,9 +78,9 @@ public final class Enemy_Mage extends Enemy
 				abilityTimer_burst += mainController.getDifficultyLevelMultiplier();
 			}
 		}
-		if(abilityTimer_powerBall < 90)
+		if(abilityTimer_powerBall < 30)
 		{
-			if(humanType==2)
+			if(humanType==1)
 			{
 				abilityTimer_powerBall += 3*mainController.getDifficultyLevelMultiplier()*(1+sp);
 			} else
@@ -105,21 +89,10 @@ public final class Enemy_Mage extends Enemy
 			}
 		}
 		rollTimer--;
-		if(humanType==1)
-		{
-			mp += 5 * mainController.getDifficultyLevelMultiplier()*(1+(2*sp));
-		} else
-		{
-			mp += 5 * mainController.getDifficultyLevelMultiplier();
-		}
 		if(currentFrame == 58)
 		{
 			currentFrame = 0;
 			playing = false;
-		}
-		if(mp > mpMax)
-		{
-			mp = mpMax;
 		}
 		if(sp > spMax)
 		{
@@ -302,16 +275,14 @@ public final class Enemy_Mage extends Enemy
 		{
 			if(playerAreaProtected == true)
 			{
-				if(mp > 2510 && abilityTimer_powerBall >= 400)
+				if(abilityTimer_powerBall >= 400)
 				{
 					setReactTimer();
 					reaction = "Power Burst";
 				}
 				else
 				{
-					if(mp < 2300)
-					{
-						if(mp > 650 && abilityTimer_teleport >= 250)
+						if(abilityTimer_teleport >= 250)
 						{
 							setReactTimer();
 							reaction = "Teleport Away";
@@ -321,7 +292,6 @@ public final class Enemy_Mage extends Enemy
 							setReactTimer();
 							reaction = "Roll Away";
 						}
-					}
 				}
 			}
 			else
@@ -340,7 +310,7 @@ public final class Enemy_Mage extends Enemy
 			}
 			else
 			{
-				if(mp > 400 && abilityTimer_powerBall >= 50)
+				if(abilityTimer_powerBall >= 50)
 				{
 					setReactTimer();
 					reaction = "Power Ball";
@@ -353,7 +323,7 @@ public final class Enemy_Mage extends Enemy
 	{
 		if(playerAreaProtected == true)
 		{
-			if(mp > 3150 && abilityTimer_teleport >= 250 && abilityTimer_burst >= 400)
+			if(abilityTimer_teleport >= 250 && abilityTimer_burst >= 400)
 			{
 				setReactTimer();
 				reaction = "Teleport Towards";
@@ -496,90 +466,97 @@ public final class Enemy_Mage extends Enemy
 		x = newX;
 		y = newY;
 		mainController.teleportFinish(x, y);
-		
-			mp -= 600;
 	}
 	/* 
 	 * Teleports to players position
 	 */
 	public void teleportTowards()
 	{
-		rotation = Math.random() * 360;
-		rads = rotation / r2d;
-		if(!mainController.player.isTeleporting())
+		if(abilityTimer_teleport > 250)
 		{
-			teleport((int)(mainController.player.x + Math.cos(rads) * 10), (int)(mainController.player.y + Math.sin(rads) * 10));
+			rotation = Math.random() * 360;
+			rads = rotation / r2d;
+			if(!mainController.player.isTeleporting())
+			{
+				teleport((int)(mainController.player.x + Math.cos(rads) * 10), (int)(mainController.player.y + Math.sin(rads) * 10));
+			}
+			setReactTimer();
+			reaction = "Power Burst";
+			abilityTimer_teleport -= 250;
 		}
-		setReactTimer();
-		reaction = "Power Burst";
-		abilityTimer_teleport -= 250;
 	}
 	/* 
 	 * Teleports to farthest defined teleport spot in Controller
 	 */
 	public void teleportAway()
 	{
-		distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 0), mainController.getTeleportSpots(1, 0));
-		teleportAwayChooseDistance = distanceFound;
-		teleportAwayChooseX = mainController.getTeleportSpots(0, 0);
-		teleportAwayChooseY = mainController.getTeleportSpots(1, 0);
-		distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 1), mainController.getTeleportSpots(1, 1));
-		if(distanceFound > teleportAwayChooseDistance)
+		if(abilityTimer_teleport > 250)
 		{
+			distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 0), mainController.getTeleportSpots(1, 0));
 			teleportAwayChooseDistance = distanceFound;
-			teleportAwayChooseX = mainController.getTeleportSpots(0, 1);
-			teleportAwayChooseY = mainController.getTeleportSpots(1, 1);
+			teleportAwayChooseX = mainController.getTeleportSpots(0, 0);
+			teleportAwayChooseY = mainController.getTeleportSpots(1, 0);
+			distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 1), mainController.getTeleportSpots(1, 1));
+			if(distanceFound > teleportAwayChooseDistance)
+			{
+				teleportAwayChooseDistance = distanceFound;
+				teleportAwayChooseX = mainController.getTeleportSpots(0, 1);
+				teleportAwayChooseY = mainController.getTeleportSpots(1, 1);
+			}
+			distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 2), mainController.getTeleportSpots(1, 2));
+			if(distanceFound > teleportAwayChooseDistance)
+			{
+				teleportAwayChooseDistance = distanceFound;
+				teleportAwayChooseX = mainController.getTeleportSpots(0, 2);
+				teleportAwayChooseY = mainController.getTeleportSpots(1, 2);
+			}
+			distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 3), mainController.getTeleportSpots(1, 3));
+			if(distanceFound > teleportAwayChooseDistance)
+			{
+				teleportAwayChooseDistance = distanceFound;
+				teleportAwayChooseX = mainController.getTeleportSpots(0, 3);
+				teleportAwayChooseY = mainController.getTeleportSpots(1, 3);
+			}
+			teleport((int) teleportAwayChooseX, (int) teleportAwayChooseY);
+			abilityTimer_teleport -= 250;
 		}
-		distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 2), mainController.getTeleportSpots(1, 2));
-		if(distanceFound > teleportAwayChooseDistance)
-		{
-			teleportAwayChooseDistance = distanceFound;
-			teleportAwayChooseX = mainController.getTeleportSpots(0, 2);
-			teleportAwayChooseY = mainController.getTeleportSpots(1, 2);
-		}
-		distanceFound = checkDistance(x, y, mainController.getTeleportSpots(0, 3), mainController.getTeleportSpots(1, 3));
-		if(distanceFound > teleportAwayChooseDistance)
-		{
-			teleportAwayChooseDistance = distanceFound;
-			teleportAwayChooseX = mainController.getTeleportSpots(0, 3);
-			teleportAwayChooseY = mainController.getTeleportSpots(1, 3);
-		}
-		teleport((int) teleportAwayChooseX, (int) teleportAwayChooseY);
-		abilityTimer_teleport -= 250;
 	}
 	/*
 	 * Releases stored powerBall towards player
 	 */
 	public void releasePowerBall()
 	{
-		
-			mp -= 300;
-		playing = false;
-		currentFrame = 0;
-		if(mainController.player.isTeleporting())
+		if(abilityTimer_powerBall > 20)
 		{
-			rads = Math.atan2((mainController.player.getXSave() - y), (mainController.player.getYSave() - x));
+			playing = false;
+			currentFrame = 0;
+			if(mainController.player.isTeleporting())
+			{
+				rads = Math.atan2((mainController.player.getXSave() - y), (mainController.player.getYSave() - x));
+			}
+			else
+			{
+				rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
+			}
+			rotation = rads * r2d;
+			mainController.createPowerBallEnemy(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 170, x, y);
+			abilityTimer_powerBall -= 20;
 		}
-		else
-		{
-			rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
-		}
-		rotation = rads * r2d;
-		mainController.createPowerBallEnemy(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 170, x, y);
-		abilityTimer_powerBall -= 50;
 	}
 	public void powerBurst()
 	{
-		mp -= 2500;
-		mainController.createPowerBallEnemy(0, 10, 0, 130, x, y);
-		mainController.createPowerBallEnemy(45, 7, 7, 130, x, y);
-		mainController.createPowerBallEnemy(90, 0, 10, 130, x, y);
-		mainController.createPowerBallEnemy(135, -7, 7, 130, x, y);
-		mainController.createPowerBallEnemy(180, -10, 0, 130, x, y);
-		mainController.createPowerBallEnemy(225, -7, -7, 130, x, y);
-		mainController.createPowerBallEnemy(270, 0, -10, 130, x, y);
-		mainController.createPowerBallEnemy(315, 7, -7, 130, x, y);
-		abilityTimer_burst -= 400;
+		if(abilityTimer_burst > 400)
+		{
+			mainController.createPowerBallEnemy(0, 10, 0, 130, x, y);
+			mainController.createPowerBallEnemy(45, 7, 7, 130, x, y);
+			mainController.createPowerBallEnemy(90, 0, 10, 130, x, y);
+			mainController.createPowerBallEnemy(135, -7, 7, 130, x, y);
+			mainController.createPowerBallEnemy(180, -10, 0, 130, x, y);
+			mainController.createPowerBallEnemy(225, -7, -7, 130, x, y);
+			mainController.createPowerBallEnemy(270, 0, -10, 130, x, y);
+			mainController.createPowerBallEnemy(315, 7, -7, 130, x, y);
+			abilityTimer_burst -= 400;
+		}
 	}
 	/*
 	 * Acts out stored reaction
@@ -610,7 +587,7 @@ public final class Enemy_Mage extends Enemy
 			rollSideways();
 			if(rolledSideways == false)
 			{
-				if(mp > 650)
+				if(abilityTimer_teleport >= 250)
 				{
 					teleportAway();
 				}
@@ -647,14 +624,8 @@ public final class Enemy_Mage extends Enemy
 	public double getYMoveRoll() {
 		return yMoveRoll;
 	}
-	public int getMp() {
-		return mp;
-	}
 	public double getSp() {
 		return sp;
-	}
-	public int getMpMax() {
-		return mpMax;
 	}
 	public double getSpMax() {
 		return spMax;
@@ -668,14 +639,8 @@ public final class Enemy_Mage extends Enemy
 	public void lowerSp(double lowered) {
 		sp -= lowered;
 	}
-	public void setMp(int mp) {
-		this.mp = mp;
-	}
 	public void setSp(int sp) {
 		this.sp = sp;
-	}
-	public void setMpMax(int mpMax) {
-		this.mpMax = mpMax;
 	}
 	public void setSpMax(int spMax) {
 		this.spMax = spMax;
