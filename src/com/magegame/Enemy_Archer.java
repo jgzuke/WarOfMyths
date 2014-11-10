@@ -17,7 +17,7 @@ public final class Enemy_Archer extends Enemy_Muggle
 		super(creator, setX, setY); //sets x, y and creator
 		visualImage = control.imageLibrary.archer_Image[0];
 		setImageDimensions();
-		hp = 2000;
+		hp = 2300;
 		baseHp();
 		setHpMax(hp);
 		worth = 4;

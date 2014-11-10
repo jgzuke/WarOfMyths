@@ -42,7 +42,7 @@ public final class Enemy_Mage extends Enemy
 		y = setY;
 		lastPlayerX = x;
 		lastPlayerY = y;
-		hp = 1500;
+		hp = 1900;
 		baseHp();
 		setHpMax(hp);
 		worth = 6;

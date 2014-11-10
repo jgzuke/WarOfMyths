@@ -15,7 +15,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		super(creator, setX, setY);
 		visualImage = control.imageLibrary.pikeman_Image[0];
 		setImageDimensions();
-		hp = 4000;
+		hp = 3200;
 		baseHp();
 		setHpMax(hp);
 		weight = 1.5;

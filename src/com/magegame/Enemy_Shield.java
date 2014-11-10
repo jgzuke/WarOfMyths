@@ -13,7 +13,7 @@ public class Enemy_Shield extends Enemy_Muggle
 	public Enemy_Shield(Controller creator, double setX, double setY)
 	{
 		super(creator, setX, setY); //sets x, y and creator
-		hp = 5000;
+		hp = 4000;
 		baseHp();
 		visualImage = control.imageLibrary.shield_Image[0];
 		setImageDimensions();

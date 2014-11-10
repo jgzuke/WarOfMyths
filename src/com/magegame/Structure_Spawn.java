@@ -34,7 +34,7 @@ public class Structure_Spawn extends Structure
 			int index = control.lowestPositionEmpty(control.enemies);
 			control.enemies[index] = new Enemy_Shield(control, (int)x, (int)y);
 			control.enemies[index].sick = true;
-			control.enemies[index].hpMax /= 2;
+			control.enemies[index].hpMax /= 2.5;
 			control.createPowerBallEnemyAOE(x, y, 140, false);
 			control.activity.playEffect("burst");
 		}

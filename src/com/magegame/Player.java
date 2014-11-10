@@ -118,10 +118,7 @@ public final class Player extends Human
 			hpAccurate += (double)hp/1000;
 			super.getHit((int)hpAccurate);
 			hpAccurate -= (int)hpAccurate;
-			if(deleted)
-			{
-				control.activity.loseFight();
-			}
+			if(deleted) control.restartGame();
 		}
 		minimumShootTime--;
 		powerUpTimer--;
@@ -343,7 +340,7 @@ public final class Player extends Human
 	{
 		if(abilityTimer_powerBall > 30)
 		{
-			if(rollTimer < 0&&control.levelNum!=10)
+			if(rollTimer < 0)
 			{
 					control.createPowerBallPlayer(rads*r2d, projectileSpeed, 130, x, y);
 					abilityTimer_powerBall -= 30;
@@ -427,6 +424,7 @@ public final class Player extends Human
 			control.activity.playEffect("burst");
 			control.activity.playEffect("burst");
 			control.activity.playPlayerEffect();
+			control.playerBursted = 0;
 		} else
 		{
 			control.startWarning("Cool Down");
@@ -457,6 +455,7 @@ public final class Player extends Human
 	@Override
 	protected void getHit(double damage)
 	{
+		control.playerHit = 0;
 		if(transformed == 1)
 		{
 			damage *= 0.08;
@@ -477,7 +476,7 @@ public final class Player extends Human
 			}
 			super.getHit(damage);
 			sp -= sp*damage/1500;
-			if(deleted) control.activity.loseFight();
+			if(deleted) control.restartGame();
 	}
 	/**
 	 * gives player a benefit, ranging from health to transformation
@@ -515,19 +514,13 @@ public final class Player extends Human
 			powerID=4;
 			break;
 		case 7:
-			control.moneyMade += control.moneyMultiplier;
-			control.activity.gameCurrency += control.moneyMultiplier;
-			break;
-		case 8:
-			control.hasKey = true;
+			control.activity.gameCurrency += 1;
 			break;
 		case 9:
-			control.moneyMade += 5*control.moneyMultiplier;
-			control.activity.gameCurrency += 5*control.moneyMultiplier;
+			control.activity.gameCurrency += 5;
 			break;
 		case 10:
-			control.moneyMade += 20*control.moneyMultiplier;
-			control.activity.gameCurrency += 20*control.moneyMultiplier;
+			control.activity.gameCurrency += 20;
 			break;
 		case 11:
 			transformedTimer = 0;

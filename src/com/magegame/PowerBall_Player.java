@@ -60,6 +60,16 @@ public final class PowerBall_Player extends PowerBall
 	protected void frameCall()
 	{
 		super.frameCall();
+		if(control.checkHitBack(x+(xForward*5), y+(yForward*5)))
+		{
+			int tempRotation = (int)Math.round(rotation/90)*90;
+			if(Math.abs(tempRotation-rotation)<20)
+			{
+				rotation = tempRotation;
+				xForward = Math.cos(rotation/r2d) * speed;
+				yForward = Math.sin(rotation/r2d) * speed;
+			}
+		}
 		if(control.checkHitBack(x, y) || control.checkHitBack(x-(xForward/2), y-(yForward/2)) && !deleted)
 		{
 			explodeBack();
@@ -123,12 +133,18 @@ public final class PowerBall_Player extends PowerBall
 					{
 						if(target == null)
 						{
-							target = control.enemies[i];
+							if(!control.checkObstructionsPointAll((float)x, (float)y, (float)control.enemies[i].x, (float)control.enemies[i].y))
+							{
+								target = control.enemies[i];
+							}
 						} else if(control.enemies[i]!=target)
 						{
 							if(Math.abs(compareRot(Math.atan2(yDif, xDif)))<Math.abs(compareRot(Math.atan2(y - target.y, x - target.x))))
 							{
-								target = control.enemies[i];
+								if(!control.checkObstructionsPointAll((float)x, (float)y, (float)control.enemies[i].x, (float)control.enemies[i].y))
+								{
+									target = control.enemies[i];
+								}
 							}
 						}
 					}
@@ -155,12 +171,18 @@ public final class PowerBall_Player extends PowerBall
 					{
 						if(target == null)
 						{
-							target = control.structures[i];
+							if(!control.checkObstructionsPointAll((float)x, (float)y, (float)control.structures[i].x, (float)control.structures[i].y))
+							{
+								target = control.structures[i];
+							}
 						} else if(control.structures[i]!=target)
 						{
 							if(Math.abs(compareRot(Math.atan2(yDif, xDif)))<Math.abs(compareRot(Math.atan2(y - target.y, x - target.x))))
 							{
-								target = control.structures[i];
+								if(!control.checkObstructionsPointAll((float)x, (float)y, (float)control.structures[i].x, (float)control.structures[i].y))
+								{
+									target = control.structures[i];
+								}
 							}
 						}
 					}

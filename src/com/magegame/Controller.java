@@ -33,6 +33,7 @@
  * @param frameCaller Calls objects and controllers frameCalls
  */
 package com.magegame;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -43,12 +44,16 @@ import android.graphics.Paint;
 import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.graphics.Paint.Style;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import java.util.Random;
 public final class Controller extends View
 {
+	protected int difficultyLevel = 10;
+	private double difficultyLevelMultiplier;
 	protected int screenMinX;
 	protected int screenMinY;
 	protected double screenDimensionMultiplier;
@@ -65,17 +70,21 @@ public final class Controller extends View
 	private Wall_Circle[] wallCircles = new Wall_Circle[30];
 	private Wall_Ring[] wallRings = new Wall_Ring[30];
 	private Rect aoeRect = new Rect();
-	private boolean gameEnded = false;
 	protected Player player;
 	protected Context context;
 	protected ImageLibrary imageLibrary;
 	private Random randomGenerator = new Random();
-	protected int difficultyLevel = 10;
-	private double difficultyLevelMultiplier;
 	protected int playerType = 0;
-	protected int levelNum = 10;
+	private int curXShift;
+	private int curYShift;
 	private int warningTimer;
 	private String warningText = "";
+	protected int levelWidth = 300;
+	protected int levelHeight = 300;
+	protected int xShiftLevel;
+	protected int yShiftLevel;
+	private int wallsMade = 0;
+	private int wallCirclesMade = 0;
 	private int[] oPassageX1;
 	private int[] oPassageX2;
 	private int[] oPassageY1;
@@ -104,6 +113,8 @@ public final class Controller extends View
 	private int[] oCircYAll;
 	private int[] oCircRadiusAll;
 	private double[] oCircRatioAll;
+	private int[] checkedX = {0};
+	private int[] checkedY = {0};
 	private int currentCircle = 0;
 	private int currentRectangle = 0;
 	private int currentCircleAll = 0;
@@ -111,41 +122,42 @@ public final class Controller extends View
 	private int currentRing = 0;
 	private int currentRingAll = 0;
 	private int currentPassage = 0;
+	private int[][] exits = new int[1][4];
 	private Bitmap background;
 	protected Bitmap tempPicture;
 	protected Bitmap tempPictureLock;
 	protected PlayerGestureDetector detect;
-	protected int levelWidth = 300;
-	protected int levelHeight = 300;
-	protected int xShiftLevel;
-	protected int yShiftLevel;
 	protected boolean gamePaused = false;
 	private Handler mHandler = new Handler();
 	protected String currentPause;
 	private Bitmap check;
 	protected String buyingItem;
-	protected int startingLevel;
 	protected boolean drainHp = false;
 	protected boolean lowerHp = false;
 	protected boolean limitSpells = false;
 	protected boolean enemyRegen = false;
-	protected double moneyMultiplier = 0;
-	protected double moneyMade = 0;
-	private int savedEnemies = 0;
-	private int[][] saveEnemyInformation = new int[30][5];
-	public boolean hasKey = false;
-	private int exitX = 0;
-	private int exitY = 0;
-	private int curXShift;
-	private int curYShift;
 	private int goldColor = Color.rgb(216, 200, 28);
 	private int platinumColor = Color.rgb(196, 204, 204);
 	private int healthColor = Color.rgb(150, 0, 0);
 	private int specialColor = Color.rgb(0, 0, 150);
 	private int cooldownColor = Color.rgb(190, 190, 0);
+	private int highlightChoiceColor = Color.BLUE;
+	private int[] godColors = {Color.rgb(150, 98, 50), Color.rgb(52, 84, 125), Color.rgb(202, 189, 105), Color.rgb(101, 42, 10)};
 	protected DrawnSprite shootStick = new Graphic_shootStick();
 	private long timeLast;
 	private byte times;
+	protected int playerHit=0;
+	protected int playerBursted = 0;
+	protected int numEnemies = 0;
+	protected int[][] horizontals = new int[6][5];
+	protected int[][] verticals = new int[5][6];
+	protected int[][] tileType = new int[6][6];
+	protected int horSpots = 0;
+	protected int verSpots = 0;
+	protected int levelsTravelled = 0;
+	private Bitmap backgroundImageTop = Bitmap.createBitmap(300, 300, Config.ARGB_8888);
+	private Bitmap backgroundImageBottom = Bitmap.createBitmap(300, 300, Config.ARGB_8888);
+	Typeface magicMedieval; 
 	private Runnable frameCaller = new Runnable()
 	{
 		/**
@@ -174,12 +186,15 @@ public final class Controller extends View
 		super(startSet);
 		activity = activitySet;
 		context = startSet;
+		magicMedieval = Typeface.createFromAsset(context.getAssets(),"fonts/MagicMedieval.ttf"); 
 		imageLibrary = new ImageLibrary(startSet, this); // creates image library
 		screenMinX = activitySet.screenMinX;
 		screenMinY = activitySet.screenMinY;
 		screenDimensionMultiplier = activitySet.screenDimensionMultiplier;
 		paint.setAntiAlias(false);
 		paint.setDither(false);
+		paint.setTypeface(magicMedieval);
+		changeDifficulty(10);
 		if(activity.highGraphics)
 		{
 			//paint.setAntiAlias(true);
@@ -198,32 +213,883 @@ public final class Controller extends View
 		setOnTouchListener(detect);
 		detect.setPlayer(player);
 		changePlayerType(0);
-		changeDifficulty(10);
-		startFighting(10);
 		frameCaller.run();
 		check = imageLibrary.loadImage("menu_check", 20, 20);
 		changePlayOptions();
 		changePlayerType(activity.playerType);
+		restartGame();
 	}
 	/**
-	 * starts a new round of fighting, sets difficulty and loads level
-	 * @param levelNumSet level to start
+	 * ends a round of fighting and resets variables
 	 */
-	protected void startFighting(int levelNumSet)
+	protected void restartGame()
 	{
-		endFighting();
-		levelNum = levelNumSet;
-		difficultyLevelMultiplier *= 0.5+(Math.pow(getLevelWinningsMultiplier((int)(levelNum/10)+2), 0.2)/2); // set difficulty for level
-		loadLevel(); // create enemies walls etc.
+		changeDifficulty(10);
+		levelsTravelled = 0;
+		player.resetVariables(); // resets players variables
+		resetLevel();
+		playerHit = -11;
+		activity.saveGame(); // saves game in case phone shuts down etc.
 	}
 	/**
-	 * changes difficulty of level
-	 * @param difficultyLevelSet new difficulty to set
+	 * ends a round of fighting and resets variables
 	 */
-	protected void changeDifficulty(int difficultyLevelSet)
+	protected void resetLevel()
 	{
-		difficultyLevel = difficultyLevelSet;
-		difficultyLevelMultiplier = 15 / (double)(difficultyLevel + 5); // set difficulty multiplier
+		enemies = new Enemy[30];
+		structures = new Structure[30];
+		powerBalls = new PowerBall[30];
+		powerBallAOEs = new PowerBallAOE[30];
+		powerUps = new PowerUp[30];
+		powerUps = new PowerUp[30];
+		numEnemies = 0;
+		for(int i = 0; i < enemies.length; i++) enemies[i]=null;
+		generateLevel();
+	}
+	protected int getRandomSpotX()
+	{
+		return (getRandomInt(horSpots)*50)+25;
+	}
+	protected int getRandomSpotY()
+	{
+		return (getRandomInt(verSpots)*50)+25;
+	}
+	protected int enemyX()
+	{
+		int pos = (getRandomInt(horSpots)*50)+25;
+		while(Math.abs(pos-player.x)<90)
+		{
+			pos = (getRandomInt(horSpots)*50)+25;
+		}
+		return pos;
+	}
+	protected int enemyY()
+	{
+		int pos = (getRandomInt(verSpots)*50)+25;
+		while(Math.abs(pos-player.y)<90)
+		{
+			pos = (getRandomInt(verSpots)*50)+25;
+		}
+		return pos;
+	}
+	private boolean wallBuiltH(int x, int y)
+	{
+		if(x < 0 || x > horSpots-1 || y < 0 || y > verSpots-2)
+		{
+			return true;
+		} else if(horizontals[x][y]==1||horizontals[x][y]==2)
+		{
+			return true;
+		} else
+		{
+			return false;
+		}
+	}
+	private boolean wallBuiltV(int x, int y)
+	{
+		if(x < 0 || x > horSpots-2 || y < 0 || y > verSpots-1)
+		{
+			return true;
+		} else if(verticals[x][y]==1||verticals[x][y]==2)
+		{
+			return true;
+		} else
+		{
+			return false;
+		}
+	}
+	private boolean wallOpenH(int x, int y)
+	{
+		if(x < 0 || x > horSpots-1 || y < 0 || y > verSpots-2)
+		{
+			return false;
+		} else if(horizontals[x][y]==1)
+		{
+			return false;
+		} else
+		{
+			return true;
+		}
+	}
+	private boolean wallOpenV(int x, int y)
+	{
+		if(x < 0 || x > horSpots-2 || y < 0 || y > verSpots-1)
+		{
+			return false;
+		} else if(verticals[x][y]==1)
+		{
+			return false;
+		} else
+		{
+			return true;
+		}
+	}
+	private void growSides(int x, int y, boolean max, boolean growing)
+	{
+		byte openSides = 4;
+		boolean[] sides = new boolean[4]; // top, bottom, left, right
+		sides[0] = (wallBuiltH(x, y-1));
+		sides[1] = (wallBuiltH(x, y));
+		sides[2] = (wallBuiltV(x-1, y));
+		sides[3] = (wallBuiltV(x, y));
+		for(int i = 0; i < 4; i ++) if(sides[i]) openSides--;
+		int toBuild = 0;
+		if(openSides>0)
+		{
+			if(max)
+			{
+				toBuild = openSides-1;
+			} else
+			{
+				toBuild = openSides-1;//getRandomInt(openSides);
+				int alternate = getRandomInt(openSides);
+				if(alternate > toBuild) toBuild = alternate;
+			}
+		}
+		while(toBuild>0)
+		{
+			int test = getRandomInt(4);
+			if(sides[test]==false)
+			{
+				switch(test)
+				{
+					case 0:
+						if(horizontals[x][y-1]==0)
+						{
+							horizontals[x][y-1]=1;
+							toBuild--;
+						}
+						break;
+					case 1:
+						if(horizontals[x][y]==0)
+						{
+							horizontals[x][y]=1;
+							toBuild--;
+						}
+						break;
+					case 2:
+						if(verticals[x-1][y]==0)
+						{
+							verticals[x-1][y]=1;
+							toBuild--;
+						}
+						break;
+					case 3:
+						if(verticals[x][y]==0)
+						{
+							verticals[x][y]=1;
+							toBuild--;
+						}
+						break;
+				}
+			}
+		}
+		for(int i = 0; i < 4; i ++)
+		{
+			if(sides[i]==false)
+			{
+				switch(i)
+				{
+					case 0: if(horizontals[x][y-1]!=1) horizontals[x][y-1]=2;
+						break;
+					case 1: if(horizontals[x][y]!=1) horizontals[x][y]=2;
+						break;
+					case 2: if(verticals[x-1][y]!=1) verticals[x-1][y]=2;
+						break;
+					case 3: if(verticals[x][y]!=1) verticals[x][y]=2;
+						break;
+				}
+			}
+		}
+		if(growing)
+		{
+			for(int i = 0; i < 4; i ++) if(!sides[i])
+			{
+				switch(i)
+				{
+					case 0: growSides(x,y-1, false, true);
+					case 1: growSides(x,y+1, false, true);
+					case 2: growSides(x-1,y, false, true);
+					case 3: growSides(x+1,y, false, true);
+				}
+			}		
+		}
+	}
+	/**
+	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
+	 */
+	protected void drawWallRotated(Bitmap section, int rotation, int x, int y, Canvas g)
+	{
+		rotateImages.reset();
+		rotateImages.postTranslate(-section.getWidth() / 2, -section.getHeight() / 2);
+		rotateImages.postRotate((float) rotation);
+		rotateImages.postTranslate((float) x, (float) y);
+		g.drawBitmap(section, rotateImages, paint);
+		section = null;
+	}
+	private boolean checkPath(int x, int y, boolean first)
+	{
+		if(first)
+		{
+			checkedX = new int[1];
+			checkedY = new int[1];
+			checkedX[0]=x;
+			checkedY[0]=y;
+		} else
+		{
+			for(int i = 0; i < checkedX.length; i++)
+			{
+				if(x==checkedX[i]&&y==checkedY[i]) return false;
+			}
+			int[]newCheckedX = new int[checkedX.length+1];
+			int[]newCheckedY = new int[checkedX.length+1];
+			for(int i = 0; i < checkedX.length; i++)
+			{
+				newCheckedX[i]=checkedX[i];
+				newCheckedY[i]=checkedY[i];
+			}
+			newCheckedX[checkedX.length]=x;
+			newCheckedY[checkedX.length]=y;
+			checkedX = newCheckedX;
+			checkedY = newCheckedY;
+		}
+		boolean onExit = false;
+		for(int i = 0; i < exits.length; i++)
+		{
+			if(x==exits[i][2]&&y==exits[i][3])
+			{
+				onExit = true;
+			}
+		}
+		if(onExit)
+		{
+			return true;
+		} else		
+		{
+			boolean[] sides = new boolean[4]; // top, bottom, left, right
+			sides[0] = (wallOpenH(x, y-1));
+			sides[1] = (wallOpenH(x, y));
+			sides[2] = (wallOpenV(x-1, y));
+			sides[3] = (wallOpenV(x, y));
+			return( sides[0]&&checkPath(x, y-1, false) || 
+					sides[1]&&checkPath(x, y+1, false) || 
+					sides[2]&&checkPath(x-1, y, false) || 
+					sides[3]&&checkPath(x+1, y, false));
+		}		
+	}
+	private void buildSides()
+	{
+		Canvas g = new Canvas(backgroundImageTop);
+		for(int i = 0; i < horSpots; i++)
+		{
+			for(int j = 0; j < verSpots-1; j++)
+			{
+				if(horizontals[i][j]==1)
+				{
+					drawWallRotated(imageLibrary.wallStraight[0], 0, 25+(50*i), 50+(50*j), g);
+					walls[wallsMade] = makeWall_Rectangle(-10+(50*i), 40+(50*j), 70, 20, true, true);
+					wallsMade++;
+				}
+				if(horizontals[i][j]==2)
+				{
+					//g.drawCircle(25+(50*i), 50+(50*j), 5, paint);
+				}
+			}
+		}
+		for(int i = 0; i < horSpots-1; i++)
+		{
+			for(int j = 0; j < verSpots; j++)
+			{
+				if(verticals[i][j]==1)
+				{
+					drawWallRotated(imageLibrary.wallStraight[0], 90, 50+(50*i), 25+(50*j), g);
+					walls[wallsMade] = makeWall_Rectangle(40+(50*i), -10+(50*j), 20, 70, true, true);
+					wallsMade++;
+				}
+				if(verticals[i][j]==2)
+				{
+					//g.drawCircle(50+(50*i), 25+(50*j), 5, paint);
+				}
+			}
+		}
+		for(int i = 0; i < horSpots-1; i++)
+		{
+			for(int j = 0; j < verSpots-1; j++)
+			{
+				int numAttached = 0;
+				if(verticals[i][j]==1) numAttached++;
+				if(verticals[i][j+1]==1) numAttached++;
+				if(horizontals[i][j]==1) numAttached++;
+				if(horizontals[i+1][j]==1) numAttached++;
+				if(numAttached == 1 || numAttached == 2) drawBitmapLevel(imageLibrary.wallPoint[0], 38+(50*i), 38+(50*j), g);
+			}
+		}
+		for(int i = 0; i < horSpots; i++)
+		{
+			drawWallRotated(imageLibrary.wallStraight[0], 0, 25+(50*i), 0, g);
+			drawWallRotated(imageLibrary.wallStraight[0], 0, 25+(50*i), verSpots*50, g);
+		}
+		for(int i = 0; i < verSpots; i++)
+		{
+			drawWallRotated(imageLibrary.wallStraight[0], 90, 0, 25+(50*i), g);
+			drawWallRotated(imageLibrary.wallStraight[0], 90, horSpots*50, 25+(50*i), g);
+		}
+	}
+	private int returnSmaller(int x, int y)
+	{
+		if(x<y) return x;
+		else return y;
+	}
+	private void buildObject(int x, int y, int rotation, String name, Canvas g)
+	{
+		if(name == "pillar")
+		{
+			drawWallRotated(imageLibrary.objectPillar[0], rotation, 25+(50*x), 25+(50*y), g);
+			wallCircles[wallCirclesMade] = makeWall_Circle(25+(50*x), 25+(50*y), 15, 1, true);
+			wallCirclesMade++;
+		}
+		if(name == "table")
+		{
+			drawWallRotated(imageLibrary.objectTable[0], rotation, 25+(50*x), 25+(50*y), g);
+			if(rotation==0)
+			{
+				walls[wallsMade] = makeWall_Rectangle((50*x)-13, (50*y), 75, 50, true, true);
+			} else
+			{
+				walls[wallsMade] = makeWall_Rectangle((50*x), (50*y)-13, 50, 75, true, true);
+			}
+			wallsMade++;
+		}
+	}
+	private void buildRoom()
+	{
+		Canvas g = new Canvas(backgroundImageTop);
+		Canvas h = new Canvas(backgroundImageBottom);
+		int roomWidth = getRandomInt(horSpots-3)+2;
+		int roomHeight = getRandomInt(verSpots-4)+2;
+		if(Math.random()>0.5)
+		{
+			roomWidth = getRandomInt(horSpots-4)+2;
+			roomHeight = getRandomInt(verSpots-3)+2;
+		}
+		Log.e("game", "width"+Integer.toString(roomWidth));
+		Log.e("game", "height"+Integer.toString(roomHeight));
+		int topmost = getRandomInt(verSpots-roomHeight+1);
+		int leftmost = getRandomInt(horSpots-roomWidth+1);
+		boolean spotTaken = false;
+		for(int i = leftmost; i < leftmost+roomWidth; i++)
+		{
+			for(int j = topmost; j < topmost+roomHeight; j++)
+			{
+				if(tileType[i][j]==1) spotTaken = true;
+			}
+		}
+		if(!spotTaken)
+		{
+			for(int i = leftmost; i < leftmost+roomWidth; i++)
+			{
+				for(int j = topmost; j < topmost+roomHeight; j++)
+				{
+					tileType[i][j]=1;
+					int overlayLevel = returnSmaller(4, returnSmaller(returnSmaller(Math.abs(leftmost-i), Math.abs(leftmost+roomWidth-i-1)), returnSmaller(Math.abs(topmost-j), Math.abs(topmost+roomHeight-j-1))));
+					drawBitmapLevel(imageLibrary.levelOverlays[(overlayLevel*3)+getRandomInt(3)], (50*i), (50*j), h);
+				}
+			}
+			for(int i = leftmost; i < leftmost+roomWidth; i++)
+			{
+				for(int j = topmost; j < topmost+roomHeight-1; j++)
+				{
+					horizontals[i][j]=2;
+				}
+			}
+			for(int i = leftmost; i < leftmost+roomWidth-1; i++)
+			{
+				for(int j = topmost; j < topmost+roomHeight; j++)
+				{
+					verticals[i][j]=2;
+				}
+			}
+			if(roomWidth>2&&roomHeight>2)
+			{
+				if(Math.random()>0.5)
+				{
+					for(int i = 0; i < 1+((roomWidth-2)*(roomHeight-2)/4); i++)
+					{
+						int X = getRandomInt(roomWidth-2)+leftmost+1;
+						int Y = getRandomInt(roomHeight-2)+topmost+1;
+						if(tileType[X][Y]==1)
+						{
+							tileType[X][Y]=3;
+							int Rot = 0;
+							if(roomHeight>roomWidth) Rot=90;
+							buildObject(X, Y, Rot, "table", g);
+						}
+					}
+				} else
+				{
+					if(roomWidth>4||roomHeight>4)
+					{
+						for(int i = leftmost+1; i<leftmost+roomWidth-1;i+=2)
+						{
+							for(int j = topmost+1; j<topmost+roomHeight-1;j+=2)
+							{
+								buildObject(i, j, 0, "pillar", g);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	/**
+	 * loads a new level, creates walls enemies etc.
+	 */
+	protected void generateLevel()
+	{
+//Log.e("game","1");
+		wallsMade = 0;
+		wallCirclesMade = 0;
+		wallCircles = new Wall_Circle[30];
+		wallRings = new Wall_Ring[30];
+		currentCircle = 0;
+		currentRectangle = 0;
+		currentCircleAll = 0;
+		currentRectangleAll = 0;
+		currentRing = 0;
+		currentRingAll = 0;
+		currentPassage = 0;
+		if(levelsTravelled>0)
+		{
+			horSpots = 6+getRandomInt(levelsTravelled);
+			verSpots = 6+getRandomInt(levelsTravelled);	
+		} else
+		{
+			horSpots = 6;
+			verSpots = 6;
+		}
+		createWallRectangleValueArrays((horSpots*verSpots)+20);
+		createWallRectangleValueArraysAll((horSpots*verSpots)+20);
+		createWallCircleValueArrays(40);
+		createWallCircleValueArraysAll(40);
+		walls = new Wall_Rectangle[(horSpots*verSpots)+20];
+		horizontals = new int[horSpots][verSpots-1];
+		verticals = new int[horSpots-1][verSpots];
+		tileType = new int[horSpots][verSpots];
+		levelWidth = 50*horSpots; // height of level
+		levelHeight = 50*verSpots; // width of level
+		backgroundImageTop = Bitmap.createBitmap(levelWidth, levelHeight, Config.ARGB_8888);
+		backgroundImageBottom = Bitmap.createBitmap(levelWidth, levelHeight, Config.ARGB_8888);
+		exits = new int[Math.round(horSpots*verSpots/15)][4];
+		//Log.e("game","2");
+		for(int i = 0; i < getRandomInt(3)+(levelsTravelled/2); i++)
+		{
+			buildRoom();
+		}
+		//Log.e("game","3");
+		int playerX = getRandomInt(horSpots-2)+1;
+		int playerY = getRandomInt(verSpots-2)+1;
+		while(tileType[playerX][playerY]!=0)
+		{
+			playerX = getRandomInt(horSpots-2)+1;
+			playerY = getRandomInt(verSpots-2)+1;
+		}
+		for(int i = 0; i < exits.length; i++)
+		{
+			boolean toClose = true;
+			int counter = 0;
+			while(toClose)
+			{
+				counter++;
+				exits[i][2] = getRandomInt(horSpots);
+				exits[i][3] = getRandomInt(verSpots);
+				toClose = false;
+				if(Math.abs(exits[i][2]-playerX)+Math.abs(exits[i][3]-playerY)<4||tileType[exits[i][2]][exits[i][3]]!=0)
+				{
+					toClose = true;
+				} else
+				{
+					for(int j = 0; j < i; j++)
+					{
+						if(Math.abs(exits[i][2]-exits[j][2])+Math.abs(exits[i][3]-exits[j][3])<4)
+						{
+							toClose = true;
+						}
+					}
+				}
+				if(toClose&&counter>40)
+				{
+					if(i>0)
+					{
+						exits[i][2] = exits[i-1][2];
+						exits[i][3] = exits[i-1][3];
+					} else
+					{
+						exits[i][2] = getRandomInt(horSpots);
+						exits[i][3] = getRandomInt(verSpots);
+					}
+					toClose = false;
+				}
+			}
+			exits[i][0] = (exits[i][2]*50)+25;
+			exits[i][1]	= (exits[i][3]*50)+25;
+		}
+		//Log.e("game","6");
+		player.x = (playerX*50)+25;
+		player.y = (playerY*50)+25;
+		//Log.e("game","7");
+		if(playerX>0) verticals[playerX-1][playerY]=1;
+		if(playerX<horSpots-1) verticals[playerX][playerY]=1;
+		if(playerY>0) horizontals[playerX][playerY-1]=1;
+		if(playerY<verSpots-1) horizontals[playerX][playerY]=1;
+		for(int i = 0; i < horSpots-1; i++)
+		{
+			if(Math.random()>0.7) verticals[i][0]=2;
+			if(Math.random()>0.7) verticals[i][verSpots-1]=2;
+		}
+		for(int i = 0; i < verSpots-1; i++)
+		{
+			if(Math.random()>0.7) horizontals[0][i]=2;
+			if(Math.random()>0.7) horizontals[horSpots-1][i]=2;
+		}
+		//Log.e("game","8");
+		if(Math.random()>0.5)
+		{
+			if(playerX>horSpots/2)
+			{
+				verticals[playerX-1][playerY]=2;
+				verticals[playerX-2][playerY]=1;
+				growSides(playerX-1, playerY, false, true);
+			} else
+			{
+				verticals[playerX][playerY]=2;
+				verticals[playerX+1][playerY]=1;
+				growSides(playerX+1, playerY, false, true);
+			}
+		} else
+		{
+			if(playerY>verSpots/2)
+			{
+				horizontals[playerX][playerY-1]=2;
+				horizontals[playerX][playerY-2]=1;
+				growSides(playerX, playerY-1, false, true);
+			} else
+			{
+				horizontals[playerX][playerY]=2;
+				horizontals[playerX][playerY+1]=1;
+				growSides(playerX, playerY+1, false, true);
+			}
+		}
+		//Log.e("game","9");
+		for(int i = 0; i < 20; i++) growSides(getRandomInt(horSpots),getRandomInt(verSpots),false, true);
+		buildSides();
+		//Log.e("game","10");
+		imageLibrary.loadLevel();
+		//Log.e("game","101");
+		if(!checkPath(playerX, playerY, true))
+		{
+			generateLevel();
+		} else
+		{
+			//Log.e("game","11");
+			if(true)//decide section type
+			{
+				//Log.e("game","12");
+				imageLibrary.changeArrayLoaded("shield", "orc_swordsman");
+				imageLibrary.changeArrayLoaded("rogue", "goblin_rogue");
+				imageLibrary.changeArrayLoaded("archer", "orc_archer");
+				imageLibrary.changeArrayLoaded("pikeman", "orc_pikeman");
+				imageLibrary.changeArrayLoaded("mage", "goblin_mage");
+				for(int i = 0; i < horSpots; i++)
+				{
+					for(int j = 0; j< verSpots; j++)
+					{
+						if(tileType[i][j]==0&&!(i==playerX&&j==playerY))
+						{
+							boolean spotTaken = false;
+							for(int k = 0; k < exits.length; k++)
+							{
+								if(exits[k][2]==i&&exits[k][3]==j)
+								{
+									spotTaken = true;
+								}
+							}
+							if(!spotTaken&&getRandomInt(4)==0)
+							{
+								double enemytype = Math.random();
+								if(enemytype<0.1)
+								{
+									enemies[numEnemies] = new Enemy_Mage(this, (i*50)+getRandomInt(50), (j*50)+getRandomInt(50));
+									numEnemies++;
+								} else if(enemytype<0.2)
+								{
+									enemies[numEnemies] = new Enemy_Rogue(this, (i*50)+getRandomInt(50), (j*50)+getRandomInt(50));
+									numEnemies++;
+								} else if(enemytype<0.4)
+								{
+									enemies[numEnemies] = new Enemy_Archer(this, (i*50)+getRandomInt(50), (j*50)+getRandomInt(50));
+									numEnemies++;
+								} else if(enemytype<0.7)
+								{
+									enemies[numEnemies] = new Enemy_Pikeman(this, (i*50)+getRandomInt(50), (j*50)+getRandomInt(50));
+									numEnemies++;
+								} else
+								{
+									enemies[numEnemies] = new Enemy_Shield(this, (i*50)+getRandomInt(50), (j*50)+getRandomInt(50));
+									numEnemies++;
+								}
+							}
+						}
+					}
+				}
+			}
+			//Log.e("game","13");
+		}
+	}
+	/**
+	 * draws the level and objects in it
+	 * @return bitmap of level and objects
+	 */
+	protected Bitmap drawLevel()
+	{
+		Bitmap drawTo = Bitmap.createBitmap(levelWidth, levelHeight, Config.ARGB_8888);
+		Canvas g = new Canvas(drawTo);
+		int w = 0;
+		int h = 0;
+		while(w < levelWidth)
+		{
+			while(h < levelHeight)
+			{
+				drawBitmapLevel(imageLibrary.toTile, w, h, g);
+				h += 50;
+			}
+			w += 50;
+			h = 0;
+		}
+		drawBitmapLevel(backgroundImageBottom, 0, 0, g);
+		for(int i = 0; i < exits.length; i++)
+		{
+			drawBitmapLevel(imageLibrary.exitFightPortal, exits[i][0] - 15, exits[i][1] - 15, g);
+		}
+		for(int i = 0; i < structures.length; i++)
+		{
+			if(structures[i] != null)
+			{
+				drawBitmapLevel(imageLibrary.structure_Spawn, (int)structures[i].x-structures[i].width, (int)structures[i].y-structures[i].height, g);
+			}
+		}
+		if(player != null)
+		{
+			drawBitmap(imageLibrary.isPlayer, (int)player.x-imageLibrary.isPlayerWidth, (int)player.y-imageLibrary.isPlayerWidth, g);
+			drawBitmapRotatedLevel(player, g);
+			if(player.transformedTimer>1&&player.transformedTimer<500)
+			{
+				int frame = player.transformedTimer;
+				while(frame>9)
+				{
+					frame -= 10;
+				}
+				drawBitmapLevel(imageLibrary.trans[frame], (int)player.x - 60, (int)player.y - 60, g);
+			}
+		}
+		for(int i = 0; i < enemies.length; i++)
+		{
+			if(enemies[i] != null)
+			{
+				drawBitmapRotatedLevel(enemies[i], g);
+			}
+		}
+		for(int i = 0; i < powerBalls.length; i++)
+		{
+			if(powerBalls[i] != null)
+			{
+				drawBitmapRotatedLevel(powerBalls[i], g);
+			}
+		}
+		for(int i = 0; i < powerBallAOEs.length; i++)
+		{
+			if(powerBallAOEs[i] != null)
+			{
+				aoeRect.top = (int)(powerBallAOEs[i].y - (powerBallAOEs[i].getHeight() / 2.5));
+				aoeRect.bottom = (int)(powerBallAOEs[i].y + (powerBallAOEs[i].getHeight() / 2.5));
+				aoeRect.left = (int)(powerBallAOEs[i].x - (powerBallAOEs[i].getWidth() / 2.5));
+				aoeRect.right = (int)(powerBallAOEs[i].x + (powerBallAOEs[i].getWidth() / 2.5));
+				paint.setAlpha(powerBallAOEs[i].getAlpha());
+				drawBitmapRectLevel(powerBallAOEs[i].getVisualImage(), aoeRect, g);
+			}
+		}
+		paint.setAlpha(255);
+		for(int i = 0; i < powerUps.length; i++)
+		{
+			if(powerUps[i] != null)
+			{
+				drawBitmapLevel(powerUps[i].getVisualImage(), (int) powerUps[i].x - 15, (int) powerUps[i].y - 15, g);
+			}
+		}
+		if(player.powerUpTimer > 0)
+		{
+			drawBitmapLevel(imageLibrary.effects[player.powerID - 1], (int) player.x - 30, (int) player.y - 30, g);
+		}
+		drawBitmapLevel(backgroundImageTop, 0, 0, g);
+		drawHealthBars(g);
+		return drawTo;
+	}
+	/**
+	 * draws background of play screen
+	 * @return bitmap of play screen
+	 */
+	protected Bitmap drawStart()
+	{
+		paint.setAlpha(255);
+		Bitmap drawTo = Bitmap.createBitmap(480, 320, Bitmap.Config.ARGB_8888);
+		Canvas g = new Canvas(drawTo);
+		if(activity.stickOnRight)
+		{
+			drawBitmap(imageLibrary.loadImage("screen000" + Integer.toString(playerType + 5), 480, 320), 0, 0, g);
+		}
+		else
+		{
+			drawBitmap(imageLibrary.loadImage("screen000" + Integer.toString(playerType + 1), 480, 320), 0, 0, g);
+		}
+		return drawTo;
+	}
+	/**
+	 * Sets deleted objects to null to be gc'd and tests player and enemy hitting arena bounds
+	 */
+	protected void frameCall()
+	{
+		playerHit++;
+		playerBursted++;
+		for(int i = 0; i < powerBalls.length; i++)
+		{
+			if(powerBalls[i] != null)
+			{
+				if(powerBalls[i].deleted)
+				{
+					powerBalls[i] = null;
+				}
+				else
+				{
+					powerBalls[i].frameCall();
+				}
+			}
+		}
+		for(int i = 0; i < powerBallAOEs.length; i++)
+		{
+			if(powerBallAOEs[i] != null)
+			{
+				if(powerBallAOEs[i].deleted)
+				{
+					powerBallAOEs[i] = null;
+				}
+				else
+				{
+					powerBallAOEs[i].frameCall();
+				}
+			}
+		}
+		for(int i = 0; i < powerUps.length; i++)
+		{
+			if(powerUps[i] != null)
+			{
+				if(powerUps[i].deleted)
+				{
+					powerUps[i] = null;
+				}
+				else
+				{
+					powerUps[i].frameCall();
+				}
+			}
+		}
+		for(int i = 0; i < enemies.length; i++)
+		{
+			if(enemies[i] != null)
+			{
+				if(enemies[i].deleted)
+				{
+					enemies[i] = null;
+				}
+				else
+				{
+					enemies[i].levelCurrentPosition = 0;
+					enemies[i].pathedToHitLength = 0;
+						enemies[i].frameCall();
+						if(enemies[i] != null)
+						{
+							if(enemies[i].x < 10) enemies[i].x = 10;
+							if(enemies[i].x > levelWidth - 10) enemies[i].x = (levelWidth - 10);
+							if(enemies[i].y < 10) enemies[i].y = 10;
+							if(enemies[i].y > levelHeight - 10) enemies[i].y = (levelHeight - 10);
+						}
+				}
+			}
+		}
+		for(int i = 0; i < structures.length; i++)
+		{
+			if(structures[i] != null)
+			{
+				if(structures[i].deleted)
+				{
+					structures[i] = null;
+				}
+				else
+				{
+					structures[i].frameCall();
+				}
+			}
+		}
+		player.frameCall();
+		if(player.x < 10) player.x = (10);
+		if(player.x > levelWidth - 10) player.x = (levelWidth - 10);
+		if(player.y < 10) player.y = (10);
+		if(player.y > levelHeight - 10) player.y = (levelHeight - 10);
+		for(int i = 0; i < walls.length; i++)
+		{
+			if(walls[i] != null)
+			{
+				walls[i].frameCall();
+			}
+		}
+		for(int i = 0; i < wallCircles.length; i++)
+		{
+			if(wallCircles[i] != null)
+			{
+				wallCircles[i].frameCall();
+			}
+		}
+		for(int i = 0; i < wallRings.length; i++)
+		{
+			if(wallRings[i] != null)
+			{
+				wallRings[i].frameCall();
+			}
+		}
+		for(int i = 0; i < exits.length; i++)
+		{
+			if(getDistance(player.x, player.y, exits[i][0], exits[i][1])<20)
+			{
+				levelsTravelled ++;
+				if(difficultyLevel>0)
+				{
+					changeDifficulty(difficultyLevel-1);
+				}
+				resetLevel();
+			}
+		}
+		invalidate();
+		activity.resetVolume();
+	}
+	/**
+	 * changes visuals and behavior when player changes type
+	 * @param playerTypeSet new player type
+	 */
+	protected void changePlayerType(int playerTypeSet)
+	{
+		playerType = playerTypeSet;
+		player.humanType = playerType;
+		imageLibrary.loadPlayerPowerBall(); // loads powerball image
+		changePlayerType(); // loads images etc.
+		background = drawStart(); // redaws player screen
 		activity.saveGame(); // saves game state in case of interuption
 	}
 	/**
@@ -244,19 +1110,6 @@ public final class Controller extends View
 		}
 		background = drawStart(); // redraws play screen
 		invalidate();
-		activity.saveGame(); // saves game state in case of interuption
-	}
-	/**
-	 * changes visuals and behavior when player changes type
-	 * @param playerTypeSet new player type
-	 */
-	protected void changePlayerType(int playerTypeSet)
-	{
-		playerType = playerTypeSet;
-		player.humanType = playerType;
-		imageLibrary.loadPlayerPowerBall(); // loads powerball image
-		changePlayerType(); // loads images etc.
-		background = drawStart(); // redaws player screen
 		activity.saveGame(); // saves game state in case of interuption
 	}
 	/**
@@ -415,921 +1268,6 @@ public final class Controller extends View
 		oPassageY2 = new int[length];
 	}
 	/**
-	 * ends a round of fighting and resets variables
-	 */
-	protected void endFighting()
-	{
-		player.resetVariables(); // resets players variables
-		moneyMade = 0;
-		hasKey = false;
-		enemies = new Enemy[30];
-		structures = new Structure[30];
-		powerBalls = new PowerBall[30];
-		powerBallAOEs = new PowerBallAOE[30];
-		powerUps = new PowerUp[30];
-		walls = new Wall_Rectangle[30];
-		wallCircles = new Wall_Circle[30];
-		wallRings = new Wall_Ring[30];
-		powerUps = new PowerUp[30];
-		gameEnded = false;
-		currentCircle = 0;
-		currentRectangle = 0;
-		currentCircleAll = 0;
-		currentRectangleAll = 0;
-		currentRing = 0;
-		currentRingAll = 0;
-		currentPassage = 0;
-		imageLibrary.currentLevelTop = null;
-		savedEnemies = 0;
-		saveEnemyInformation = new int[30][5];
-		activity.saveGame(); // saves game in case phone shuts down etc.
-	}
-	/**
-	 * loads a new level, creates walls enemies etc.
-	 */
-	protected void loadLevel()
-	{
-		if(levelNum == 10)
-		{			// *******EXAMPLE FOR COMMENTS FOR LOADLEVEL SECTION
-			createWallRectangleValueArraysAll(6); //creates array to hold tall rectangular walls
-			createWallCircleValueArraysAll(2); //creates array to hold tall circular walls
-			levelWidth = 300; // height of level
-			levelHeight = 300; // width of level
-			player.x = 150; // player start x
-			player.y = 150; // player start y
-			wallCircles[0] = makeWall_Circle(106, 271, 19, 1, false);
-			wallCircles[1] = makeWall_Circle(59, 244, 19, 1, false);
-			walls[0] = makeWall_Rectangle(0, 0, 10, 300, true, false);
-			walls[1] = makeWall_Rectangle(0, 0, 110, 10, true, false);
-			walls[2] = makeWall_Rectangle(290, 0, 10, 300, true, false);
-			walls[3] = makeWall_Rectangle(0, 290, 300, 10, true, false);
-			walls[4] = makeWall_Rectangle(190, 0, 110, 10, true, false);
-			walls[5] = makeWall_Rectangle(-185, 199, 227, 210, true, false);
-		}
-		if(levelNum == 20)
-		{
-			createWallRectangleValueArrays(6);
-			createWallRectangleValueArraysAll(6);
-			levelWidth = 515;
-			levelHeight = 300;
-			player.x = 100;
-			player.y = 150;
-			exitX = 16000;
-			enemies[0] = new Enemy_Target(this, 282, 18, 90, false); // CREATES ENEMIES
-			enemies[1] = new Enemy_Target(this, 282, 284, -90, false);
-			enemies[2] = new Enemy_Target(this, 344, 135, 180, false);
-			enemies[3] = new Enemy_Target(this, 344, 165, 180, false);
-			enemies[4] = new Enemy_Target(this, 423, 18, 90, true);
-			enemies[5] = new Enemy_Target(this, 460, 18, 90, true);
-			enemies[6] = new Enemy_Target(this, 404, 284, -90, true);
-			enemies[7] = new Enemy_Target(this, 441, 284, -90, true);
-			walls[0] = makeWall_Rectangle(210, -77, 15, 205, true, true);
-			walls[1] = makeWall_Rectangle(210, 172, 15, 205, true, true);
-			walls[2] = makeWall_Rectangle(355, -77, 15, 205, true, true);
-			walls[3] = makeWall_Rectangle(355, 172, 15, 205, true, true);
-			walls[4] = makeWall_Rectangle(503, -77, 15, 205, true, true);
-			walls[5] = makeWall_Rectangle(503, 172, 15, 205, true, true);
-		}
-		if(levelNum == 30)
-		{
-			imageLibrary.changeArrayLoaded("shield", "human_swordsman");
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			createWallRectangleValueArrays(5);
-			createWallRectangleValueArraysAll(7);
-			levelWidth = 480;
-			levelHeight = 310;
-			player.x = 436;
-			player.y = 112;
-			exitX = 40; // exit x coordinate
-			exitY = 112; // exit y coordinate
-			enemies[0] = new Enemy_Shield(this, 245, 85);
-			enemies[1] = new Enemy_Archer(this, 60, 192);
-			enemies[2] = new Enemy_Shield(this, 80, 249);
-			enemies[1].keyHolder = true;			// THIS ENEMY HOLDS KEY TO NEXT LEVEL
-			walls[0] = makeWall_Rectangle(-5, 8, 100, 70, true, true);
-			walls[1] = makeWall_Rectangle(83, -9, 141, 153, true, true);
-			walls[2] = makeWall_Rectangle(99, 125, 108, 59, true, true);
-			walls[3] = makeWall_Rectangle(311, 67, 96, 1210, true, true);
-			walls[4] = makeWall_Rectangle(300, 175, 1220, 1350, true, true);
-			walls[5] = makeWall_Rectangle(116, 177, 13, 80, true, false);
-			walls[6] = makeWall_Rectangle(116, 245, 56, 13, true, false);
-		}
-		if(levelNum == 40)
-		{
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("pikeman", "human_pikeman");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArrays(9);
-			createWallRectangleValueArraysAll(11);
-			createWallRingValueArrays(2);
-			createWallRingValueArraysAll(2);
-			createWallPassageValueArrays(3);
-			levelWidth = 400;
-			levelHeight = 400;
-			player.x = 372;
-			player.y = 338;
-			exitX = 36;
-			exitY = 111;
-			enemies[0] = new Enemy_Pikeman(this, 208, 32);
-			enemies[1] = new Enemy_Pikeman(this, 167, 96);
-			enemies[2] = new Enemy_Pikeman(this, 181, 362);
-			enemies[3] = new Enemy_Pikeman(this, 40, 251);
-			enemies[4] = new Enemy_Archer(this, 341, 130);
-			enemies[5] = new Enemy_Mage(this, 200, 200);
-			enemies[6] = new Enemy_Mage(this, 65, 200);
-			enemies[6].keyHolder = true;
-			makeWall_Pass(181, 131, 37, 137);
-			makeWall_Pass(290, -21, 73, 70);
-			makeWall_Pass(34, 347, 83, 79);
-			wallRings[0] = makeWall_Ring(200, 25, 125, 145, true);
-			wallRings[1] = makeWall_Ring(200, 375, 125, 145, true);
-			walls[0] = makeWall_Rectangle(67, -52, 86, 86, true, false);
-			walls[1] = makeWall_Rectangle(224, 320, 32, 196, true, false);
-			walls[2] = makeWall_Rectangle(316, 49, 21, 19, true, true);
-			walls[3] = makeWall_Rectangle(65, 326, 20, 20, true, true);
-			walls[4] = makeWall_Rectangle(131, 144, 18, 110, true, true);
-			walls[5] = makeWall_Rectangle(250, 145, 18, 108, true, true);
-			walls[6] = makeWall_Rectangle(140, 144, 36, 19, true, true);
-			walls[7] = makeWall_Rectangle(139, 236, 37, 19, true, true);
-			walls[8] = makeWall_Rectangle(223, 144, 38, 19, true, true);
-			walls[9] = makeWall_Rectangle(223, 234, 36, 19, true, true);
-			walls[10] = makeWall_Rectangle(336, 248, 300, 24, true, true);
-		}
-		if(levelNum == 50)
-		{
-			imageLibrary.changeArrayLoaded("shield", "human_swordsman");
-			imageLibrary.changeArrayLoaded("pikeman", "human_pikeman");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArrays(3);
-			createWallRectangleValueArraysAll(9);
-			createWallCircleValueArraysAll(1);
-			levelWidth = 500;
-			levelHeight = 300;
-			player.x = 475;
-			player.y = 275;
-			exitX = 52;
-			exitY = 150;
-			enemies[0] = new Enemy_Pikeman(this, 22, 44);
-			enemies[1] = new Enemy_Shield(this, 36, 202);
-			enemies[2] = new Enemy_Pikeman(this, 192, 51);
-			enemies[3] = new Enemy_Shield(this, 286, 48);
-			enemies[4] = new Enemy_Mage(this, 460, 62);
-			enemies[5] = new Enemy_Mage(this, 120, 48);
-			enemies[5].keyHolder = true;
-			walls[0] = makeWall_Rectangle(35, 58, 79, 31, true, false);
-			walls[1] = makeWall_Rectangle(202, 59, 79, 31, true, false);
-			walls[2] = makeWall_Rectangle(37, 217, 79, 31, true, false);
-			walls[3] = makeWall_Rectangle(209, 220, 79, 31, true, false);
-			walls[4] = makeWall_Rectangle(375, 14, 79, 31, true, false);
-			walls[5] = makeWall_Rectangle(357, -13, 10, 207, true, true);
-			walls[6] = makeWall_Rectangle(357, 225, 10, 85, true, true);
-			walls[7] = makeWall_Rectangle(375, 185, 80, 10, true, false);
-			walls[8] = makeWall_Rectangle(425, 237, 150, 36, true, true);
-			wallCircles[0] = makeWall_Circle(180, 160, 15, 1, false);
-		}
-		if(levelNum == 60)
-		{
-			imageLibrary.changeArrayLoaded("shield", "human_swordsman");
-			imageLibrary.changeArrayLoaded("pikeman", "human_pikeman");
-			imageLibrary.changeArrayLoaded("rogue", "human_rogue");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArrays(17);
-			createWallRectangleValueArraysAll(25);
-			createWallCircleValueArraysAll(1);
-			levelWidth = 450;
-			levelHeight = 650;
-			player.x = 452;
-			player.y = 265;
-			exitX = 400;
-			exitY = 600;
-			enemies[0] = new Enemy_Pikeman(this, 207, 578);
-			enemies[1] = new Enemy_Pikeman(this, 311, 549);
-			enemies[2] = new Enemy_Pikeman(this, 397, 573);
-			enemies[3] = new Enemy_Shield(this, 281, 222);
-			enemies[4] = new Enemy_Shield(this, 267, 313);
-			enemies[5] = new Enemy_Shield(this, 362, 133);
-			enemies[6] = new Enemy_Shield(this, 355, 70);
-			enemies[7] = new Enemy_Mage(this, 250, 136);
-			enemies[8] = new Enemy_Mage(this, 177, 96);
-			enemies[9] = new Enemy_Mage(this, 61, 38);
-			enemies[10] = new Enemy_Rogue(this, 72, 536);
-			enemies[11] = new Enemy_Rogue(this, 17, 91);
-			enemies[12] = new Enemy_Rogue(this, 345, 195);
-			enemies[9].keyHolder = true;
-			wallCircles[0] = makeWall_Circle(116, 33, 15, 1, false);
-			walls[0] = makeWall_Rectangle(-92, -116, 138, 192, true, false);
-			walls[1] = makeWall_Rectangle(158, -98, 119, 175, true, false);
-			walls[2] = makeWall_Rectangle(212, -128, 22, 296, true, true);
-			walls[3] = makeWall_Rectangle(221, -124, 92, 241, true, false);
-			walls[4] = makeWall_Rectangle(392, -131, 192, 252, true, true);
-			walls[5] = makeWall_Rectangle(-49, 106, 105, 14, true, true);
-			walls[6] = makeWall_Rectangle(-27, 112, 40, 232, true, true);
-			walls[7] = makeWall_Rectangle(42, 161, 14, 182, true, true);
-			walls[8] = makeWall_Rectangle(50, 157, 350, 20, true, true);
-			walls[9] = makeWall_Rectangle(394, 162, 14, 182, true, true);
-			walls[10] = makeWall_Rectangle(97, 249, 80, 33, true, false);
-			walls[11] = makeWall_Rectangle(99, 364, 78, 32, true, false);
-			walls[12] = makeWall_Rectangle(272, 368, 79, 32, true, false);
-			walls[13] = makeWall_Rectangle(-31, 469, 41, 49, true, true);
-			walls[14] = makeWall_Rectangle(-44, 512, 137, 11, true, true);
-			walls[15] = makeWall_Rectangle(88, 519, 11, 92, true, true);
-			walls[16] = makeWall_Rectangle(60, 552, 34, 62, true, false);
-			walls[17] = makeWall_Rectangle(46, 468, 441, 11, true, true);
-			walls[18] = makeWall_Rectangle(140, 473, 346, 19, true, true);
-			walls[19] = makeWall_Rectangle(275, 249, 77, 33, true, false);
-			walls[20] = makeWall_Rectangle(134, 474, 11, 139, true, true);
-			walls[21] = makeWall_Rectangle(437, 111, 41, 232, true, true);
-			walls[22] = makeWall_Rectangle(50, 167, 40, 48, true, true);
-			walls[23] = makeWall_Rectangle(360, 172, 40, 40, true, true);
-			walls[24] = makeWall_Rectangle(108, 120, 115, 48, true, false);
-		}
-		if(levelNum == 70)
-		{
-			imageLibrary.changeArrayLoaded("shield", "human_swordsman");
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArrays(8);
-			createWallRectangleValueArraysAll(10);
-			createWallCircleValueArraysAll(9);
-			levelWidth = 400;
-			levelHeight = 600;
-			player.x = 350;
-			player.y = 300;
-			exitX = 200;
-			exitY = 550;
-			enemies[0] = new Enemy_Archer(this, 150, 25);
-			enemies[1] = new Enemy_Archer(this, 221, 54);
-			enemies[2] = new Enemy_Archer(this, 283, 24);
-			enemies[3] = new Enemy_Archer(this, 258, 253);
-			enemies[4] = new Enemy_Mage(this, 146, 304);
-			enemies[5] = new Enemy_Mage(this, 194, 559);
-			enemies[6] = new Enemy_Shield(this, 165, 143);
-			enemies[7] = new Enemy_Shield(this, 202, 420);
-			enemies[8] = new Enemy_Shield(this, 64, 569);
-			enemies[9] = new Enemy_Shield(this, 318, 565);
-			enemies[3].keyHolder = true;
-			walls[0] = makeWall_Rectangle(-62, -112, 79, 186, true, false);
-			walls[1] = makeWall_Rectangle(381, -143, 62, 221, true, false);
-			walls[2] = makeWall_Rectangle(43, 96, 10, 190, true, true);
-			walls[3] = makeWall_Rectangle(43, 317, 10, 186, true, true);
-			walls[4] = makeWall_Rectangle(88, 137, 10, 322, true, true);
-			walls[5] = makeWall_Rectangle(302, 137, 10, 322, true, true);
-			walls[6] = makeWall_Rectangle(346, 98, 10, 185, true, true);
-			walls[7] = makeWall_Rectangle(346, 316, 10, 186, true, true);
-			walls[8] = makeWall_Rectangle(49, 497, 303, 10, true, true);
-			walls[9] = makeWall_Rectangle(49, 92, 303, 10, true, true);
-			wallCircles[0] = makeWall_Circle(200, 14, 9, 1, false);
-			wallCircles[1] = makeWall_Circle(237, 11, 9, 1, false);
-			wallCircles[2] = makeWall_Circle(212, 85, 9, 1, false);
-			wallCircles[3] = makeWall_Circle(239, 83, 9, 1, false);
-			wallCircles[4] = makeWall_Circle(157, 221, 14, 1, false);
-			wallCircles[5] = makeWall_Circle(258, 182, 14, 1, false);
-			wallCircles[6] = makeWall_Circle(218, 293, 14, 1, false);
-			wallCircles[7] = makeWall_Circle(147, 404, 14, 1, false);
-			wallCircles[8] = makeWall_Circle(254, 403, 14, 1, false);
-		}
-		if(levelNum == 80)
-		{
-			imageLibrary.changeArrayLoaded("pikeman", "human_pikeman");
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArrays(8);
-			createWallRectangleValueArraysAll(8);
-			createWallRingValueArrays(1);
-			createWallRingValueArraysAll(1);
-			createWallPassageValueArrays(2);
-			levelWidth = 400;
-			levelHeight = 500;
-			player.x = 379;
-			player.y = 250;
-			exitX = 200;
-			exitY = 250;
-			enemies[0] = new Enemy_Pikeman(this, 199, 61);
-			enemies[1] = new Enemy_Pikeman(this, 187, 187);
-			enemies[2] = new Enemy_Pikeman(this, 191, 327);
-			enemies[3] = new Enemy_Pikeman(this, 191, 449);
-			enemies[4] = new Enemy_Mage(this, 182, 257);
-			enemies[5] = new Enemy_Archer(this, 111, 256);
-			enemies[6] = new Enemy_Archer(this, 264, 240);
-			enemies[4].keyHolder = true;
-			makeWall_Pass(168, 73, 62, 98);
-			makeWall_Pass(168, 358, 62, 98);
-			wallRings[0] = makeWall_Ring(197, 253, 130, 150, true);
-			walls[0] = makeWall_Rectangle(118, -152, 20, 282, true, true);
-			walls[1] = makeWall_Rectangle(263, 61, 19, 71, true, true);
-			walls[2] = makeWall_Rectangle(118, 375, 19, 283, true, true);
-			walls[3] = makeWall_Rectangle(262, 375, 19, 68, true, true);
-			walls[4] = makeWall_Rectangle(127, 109, 30, 19, true, true);
-			walls[5] = makeWall_Rectangle(243, 109, 29, 19, true, true);
-			walls[6] = makeWall_Rectangle(129, 378, 28, 19, true, true);
-			walls[7] = makeWall_Rectangle(242, 378, 27, 19, true, true);
-		}
-		if(levelNum == 90)
-		{
-			imageLibrary.changeArrayLoaded("shield", "human_swordsman");
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArrays(6);
-			createWallRectangleValueArraysAll(6);
-			levelWidth = 400;
-			levelHeight = 410;
-			player.x = 329;
-			player.y = 205;
-			exitX = -1000;
-			exitY = -1000;
-			enemies[0] = new Enemy_Shield(this, 200, 50);
-			enemies[2] = new Enemy_Shield(this, 100, 340);
-			enemies[3] = new Enemy_Shield(this, 300, 340);
-			enemies[4] = new Enemy_Mage(this, 200, 180);
-			enemies[5] = new Enemy_Mage(this, 200, 230);
-			enemies[4].keyHolder = true;
-			walls[0] = makeWall_Rectangle(43, -48, 10, 240, true, true);
-			walls[1] = makeWall_Rectangle(43, 223, 10, 240, true, true);
-			walls[2] = makeWall_Rectangle(346, -48, 10, 240, true, true);
-			walls[3] = makeWall_Rectangle(346, 223, 10, 240, true, true);
-			walls[4] = makeWall_Rectangle(88, 43, 10, 322, true, true);
-			walls[5] = makeWall_Rectangle(302, 43, 10, 322, true, true);
-			int[] toSave0 = {
-				1, 200, 50, 0, 0 // INFORMATION FOR ENEMIES IN OTHER SECTIONS OF LEVEL
-			};
-			int[] toSave1 = {
-				1, 200, 360, 0, 0
-			};
-			int[] toSave2 = {
-				5, 100, 205, 0, 0
-			};
-			int[] toSave3 = {
-				5, 300, 205, 0, 0
-			};
-			saveEnemyInformation[0] = toSave0; // SAVES ENEMIES IN ALTERNATE SECTIONS STARTING STATES
-			saveEnemyInformation[1] = toSave1;
-			saveEnemyInformation[2] = toSave2;
-			saveEnemyInformation[3] = toSave3;
-			savedEnemies = 4;
-		}
-		if(levelNum == 100)
-		{
-			imageLibrary.changeArrayLoaded("shield", "human_swordsman");
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArrays(17);
-			createWallRectangleValueArraysAll(17);
-			levelWidth = 390;
-			levelHeight = 340;
-			player.x = 20;
-			player.y = 320;
-			exitX = -1000;
-			exitY = -1000;
-			enemies[0] = new Enemy_Shield(this, 82, 29);
-			enemies[1] = new Enemy_Shield(this, 300, 88);
-			enemies[2] = new Enemy_Mage(this, 364, 51);
-			enemies[3] = new Enemy_Shield(this, 86, 254);
-			enemies[4] = new Enemy_Shield(this, 279, 314);
-			enemies[5] = new Enemy_Shield(this, 283, 177);
-			enemies[6] = new Enemy_Shield(this, 283, 227);
-			enemies[7] = new Enemy_Mage(this, 208, 201);
-			walls[0] = makeWall_Rectangle(49-3, 231, 16, 226, true, true);
-			walls[1] = makeWall_Rectangle(-150, 175-3, 260, 16, true, true);
-			walls[2] = makeWall_Rectangle(104-3, 179, 16, 51, true, true);
-			walls[3] = makeWall_Rectangle(107, 224-3, 95, 16, true, true);
-			walls[4] = makeWall_Rectangle(197-3, 229, 16, 56, true, true);
-			walls[5] = makeWall_Rectangle(105, 280-3, 232, 16, true, true);
-			walls[6] = makeWall_Rectangle(330-3, 229, 16, 56, true, true);
-			walls[7] = makeWall_Rectangle(334, 224-3, 123, 16, true, true);
-			walls[8] = makeWall_Rectangle(108, 121-3, 228, 16, true, true);
-			walls[9] = makeWall_Rectangle(330-3, 124, 16, 59, true, true);
-			walls[10] = makeWall_Rectangle(156-3, 126, 16, 54, true, true);
-			walls[11] = makeWall_Rectangle(197-3, 126, 16, 54, true, true);
-			walls[12] = makeWall_Rectangle(160, 174-3, 43, 16, true, true);
-			walls[13] = makeWall_Rectangle(49-3, 49, 16, 131, true, true);
-			walls[14] = makeWall_Rectangle(105-3, -79, 16, 206, true, true);
-			walls[15] = makeWall_Rectangle(258-3, -140, 16, 206, true, true);
-			walls[16] = makeWall_Rectangle(163, 60-3, 101, 16, true, true);
-			int[] toSave0 = {
-				1, 303, 114, 0, 0 // INFORMATION FOR ENEMIES IN OTHER SECTIONS OF LEVEL
-			};
-			int[] toSave1 = {
-				1, 297, 179, 0, 0
-			};
-			int[] toSave2 = {
-				6, 205, 146, 0, 1
-			};
-			int[] toSave3 = {
-				1, 367, 32, 0, 0
-			};
-			int[] toSave4 = {
-				5, 88, 81, 0, 0
-			};
-			int[] toSave5 = {
-				5, 133, 79, 0, 0
-			};
-			int[] toSave6 = {
-				1, 135, 312, 0, 0
-			};
-			saveEnemyInformation[0] = toSave0; // SAVES ENEMIES IN ALTERNATE SECTIONS STARTING STATES
-			saveEnemyInformation[1] = toSave1;
-			saveEnemyInformation[2] = toSave2;
-			saveEnemyInformation[3] = toSave3;
-			saveEnemyInformation[4] = toSave4;
-			saveEnemyInformation[5] = toSave5;
-			saveEnemyInformation[6] = toSave6;
-			savedEnemies = 7;
-		}
-		if(levelNum == 110)
-		{
-			imageLibrary.changeArrayLoaded("pikeman", "human_pikeman");
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("rogue", "human_rogue");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArrays(8);
-			createWallRectangleValueArraysAll(12);
-			levelWidth = 570;
-			levelHeight = 470;
-			player.x = 35;
-			player.y = 422;
-			exitX = 520;
-			exitY = 420;
-			enemies[0] = new Enemy_Mage(this, 84, 43);
-			enemies[1] = new Enemy_Mage(this, 40, 83);
-			enemies[2] = new Enemy_Pikeman(this, 155, 68);
-			enemies[3] = new Enemy_Pikeman(this, 111, 124);
-			
-			enemies[4] = new Enemy_Mage(this, 453, 399);
-			enemies[5] = new Enemy_Mage(this, 509, 366);
-			enemies[6] = new Enemy_Pikeman(this, 403, 366);
-			enemies[7] = new Enemy_Pikeman(this, 437, 314);
-			enemies[8] = new Enemy_Pikeman(this, 494, 302);
-			
-			enemies[9] = new Enemy_Archer(this, 468, 29);
-			enemies[10] = new Enemy_Rogue(this, 503, 186);
-			
-			enemies[0].keyHolder = true;
-			walls[0] = makeWall_Rectangle(26, 179, 89, 199, true, true);
-			walls[1] = makeWall_Rectangle(-99, 152, 190, 41, true, false);
-			walls[2] = makeWall_Rectangle(-32, 305, 85, 44, true, true);
-			walls[3] = makeWall_Rectangle(41, 240, 85, 80, true, false);
-			walls[4] = makeWall_Rectangle(189, 49, 121, 221, true, true);
-			walls[5] = makeWall_Rectangle(196, 174, 246, 103, true, true);
-			walls[6] = makeWall_Rectangle(487, -117, 111, 293, true, true);
-			walls[7] = makeWall_Rectangle(512, -18, 111, 293, true, true);
-			walls[8] = makeWall_Rectangle(188, 352, 178, 190, true, true);
-			walls[9] = makeWall_Rectangle(248, 383, 128, 75, true, true);
-			walls[10] = makeWall_Rectangle(248, 69, 128, 9, true, false);
-			walls[11] = makeWall_Rectangle(248, 135, 128, 9, true, false);
-		}
-		if(levelNum == 120)
-		{
-			imageLibrary.changeArrayLoaded("pikeman", "human_pikeman");
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRectangleValueArraysAll(23);
-			createWallCircleValueArraysAll(2);
-			createWallCircleValueArrays(1);
-			levelWidth = 550;
-			levelHeight = 400;
-			player.x = 35;
-			player.y = 365;
-			exitX = 203;
-			exitY = 230;
-			enemies[0] = new Enemy_Pikeman(this, 48, 70);
-			enemies[2] = new Enemy_Pikeman(this, 159, 126);
-			enemies[3] = new Enemy_Archer(this, 220, 126);
-			enemies[5] = new Enemy_Mage(this, 346, 252);
-			enemies[6] = new Enemy_Pikeman(this, 318, 371);
-			enemies[8] = new Enemy_Archer(this, 449, 254);
-			enemies[10] = new Enemy_Mage(this, 464, 78);
-			enemies[5].keyHolder = true;
-			walls[0] = makeWall_Rectangle(-42, 96, 51, 167, true, false);
-			walls[1] = makeWall_Rectangle(-41, 220, 71, 61, true, false);
-			walls[2] = makeWall_Rectangle(34, 98, 55, 95, true, false);
-			walls[3] = makeWall_Rectangle(68, 60, 51, 139, true, false);
-			walls[4] = makeWall_Rectangle(132, 24, 29, 58, true, false);
-			walls[5] = makeWall_Rectangle(104, 52, 53, 35, true, false);
-			walls[6] = makeWall_Rectangle(56, 183, 117, 103, true, false);
-			walls[7] = makeWall_Rectangle(108, 169, 151, 28, true, false);
-			walls[8] = makeWall_Rectangle(194, -6, 114, 81, true, false);
-			walls[9] = makeWall_Rectangle(230, 0, 150, 26, true, false);
-			walls[10] = makeWall_Rectangle(331, 46, 54, 73, true, false);
-			walls[11] = makeWall_Rectangle(266, 101, 112, 22, true, false);
-			walls[12] = makeWall_Rectangle(259, 121, 71, 62, true, false);
-			walls[13] = makeWall_Rectangle(234, 162, 22, 169, true, false);
-			walls[14] = makeWall_Rectangle(128, 307, 51, 58, true, false);
-			walls[15] = makeWall_Rectangle(161, 325, 124, 44, true, false);
-			walls[16] = makeWall_Rectangle(252, 296, 171, 41, true, false);
-			walls[17] = makeWall_Rectangle(417, 289, 60, 59, true, false);
-			walls[18] = makeWall_Rectangle(383, 173, 22, 125, true, false);
-			walls[19] = makeWall_Rectangle(354, 145, 40, 37, true, false);
-			walls[20] = makeWall_Rectangle(394, 162, 128, 59, true, false);
-			walls[21] = makeWall_Rectangle(507, 244, 110, 38, true, false);
-			walls[22] = makeWall_Rectangle(417, 372, 272, 86, true, false);
-			wallCircles[0] = makeWall_Circle(508, 42, 35, 1, false);
-			wallCircles[1] = makeWall_Circle(57, 350, 30, 1, true);
-		}
-		if(levelNum == 130)
-		{
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("shield", "human_axeman");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRingValueArrays(1);
-			createWallRingValueArraysAll(1);
-			createWallCircleValueArrays(1);
-			createWallRectangleValueArraysAll(4);
-			createWallRectangleValueArrays(4);
-			levelWidth = 450;
-			levelHeight = 450;
-			player.x = 425;
-			player.y = 225;
-			exitX = 100;
-			exitY = 400;
-			enemies[0] = new Enemy_Mage(this, 100, 50);
-			enemies[1] = new Enemy_Mage(this, 100, 400);
-			enemies[2] = new Enemy_Shield(this, 159, 50);
-			enemies[3] = new Enemy_Shield(this, 150, 400);
-			enemies[4] = new Enemy_Archer(this, 175, 225);
-			enemies[5] = new Enemy_Archer(this, 250, 260);
-			enemies[6] = new Enemy_Archer(this, 250, 190);
-			enemies[0].keyHolder = true;
-			wallRings[1] = makeWall_Ring(225, 225, 120, 170, false);
-			wallCircles[1] = makeWall_Circle(225, 225, 35, 1, true);
-			walls[0] = makeWall_Rectangle(113, 165, 19, 119, true, true);
-			walls[1] = makeWall_Rectangle(318, 165, 19, 119, true, true);
-			walls[2] = makeWall_Rectangle(165, 113, 120, 19, true, true);
-			walls[3] = makeWall_Rectangle(165, 318, 120, 19, true, true);
-		}
-		if(levelNum == 140)
-		{
-			imageLibrary.changeArrayLoaded("archer", "human_archer");
-			imageLibrary.changeArrayLoaded("shield", "human_axeman");
-			imageLibrary.changeArrayLoaded("mage", "human_mage");
-			createWallRingValueArraysAll(2);
-			createWallPassageValueArrays(2);
-			createWallCircleValueArrays(18);
-			createWallCircleValueArraysAll(19);
-			createWallRectangleValueArraysAll(5);
-			createWallRectangleValueArrays(1);
-			levelWidth = 300;
-			levelHeight = 650;
-			player.x = 150;
-			player.y = 630;
-			exitX = 150;
-			exitY = 90;
-			enemies[0] = new Enemy_Archer(this, 134, 107);
-			enemies[1] = new Enemy_Archer(this, 179, 107);
-			enemies[2] = new Enemy_Shield(this, 152, 235);
-			enemies[3] = new Enemy_Mage(this, 150, 324);
-			enemies[4] = new Enemy_Archer(this, 214, 386);
-			enemies[5] = new Enemy_Shield(this, 200, 492);
-			enemies[6] = new Enemy_Shield(this, 152, 438);
-			enemies[3].keyHolder = true;
-			wallCircles[0] = makeWall_Circle(202, 143, 19, 1, true);
-			wallCircles[1] = makeWall_Circle(108, 146, 19, 1, true);
-			wallCircles[2] = makeWall_Circle(263, 188, 19, 1, true);
-			wallCircles[3] = makeWall_Circle(243, 272, 19, 1, true);
-			wallCircles[4] = makeWall_Circle(64, 198, 19, 1, true);
-			wallCircles[5] = makeWall_Circle(33, 263, 19, 1, true);
-			wallCircles[6] = makeWall_Circle(16, 313, 19, 1, true);
-			wallCircles[7] = makeWall_Circle(37, 338, 19, 1, true);
-			wallCircles[8] = makeWall_Circle(39, 370, 19, 1, true);
-			wallCircles[9] = makeWall_Circle(197, 319, 19, 1, true);
-			wallCircles[10] = makeWall_Circle(104, 432, 19, 1, true);
-			wallCircles[11] = makeWall_Circle(284, 364, 19, 1, true);
-			wallCircles[12] = makeWall_Circle(257, 380, 19, 1, true);
-			wallCircles[13] = makeWall_Circle(54, 503, 19, 1, true);
-			wallCircles[14] = makeWall_Circle(259, 531, 19, 1, true);
-			wallCircles[15] = makeWall_Circle(130, 590, 19, 1, true);
-			wallCircles[16] = makeWall_Circle(168, 592, 19, 1, true);
-			wallCircles[17] = makeWall_Circle(78, 638, 19, 1, true);
-			wallCircles[18] = makeWall_Circle(150, 378, 29, 1, false);
-			wallRings[0] = makeWall_Ring(150, 90, 88, 101, false);
-			wallRings[1] = makeWall_Ring(150, 376, 88, 101, false);
-			walls[0] = makeWall_Rectangle(123, 169, 14, 127, true, false);
-			walls[1] = makeWall_Rectangle(163, 169, 14, 127, true, false);
-			walls[2] = makeWall_Rectangle(123, 455, 14, 77, true, false);
-			walls[3] = makeWall_Rectangle(163, 455, 14, 77, true, false);
-			walls[4] = makeWall_Rectangle(127, 577, 42, 28, true, true);
-			makeWall_Pass(141, 141, 19, 188);
-			makeWall_Pass(141, 423, 19, 87);
-		}
-		if(levelNum == 150)
-		{
-			imageLibrary.changeArrayLoaded("archer", "goblin_archer");
-			imageLibrary.changeArrayLoaded("pikeman", "goblin_pikeman");
-			imageLibrary.changeArrayLoaded("rogue", "goblin_rogue");
-			imageLibrary.changeArrayLoaded("mage", "goblin_mage");
-			createWallRectangleValueArraysAll(19);
-			createWallRectangleValueArrays(8);
-			levelWidth = 360;
-			levelHeight = 360;
-			player.x = 30;
-			player.y = 30;
-			exitX = 15000;
-			exitY = 90000;
-			enemies[0] = new Enemy_Archer(this, 208, 21);
-			enemies[1] = new Enemy_Archer(this, 21, 273);
-			enemies[2] = new Enemy_Archer(this, 172, 341);
-			enemies[3] = new Enemy_Mage(this, 271, 212);
-			enemies[4] = new Enemy_Pikeman(this, 118, 268);
-			enemies[5] = new Enemy_Pikeman(this, 187, 107);
-			enemies[3].keyHolder = true;
-			int[] toSave0 = {
-				4, 90, 54, 0, 0 // INFORMATION FOR ENEMIES IN OTHER SECTIONS OF LEVEL
-			};
-			int[] toSave1 = {
-				4, 214, 117, 0, 0
-			};
-			int[] toSave2 = {
-				4, 124, 171, 0, 0
-			};
-			int[] toSave4 = {
-				2, 161, 189, 0, 0
-			};
-			int[] toSave3 = {
-				6, 133, 243, 0, 0
-			};
-			int[] toSave5 = {
-				6, 196, 243, 0, 0
-			};
-			saveEnemyInformation[0] = toSave0;
-			saveEnemyInformation[1] = toSave1;
-			saveEnemyInformation[2] = toSave2;
-			saveEnemyInformation[3] = toSave3;
-			saveEnemyInformation[4] = toSave4;
-			saveEnemyInformation[5] = toSave5;
-			savedEnemies = 6;
-			walls[0] = makeWall_Rectangle(49, -31, 61, 130, true, true);
-			walls[1] = makeWall_Rectangle(-41, 137, 134, 61, true, true);
-			walls[2] = makeWall_Rectangle(320, 19, 167, 206, true, true);
-			walls[3] = makeWall_Rectangle(280, 95, 198, 85, true, true);
-			walls[4] = makeWall_Rectangle(309, 212, 173, 180, true, true);
-			walls[5] = makeWall_Rectangle(260, 247, 173, 180, true, true);
-			walls[6] = makeWall_Rectangle(243, 106, 225, 12, true, true);
-			walls[7] = makeWall_Rectangle(243, 158, 225, 12, true, true);
-			
-			walls[8] = makeWall_Rectangle(-21, 283, 69, 18, true, false);
-			walls[9] = makeWall_Rectangle(-21, 247, 69, 18, true, false);
-			walls[10] = makeWall_Rectangle(34, 253, 18, 42, true, false);
-			
-			walls[11] = makeWall_Rectangle(185, 36, 42, 18, true, false);
-			walls[12] = makeWall_Rectangle(214, -20, 18, 69, true, false);
-			walls[13] = makeWall_Rectangle(179, -20, 18, 69, true, false);
-			
-			walls[14] = makeWall_Rectangle(148, 309, 42, 18, true, false);
-			walls[15] = makeWall_Rectangle(178, 315, 18, 80, true, false);
-			walls[16] = makeWall_Rectangle(143, 315, 18, 80, true, false);
-			
-			walls[17] = makeWall_Rectangle(224, 321, 180, 61, true, false);
-			walls[18] = makeWall_Rectangle(302, -38, 36, 91, true, false);
-		}
-		if(levelNum == 160)
-		{
-			imageLibrary.changeArrayLoaded("archer", "goblin_archer");
-			imageLibrary.changeArrayLoaded("shield", "goblin_swordsman");
-			imageLibrary.changeArrayLoaded("mage", "goblin_mage");
-			imageLibrary.structure_Spawn = imageLibrary.loadImage("structure_spawn", 50, 50);
-			createWallRectangleValueArraysAll(11);
-			createWallRectangleValueArrays(6);
-			levelWidth = 360;
-			levelHeight = 380;
-			player.x = 200;
-			player.y = 360;
-			exitX = 325;
-			exitY = 345;
-			enemies[0] = new Enemy_Archer(this, 146, 13);
-			enemies[1] = new Enemy_Archer(this, 222, 12);
-			enemies[2] = new Enemy_Mage(this, 182, 13);
-			enemies[3] = new Enemy_Shield(this, 148, 78);
-			enemies[4] = new Enemy_Shield(this, 225, 78);
-			enemies[2].keyHolder = true;
-			enemies[3].sick = true;
-			enemies[4].sick = true;
-			structures[0] = new Structure_Spawn(this, 115, 130);
-			structures[1] = new Structure_Spawn(this, 245, 130);
-			walls[0] = makeWall_Rectangle(-41, 99, 134, 61, true, true);
-			walls[1] = makeWall_Rectangle(269, 99, 134, 61, true, true);
-			walls[2] = makeWall_Rectangle(37, 327, 102, 61, true, true);
-			walls[3] = makeWall_Rectangle(177, 284, 102, 61, true, true);
-			walls[4] = makeWall_Rectangle(57, 187, 45, 70, true, true);
-			walls[5] = makeWall_Rectangle(269, 188, 45, 69, true, true);
-			
-			walls[6] = makeWall_Rectangle(114, 28, 134, 16, true, false);
-			walls[7] = makeWall_Rectangle(236, -29, 16, 69, true, false);
-			walls[8] = makeWall_Rectangle(110, -29, 16, 69, true, false);
-			walls[9] = makeWall_Rectangle(234, 193, 56, 60, true, false);
-			walls[10] = makeWall_Rectangle(87, 221, 78, 30, true, false);
-		}
-		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
-	}
-	/**
-	 * loads a new section of the current level
-	 * @param level id of new section to load
-	 */
-	protected void loadLevelSection(int level)
-	{
-		levelNum = level;
-		for(int i = 0; i < powerUps.length; i++)
-		{
-			if(powerUps[i] != null) player.getPowerUp(powerUps[i].ID);
-		}
-		if(levelNum > 29)
-		{
-			int tempEnemies = savedEnemies; // READS IN AND CREATES ENEMIES IN NEW SECTION, SAVES ENEMIES IN OLD SECTION
-			int[][] tempSave = new int[tempEnemies][5];
-			for(int i = 0; i < tempEnemies; i++)
-			{
-				System.arraycopy(saveEnemyInformation[i], 0, tempSave[i], 0, 5);
-			}
-			savedEnemies = 0;
-			for(int i = 0; i < 30; i++)
-			{
-				if(enemies[i] != null)
-				{
-					if(!enemies[i].deleted)
-					{
-						saveEnemyInformation[savedEnemies][0] = enemies[i].getType();
-						saveEnemyInformation[savedEnemies][1] = (int) enemies[i].x;
-						saveEnemyInformation[savedEnemies][2] = (int) enemies[i].y;
-						saveEnemyInformation[savedEnemies][3] = enemies[i].hp;
-						if(enemies[i].keyHolder)
-						{
-							saveEnemyInformation[savedEnemies][4] = 1;
-						}
-						else
-						{
-							saveEnemyInformation[savedEnemies][4] = 0;
-						}
-						savedEnemies++;
-					}
-				}
-			}
-			endFightSection(tempSave, tempEnemies);
-		} else
-		{
-			endFightSection();
-		}
-		if(levelNum == 90)
-		{
-			createWallRectangleValueArrays(6); // SAME FORMAT AS LOADING LEVELS
-			createWallRectangleValueArraysAll(6);
-			exitX = -1000;
-			exitY = -1000;
-			walls[0] = makeWall_Rectangle(43, -48, 10, 240, true, true);
-			walls[1] = makeWall_Rectangle(43, 223, 10, 240, true, true);
-			walls[2] = makeWall_Rectangle(346, -48, 10, 240, true, true);
-			walls[3] = makeWall_Rectangle(346, 223, 10, 240, true, true);
-			walls[4] = makeWall_Rectangle(88, 43, 10, 322, true, true);
-			walls[5] = makeWall_Rectangle(302, 43, 10, 322, true, true);
-		}
-		if(levelNum == 91)
-		{
-			createWallRectangleValueArrays(4);
-			createWallRectangleValueArraysAll(4);
-			exitX = 200;
-			exitY = 230;
-			walls[0] = makeWall_Rectangle(43, 45, 10, 320, true, true);
-			walls[1] = makeWall_Rectangle(346, 45, 10, 320, true, true);
-			walls[2] = makeWall_Rectangle(0, 145, 45, 120, true, true);
-			walls[3] = makeWall_Rectangle(355, 145, 45, 120, true, true);
-		}
-		if(levelNum == 100)
-		{
-			createWallRectangleValueArrays(17); // SAME FORMAT AS LOADING LEVELS
-			createWallRectangleValueArraysAll(17);
-			exitX = -1000;
-			exitY = -1000;
-			walls[0] = makeWall_Rectangle(49-3, 231, 16, 226, true, true);
-			walls[1] = makeWall_Rectangle(-150, 175-3, 260, 16, true, true);
-			walls[2] = makeWall_Rectangle(104-3, 179, 16, 51, true, true);
-			walls[3] = makeWall_Rectangle(107, 224-3, 95, 16, true, true);
-			walls[4] = makeWall_Rectangle(197-3, 229, 16, 56, true, true);
-			walls[5] = makeWall_Rectangle(105, 280-3, 232, 16, true, true);
-			walls[6] = makeWall_Rectangle(330-3, 229, 16, 56, true, true);
-			walls[7] = makeWall_Rectangle(334, 224-3, 123, 16, true, true);
-			walls[8] = makeWall_Rectangle(108, 121-3, 228, 16, true, true);
-			walls[9] = makeWall_Rectangle(330-3, 124, 16, 59, true, true);
-			walls[10] = makeWall_Rectangle(156-3, 126, 16, 54, true, true);
-			walls[11] = makeWall_Rectangle(197-3, 126, 16, 54, true, true);
-			walls[12] = makeWall_Rectangle(160, 174-3, 43, 16, true, true);
-			walls[13] = makeWall_Rectangle(49-3, 49, 16, 131, true, true);
-			walls[14] = makeWall_Rectangle(105-3, -79, 16, 206, true, true);
-			walls[15] = makeWall_Rectangle(258-3, -140, 16, 206, true, true);
-			walls[16] = makeWall_Rectangle(163, 60-3, 101, 16, true, true);
-		}
-		if(levelNum == 101)
-		{
-			createWallRectangleValueArrays(9); // SAME FORMAT AS LOADING LEVELS
-			createWallRectangleValueArraysAll(9);
-			exitX = 40;
-			exitY = 300;
-			walls[0] = makeWall_Rectangle(-73, 224-3, 187, 16, true, true);
-			walls[1] = makeWall_Rectangle(161, 280-3, 126, 16, true, true);
-			walls[2] = makeWall_Rectangle(330-3, 169, 16, 272, true, true);
-			walls[3] = makeWall_Rectangle(330-3, 64, 16, 63, true, true);
-			walls[4] = makeWall_Rectangle(49-3, -46, 16, 226, true, true);
-			walls[5] = makeWall_Rectangle(157-3, -106, 16, 391, true, true);
-			walls[6] = makeWall_Rectangle(165, 60-3, 172, 16, true, true);
-			walls[7] = makeWall_Rectangle(162, 224-3, 172, 16, true, true);
-			walls[8] = makeWall_Rectangle(103-3, 284, 16, 135, true, true);
-
-		}
-		if(levelNum == 150)
-		{
-			createWallRectangleValueArraysAll(19);
-			createWallRectangleValueArrays(8);
-			levelWidth = 360;
-			levelHeight = 360;
-			player.x +=199;
-			player.y +=50;
-			exitX = 15000;
-			exitY = 90000;
-			walls[0] = makeWall_Rectangle(49, -31, 61, 130, true, true);
-			walls[1] = makeWall_Rectangle(-41, 137, 134, 61, true, true);
-			walls[2] = makeWall_Rectangle(320, 19, 167, 206, true, true);
-			walls[3] = makeWall_Rectangle(280, 95, 198, 85, true, true);
-			walls[4] = makeWall_Rectangle(309, 212, 173, 180, true, true);
-			walls[5] = makeWall_Rectangle(260, 247, 173, 180, true, true);
-			walls[6] = makeWall_Rectangle(243, 106, 225, 12, true, true);
-			walls[7] = makeWall_Rectangle(243, 158, 225, 12, true, true);
-			
-			walls[8] = makeWall_Rectangle(-21, 284, 69, 16, true, false);
-			walls[9] = makeWall_Rectangle(-21, 248, 69, 16, true, false);
-			walls[10] = makeWall_Rectangle(35, 253, 16, 42, true, false);
-			walls[11] = makeWall_Rectangle(185, 37, 42, 16, true, false);
-			walls[12] = makeWall_Rectangle(215, -20, 16, 69, true, false);
-			walls[13] = makeWall_Rectangle(180, -20, 16, 69, true, false);
-			walls[14] = makeWall_Rectangle(148, 310, 42, 16, true, false);
-			walls[15] = makeWall_Rectangle(179, 315, 16, 69, true, false);
-			walls[16] = makeWall_Rectangle(144, 315, 16, 69, true, false);
-			
-			walls[17] = makeWall_Rectangle(224, 321, 180, 61, true, false);
-			walls[18] = makeWall_Rectangle(302, -38, 36, 91, true, false);
-		}
-		if(levelNum == 151)
-		{
-			createWallRectangleValueArrays(13);
-			createWallRectangleValueArraysAll(13);
-			createWallCircleValueArrays(2);
-			levelWidth = 300;
-			levelHeight = 305;
-			player.x -=199;
-			player.y -=50;
-			exitX = 150;
-			exitY = 275;
-			walls[0] = makeWall_Rectangle(10, -12, 109, 58, true, true);
-			walls[1] = makeWall_Rectangle(-29, 5, 109, 58, true, true);
-			walls[2] = makeWall_Rectangle(-29, 117, 109, 58, true, true);
-			walls[3] = makeWall_Rectangle(0, 264, 109, 58, true, true);
-			walls[4] = makeWall_Rectangle(196, 266, 109, 58, true, true);
-			walls[5] = makeWall_Rectangle(185, -12, 109, 58, true, true);
-			walls[6] = makeWall_Rectangle(220, 37, 109, 121, true, true);
-			walls[7] = makeWall_Rectangle(183, 131, 109, 29, true, true);
-			walls[8] = makeWall_Rectangle(198, 146, 109, 53, true, true);
-			walls[9] = makeWall_Rectangle(241, 175, 109, 121, true, true);
-			walls[10] = makeWall_Rectangle(-39, 171, 109, 121, true, true);
-			walls[11] = makeWall_Rectangle(-8, 132, 129, 27, true, true);
-			walls[12] = makeWall_Rectangle(3, 146, 109, 53, true, true);
-			wallCircles[0] = makeWall_Circle(237, 203, 32, 1, false);
-			wallCircles[1] = makeWall_Circle(83, 257, 26, 1, false);
-		}
-		if(levelNum == 21)
-		{
-			createWallRectangleValueArrays(7);
-			createWallRectangleValueArraysAll(7);
-			levelWidth = 555;
-			player.x = 25;
-			enemies[0] = new Enemy_Target(this, 653 - 506, 125, 180, false);
-			enemies[1] = new Enemy_Target(this, 653 - 506, 176, 180, false);
-			enemies[2] = new Enemy_Target(this, 670 - 506, 150, 180, false);
-			enemies[3] = new Enemy_Target(this, 358, 150, 180, false);
-			enemies[4] = new Enemy_Target(this, 1014 - 506+40, 150, 180, false);
-			walls[0] = makeWall_Rectangle(503 - 506, -100, 15, 500, true, true);
-			walls[1] = makeWall_Rectangle(665 - 506, -77, 15, 205, true, true);
-			walls[2] = makeWall_Rectangle(665 - 506, 172, 15, 205, true, true);
-			walls[3] = makeWall_Rectangle(825 - 506+40, -77, 15, 205, true, true);
-			walls[4] = makeWall_Rectangle(825 - 506+40, 172, 15, 205, true, true);
-			walls[5] = makeWall_Rectangle(1014 - 506+40, -77, 15, 205, true, true);
-			walls[6] = makeWall_Rectangle(1014 - 506+40, 172, 15, 205, true, true);
-		}
-		if(levelNum == 22)
-		{
-			createWallRectangleValueArrays(5);
-			createWallRectangleValueArraysAll(5);
-			levelWidth = 632;
-			player.x = 25;
-			exitX = 582;
-			exitY = 150;
-			enemies[0] = new Enemy_Target(this, 1204 - 1017, 150, 180, false);
-			enemies[1] = new Enemy_Target(this, 1400 - 1017, 150, 180, false);
-			enemies[2] = new Enemy_Target(this, 1522 - 1017, 150, 180, false);
-			enemies[2].keyHolder = true;
-			walls[0] = makeWall_Rectangle(1014 - 1017, -100, 15, 500, true, true);
-			walls[1] = makeWall_Rectangle(1198 - 1017, -77, 15, 205, true, true);
-			walls[2] = makeWall_Rectangle(1198 - 1017, 172, 15, 205, true, true);
-			walls[3] = makeWall_Rectangle(1393 - 1017, -77, 15, 205, true, true);
-			walls[4] = makeWall_Rectangle(1393 - 1017, 172, 15, 205, true, true);
-		}
-		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
-	}
-	/**
 	 * creates an enemy based off of saved info
 	 * @param info array of stored values
 	 * @param index which spot in enemy array to populate
@@ -1362,54 +1300,6 @@ public final class Controller extends View
 		{
 			enemies[index].keyHolder = true; // if saved enemy has key
 		}
-	}
-	/**
-	 * end a section of a fight, stored enemies in current states
-	 * @param enemyData enemies to create
-	 * @param tempEnemies number of enemies to create
-	 */
-	private void endFightSection(int[][] enemyData, int tempEnemies)
-	{
-		enemies = new Enemy[30];
-		structures = new Structure[30];
-		powerBalls = new PowerBall[30];
-		powerBallAOEs = new PowerBallAOE[30];
-		powerUps = new PowerUp[30];
-		walls = new Wall_Rectangle[30];
-		wallCircles = new Wall_Circle[30];
-		wallRings = new Wall_Ring[30];
-		powerUps = new PowerUp[30];
-		currentCircle = 0;
-		currentRectangle = 0; // RESETS CURRENT WALL INDEXES OF ARRAYS
-		currentCircleAll = 0;
-		currentRectangleAll = 0;
-		currentRing = 0;
-		currentPassage = 0;
-		for(int i = 0; i < tempEnemies; i++)
-		{
-			createEnemy(enemyData[i], i); // CREATES SAVED ENEMIES
-		}
-	}
-	/**
-	 * ends a fight section with no saved enemies
-	 */
-	private void endFightSection()
-	{
-		enemies = new Enemy[30]; // SAME AS OTHER endFightSection BUT DOESNT SPAWN ENEMIES
-		structures = new Structure[30];
-		powerBalls = new PowerBall[30];
-		powerBallAOEs = new PowerBallAOE[30];
-		powerUps = new PowerUp[30];
-		walls = new Wall_Rectangle[30];
-		wallCircles = new Wall_Circle[30];
-		wallRings = new Wall_Ring[30];
-		powerUps = new PowerUp[30];
-		currentCircle = 0;
-		currentRectangle = 0;
-		currentCircleAll = 0;
-		currentRectangleAll = 0;
-		currentRing = 0;
-		currentPassage = 0;
 	}
 	/**
 	 * fixes hp bar so it is on screen
@@ -1470,18 +1360,6 @@ public final class Controller extends View
 					maxX = (int) enemies[i].x + 20;
 					minY = (int) enemies[i].y - 30;
 					maxY = (int) enemies[i].y - 20;
-					/*offset = fixXBoundsHpBar(minX, maxX);
-					minX += offset;
-					maxX += offset;
-					offset = fixYBoundsHpBar(minY, maxY);
-					minY += offset;
-					maxY += offset;
-					paint.setColor(Color.RED);
-					paint.setStyle(Paint.Style.FILL);
-					drawRect(minX, minY, minX + (40 * enemies[i].getHp() / enemies[i].getHpMax()), maxY, g);
-					paint.setColor(Color.BLACK);
-					paint.setStyle(Paint.Style.STROKE);
-					drawRect(minX, minY, maxX, maxY, g);*/
 					paint.setColor(Color.RED);
 					paint.setStyle(Paint.Style.FILL);
 					drawRect(minX, minY, minX + (40 * enemies[i].getHp() / enemies[i].getHpMax()), maxY, g);
@@ -1532,8 +1410,8 @@ public final class Controller extends View
 		paint.setTextSize(12);
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(Color.WHITE);
-		drawText(Integer.toString(player.getHp()), 435 - fix, 160, g);
-		drawText(Integer.toString((int)(2000*player.getSp())), 435 - fix, 204, g);
+		drawText(Integer.toString(player.getHp()), 435 - fix, 158, g);
+		drawText(Integer.toString((int)(2000*player.getSp())), 435 - fix, 202, g);
 		//drawText(Integer.toString(activity.gameCurrency), 435 - fix, 205, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(cooldownColor);
@@ -1594,214 +1472,7 @@ public final class Controller extends View
 				}
 			}
 		paint.setAlpha(255);
-		if(player.transformed==0&&levelNum!=10) drawBitmapRotated(shootStick, g);
-	}
-	/**
-	 * Sets deleted objects to null to be gc'd and tests player and enemy hitting arena bounds
-	 */
-	protected void frameCall()
-	{
-		for(int i = 0; i < powerBalls.length; i++)
-		{
-			if(powerBalls[i] != null)
-			{
-				if(powerBalls[i].deleted)
-				{
-					powerBalls[i] = null;
-				}
-				else
-				{
-					powerBalls[i].frameCall();
-				}
-			}
-		}
-		for(int i = 0; i < powerBallAOEs.length; i++)
-		{
-			if(powerBallAOEs[i] != null)
-			{
-				if(powerBallAOEs[i].deleted)
-				{
-					powerBallAOEs[i] = null;
-				}
-				else
-				{
-					powerBallAOEs[i].frameCall();
-				}
-			}
-		}
-		for(int i = 0; i < powerUps.length; i++)
-		{
-			if(powerUps[i] != null)
-			{
-				if(powerUps[i].deleted)
-				{
-					powerUps[i] = null;
-				}
-				else
-				{
-					powerUps[i].frameCall();
-				}
-			}
-		}
-		for(int i = 0; i < enemies.length; i++)
-		{
-			if(enemies[i] != null)
-			{
-				if(enemies[i].deleted)
-				{
-					enemies[i] = null;
-				}
-				else
-				{
-					enemies[i].levelCurrentPosition = 0;
-					enemies[i].pathedToHitLength = 0;
-					if(enemyInView(enemies[i].x, enemies[i].y))
-					{
-						enemies[i].frameCall();
-						if(enemies[i] != null)
-						{
-							if(enemies[i].x < 10) enemies[i].x = 10;
-							if(enemies[i].x > levelWidth - 10) enemies[i].x = (levelWidth - 10);
-							if(enemies[i].y < 10) enemies[i].y = 10;
-							if(enemies[i].y > levelHeight - 10) enemies[i].y = (levelHeight - 10);
-						}
-					}
-				}
-			}
-		}
-		for(int i = 0; i < structures.length; i++)
-		{
-			if(structures[i] != null)
-			{
-				if(structures[i].deleted)
-				{
-					structures[i] = null;
-				}
-				else
-				{
-					if(enemyInView(structures[i].x, structures[i].y))
-					{
-						structures[i].frameCall();
-					}
-				}
-			}
-		}
-		if(hasKey && getDistance(player.x, player.y, exitX, exitY) < 30 && levelNum > 19)
-		{
-			activity.winFight();
-		}
-		else
-		{
-			if(!player.deleted)
-			{
-				player.frameCall();
-					if(player.x < 10) player.x = (10);
-					if(player.x > levelWidth - 10) player.x = (levelWidth - 10);
-					if(player.y < 10) player.y = (10);
-					if(player.y > levelHeight - 10) player.y = (levelHeight - 10);
-			}
-		}
-		if(activity.gameRunning)
-		{
-			if(levelNum == 10)
-			{
-				if(imageLibrary.directionsTutorial == null && distSquared(player.x, player.y, 162, 150) < 400)
-				{
-					imageLibrary.directionsTutorial = imageLibrary.loadImage("menu_directions", 200, 180);
-				}
-				else if(imageLibrary.directionsTutorial != null && distSquared(player.x, player.y, 162, 150) > 400)
-				{
-					imageLibrary.directionsTutorial.recycle();
-					imageLibrary.directionsTutorial = null;
-				}
-				if(player.x > 110 && player.x < 190 && player.y < 16)
-				{
-					gamePaused = true;
-					currentPause = "chooseLevel";
-					player.x += 15;
-					invalidate();
-				}
-			}
-			if(levelNum == 20)
-			{
-				if(player.x > 504 && player.y > 140 && player.y < 160)
-				{
-					loadLevelSection(21);
-				}
-			}
-			if(levelNum == 21)
-			{
-				if(player.x > 544 && player.y > 140 && player.y < 160)
-				{
-					loadLevelSection(22);
-				}
-			}
-			if(levelNum == 90)
-			{
-				if(player.x < 50 || player.x > 350)
-				{
-					if(player.y < 105 || player.y > 305)
-					{
-						loadLevelSection(91);
-					}
-				}
-			}
-			if(levelNum == 91)
-			{
-				if(player.x < 50 || player.x > 350)
-				{
-					if(player.y > 125 && player.y < 285)
-					{
-						loadLevelSection(90);
-					}
-				}
-			}
-			if(levelNum == 100)
-			{
-				if(playerOnSquare(184, 234, 10, 48)) loadLevelSection(101);
-				if(playerOnSquare(338, 232, 48, 15)) loadLevelSection(101);
-				if(playerOnSquare(228, 5, 31, 57)) loadLevelSection(101);
-				if(playerOnSquare(4, 113, 48, 65)) loadLevelSection(101);
-			}
-			if(levelNum == 101)
-			{
-				if(playerOnSquare(338, 268, 48, 69)) loadLevelSection(100);
-				if(playerOnSquare(3, 6, 48, 89)) loadLevelSection(100);
-				if(playerOnSquare(166, 5, 42, 57)) loadLevelSection(100);
-				if(playerOnSquare(166, 234, 12, 48)) loadLevelSection(100);
-			}
-			if(levelNum == 150)
-			{
-				if(playerOnSquare(262, 122, 17, 37)) loadLevelSection(151);
-			}
-			if(levelNum == 151)
-			{
-				if(playerOnSquare(40, 72, 17, 36)) loadLevelSection(150);
-			}
-			for(int i = 0; i < walls.length; i++)
-			{
-				if(walls[i] != null)
-				{
-					walls[i].frameCall();
-				}
-			}
-			for(int i = 0; i < wallCircles.length; i++)
-			{
-				if(wallCircles[i] != null)
-				{
-					wallCircles[i].frameCall();
-				}
-			}
-			for(int i = 0; i < wallRings.length; i++)
-			{
-				if(wallRings[i] != null)
-				{
-					wallRings[i].frameCall();
-				}
-			}
-			invalidate();
-		}
-		activity.resetVolume();
+		if(player.transformed==0) drawBitmapRotated(shootStick, g);
 	}
 	protected boolean playerOnSquare(double x1, double y1, double width, double height)
 	{
@@ -1822,266 +1493,6 @@ public final class Controller extends View
 		return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
 	}
 	/**
-	 * draws background of play screen
-	 * @return bitmap of play screen
-	 */
-	protected Bitmap drawStart()
-	{
-		paint.setAlpha(255);
-		Bitmap drawTo = Bitmap.createBitmap(480, 320, Bitmap.Config.ARGB_8888);
-		Canvas g = new Canvas(drawTo);
-		drawBitmap(imageLibrary.loadImage("leveloverlay000" + Integer.toString(playerType + 1), 300, 300), 90, 10, g);
-		if(activity.stickOnRight)
-		{
-			drawBitmap(imageLibrary.loadImage("screen000" + Integer.toString(playerType + 5), 480, 320), 0, 0, g);
-		}
-		else
-		{
-			drawBitmap(imageLibrary.loadImage("screen000" + Integer.toString(playerType + 1), 480, 320), 0, 0, g);
-		}
-		return drawTo;
-	}
-	/**
-	 * draws the level and objects in it
-	 * @return bitmap of level and objects
-	 */
-	protected Bitmap drawLevel()
-	{
-		Bitmap drawTo = Bitmap.createBitmap(levelWidth, levelHeight, Config.ARGB_8888);
-		Canvas g = new Canvas(drawTo);
-		int w = 0;
-		int h = 0;
-		while(w < levelWidth)
-		{
-			while(h < levelHeight)
-			{
-				drawBitmapLevel(imageLibrary.toTile, w, h, g);
-				h += 90;
-			}
-			w += 90;
-			h = 0;
-		}
-		drawBitmap(imageLibrary.currentLevel, 0, 0, g);
-		if(levelNum > 19)
-		{
-			drawBitmapLevel(imageLibrary.exitFightPortal, exitX - 30, exitY - 30, g);
-		}
-		for(int i = 0; i < structures.length; i++)
-		{
-			if(structures[i] != null)
-			{
-				drawBitmapLevel(imageLibrary.structure_Spawn, (int)structures[i].x-structures[i].width, (int)structures[i].y-structures[i].height, g);
-			}
-		}
-		if(levelNum == 10)
-		{
-			if(imageLibrary.directionsTutorial != null) drawBitmapLevel(imageLibrary.directionsTutorial, 45, 65, g);
-			paint.setAlpha(255);
-		}
-		if(player != null)
-		{
-			drawBitmap(imageLibrary.isPlayer, (int)player.x-imageLibrary.isPlayerWidth, (int)player.y-imageLibrary.isPlayerWidth, g);
-			drawBitmapRotatedLevel(player, g);
-			if(player.transformedTimer>1&&player.transformedTimer<500)
-			{
-				int frame = player.transformedTimer;
-				while(frame>9)
-				{
-					frame -= 10;
-				}
-				drawBitmapLevel(imageLibrary.trans[frame], (int)player.x - 60, (int)player.y - 60, g);
-			}
-		}
-		for(int i = 0; i < enemies.length; i++)
-		{
-			if(enemies[i] != null)
-			{
-				if(enemies[i].keyHolder)
-				{
-					drawBitmapLevel(imageLibrary.haskey, (int) enemies[i].x - 20, (int) enemies[i].y - 20, g);
-				}
-				drawBitmapRotatedLevel(enemies[i], g);
-			}
-		}
-		for(int i = 0; i < powerBalls.length; i++)
-		{
-			if(powerBalls[i] != null)
-			{
-				drawBitmapRotatedLevel(powerBalls[i], g);
-			}
-		}
-		for(int i = 0; i < powerBallAOEs.length; i++)
-		{
-			if(powerBallAOEs[i] != null)
-			{
-				aoeRect.top = (int)(powerBallAOEs[i].y - (powerBallAOEs[i].getHeight() / 2.5));
-				aoeRect.bottom = (int)(powerBallAOEs[i].y + (powerBallAOEs[i].getHeight() / 2.5));
-				aoeRect.left = (int)(powerBallAOEs[i].x - (powerBallAOEs[i].getWidth() / 2.5));
-				aoeRect.right = (int)(powerBallAOEs[i].x + (powerBallAOEs[i].getWidth() / 2.5));
-				paint.setAlpha(powerBallAOEs[i].getAlpha());
-				drawBitmapRectLevel(powerBallAOEs[i].getVisualImage(), aoeRect, g);
-			}
-		}
-		paint.setAlpha(255);
-		for(int i = 0; i < powerUps.length; i++)
-		{
-			if(powerUps[i] != null)
-			{
-				drawBitmapLevel(powerUps[i].getVisualImage(), (int) powerUps[i].x - 15, (int) powerUps[i].y - 15, g);
-			}
-		}
-		if(imageLibrary.currentLevelTop != null)
-		{
-			drawBitmapLevel(imageLibrary.currentLevelTop, 0, 0, g);
-		}
-		if(player.powerUpTimer > 0)
-		{
-			drawBitmapLevel(imageLibrary.effects[player.powerID - 1], (int) player.x - 30, (int) player.y - 30, g);
-		}
-		drawHealthBars(g);
-		return drawTo;
-	}
-	/**
-	 * checks whether object is in view
-	 * @param lowx objects low x
-	 * @param lowy objects low y
-	 * @param width objects width
-	 * @param height objects height
-	 * @return whether object is in view
-	 */
-	private boolean inView(int lowx, int lowy, int width, int height)
-	{
-		lowx += curXShift;
-		int highx = lowx + width;
-		lowy += curYShift;
-		int highy = lowy + height;
-		return !(lowx > 300 || highx < 0 || lowy > 300 || highy < 0);
-	}
-	/**
-	 * checks whether enemy is in view
-	 * @param x enemy x
-	 * @param y enemy y
-	 * @return whether enemy is in view
-	 */
-	protected boolean enemyInView(double x, double y)
-	{
-		return !(x + curXShift > 400 || x + curXShift < -100 || y + curYShift > 400 || y + curYShift < -100);
-	}
-	/**
-	 * draw start fight screen
-	 * @param g canvas to draw to
-	 */
-	protected void drawStartFight(Canvas g)
-	{
-		drawBehindPause(g);
-		drawBitmap(imageLibrary.loadImage("menu_startfight", 480, 320), 0, 0, g);
-		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(Color.BLACK);
-		paint.setAlpha(120);
-		if(difficultyLevel == 10)
-		{
-			moneyMultiplier = 5;
-			drawRect(30, 104, 130, 144, g);
-		}
-		if(difficultyLevel == 6)
-		{
-			moneyMultiplier = 7;
-			drawRect(130, 29, 230, 69, g);
-		}
-		if(difficultyLevel == 3)
-		{
-			moneyMultiplier = 12;
-			drawRect(250, 29, 350, 69, g);
-		}
-		if(difficultyLevel == 0)
-		{
-			moneyMultiplier = 20;
-			drawRect(350, 104, 450, 144, g);
-		}
-		moneyMultiplier *= getLevelWinningsMultiplier(startingLevel);
-		if(drainHp)
-		{
-			moneyMultiplier *= 1.4;
-			drawRect(16, 234, 116, 304, g);
-		}
-		if(lowerHp)
-		{
-			moneyMultiplier *= 1.4;
-			drawRect(132, 234, 232, 304, g);
-		}
-		if(limitSpells)
-		{
-			moneyMultiplier *= 1.4;
-			drawRect(248, 234, 348, 304, g);
-		}
-		if(enemyRegen)
-		{
-			moneyMultiplier *= 1.4;
-			drawRect(364, 234, 464, 304, g);
-		}
-		moneyMultiplier *= 1+((double)activity.bExcess/8);
-		paint.setAlpha(255);
-		paint.setTextAlign(Align.CENTER);
-		paint.setTextSize(38);
-		//TODO
-		drawText(getLevelName(startingLevel), 240, 113, g);
-		paint.setTextSize(25);
-		drawText("Gold Multiplier: " + Integer.toString((int)moneyMultiplier), 240, 153, g);
-	}
-	/**
-	 * returns winning multiplier for level
-	 * @param level level to return multiplier for
-	 * @return multiplier for level
-	 */
-	protected double getLevelWinningsMultiplier(int level)
-	{
-		if(level==0)
-		{
-			return 0;
-		} else
-		{
-			return 1 + ((double)(level-1)/(double)10);
-		}
-	}
-	protected String getLevelName(int level)
-	{
-		switch(level)
-		{
-		case 0:
-			return "Tutorial";
-		case 1:
-			return "Broken Sanctuary";
-		case 2:
-			return "Beyond the Gate";
-		case 3:
-			return "Mouldy Tavern";
-		case 4:
-			return "The Chambers";
-		case 5:
-			return "Orientation";
-		case 6:
-			return "The Outpost";
-		case 7:
-			return "War Preparation";
-		case 8:
-			return "The Labyrinth";
-		case 9:
-			return "Back to Town";
-		case 10:
-			return "Temple of Fire";
-		case 11:
-			return "Temple of Ice";
-		case 12:
-			return "Temple of Earth";
-		case 13:
-			return "Goblin Nest";
-		case 14:
-			return "The Hordes Return";
-		default:
-			return "Default";
-		}
-	}
-	/**
 	 * draw buy powerups screen
 	 * @param g canvas to draw to
 	 */
@@ -2096,19 +1507,16 @@ public final class Controller extends View
 		drawBitmap(imageLibrary.loadImage("menu_blessing", 480, 320), 0, 0, g);
 		paint.setTextSize(20);
 		paint.setTextAlign(Align.LEFT);
-		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
-		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
+		drawMoneyTop(g);
 		paint.setTextSize(25);
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.buy("Ambrosia", 9999999, false)), 147, 147, g);
-		drawText(Integer.toString(activity.buy("Cooldown", 9999999, false)), 357, 147, g);
-		drawText(Integer.toString(activity.buy("Apollo's Flame", 9999999, false)), 147, 220, g);
-		drawText(Integer.toString(activity.buy("Hades' Helm", 9999999, false)), 357, 220, g);
-		drawText(Integer.toString(activity.buy("Zues's Armor", 9999999, false)), 147, 294, g);
-		drawText(Integer.toString(activity.buy("Posiedon's Shell", 9999999, false)), 357, 294, g);
+		drawText(Integer.toString(activity.buy("Ambrosia", 9999999, false)), 147, 142, g);
+		drawText(Integer.toString(activity.buy("Cooldown", 9999999, false)), 357, 142, g);
+		drawText(Integer.toString(activity.buy("Apollo's Flame", 9999999, false)), 147, 215, g);
+		drawText(Integer.toString(activity.buy("Hades' Helm", 9999999, false)), 357, 215, g);
+		drawText(Integer.toString(activity.buy("Zues's Armor", 9999999, false)), 147, 289, g);
+		drawText(Integer.toString(activity.buy("Posiedon's Shell", 9999999, false)), 357, 289, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(120);
@@ -2134,27 +1542,7 @@ public final class Controller extends View
 		drawBitmap(imageLibrary.loadImage("menu_buyall", 480, 320), 0, 0, g);
 		paint.setTextSize(20);
 		paint.setTextAlign(Align.LEFT);
-		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
-		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
-	}
-	protected void drawChooseLevel(Canvas g)
-	{
-		//drawBehindPause(g);
-		//TODO
-		for(int i = 0; i < 5; i++)
-		{
-			for(int j = 0; j < 4; j++)
-			{
-				int xVal = detect.chooseLevelX+(i*150);
-				int yVal = detect.chooseLevelY+(j*150);
-				if(yVal<480&&yVal>-150&&xVal<320&&xVal>-150)
-				{
-					drawBitmap(imageLibrary.loadImage("menu_fullmap"+imageLibrary.correctDigits(4, i+(5*j)), 150, 150), xVal, yVal, g);
-				}
-			}
-		}
+		drawMoneyTop(g);
 	}
 	/**
 	 * draw buy worship screen
@@ -2171,22 +1559,19 @@ public final class Controller extends View
 		drawBitmap(imageLibrary.loadImage("menu_worship", 480, 320), 0, 0, g);
 		paint.setTextSize(20);
 		paint.setTextAlign(Align.LEFT);
-		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
-		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
+		drawMoneyTop(g);
 		paint.setTextSize(25);
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.buy("Worship Apollo", 9999999, false)), 98, 147, g);
-		drawText(Integer.toString(activity.buy("Worship Posiedon", 9999999, false)), 248, 147, g);
-		drawText(Integer.toString(activity.buy("Worship Zues", 9999999, false)), 398, 147, g);
-		drawText(Integer.toString(activity.buy("Worship Hades", 9999999, false)), 98, 220, g);
-		drawText(Integer.toString(activity.buy("Worship Ares", 9999999, false)), 248, 220, g);
-		drawText(Integer.toString(activity.buy("Worship Athena", 9999999, false)), 398, 220, g);
-		drawText(Integer.toString(activity.buy("Worship Hermes", 9999999, false)), 98, 294, g);
-		drawText(Integer.toString(activity.buy("Worship Hephaestus", 9999999, false)), 248, 294, g);
-		drawText(Integer.toString(activity.buy("Worship Hera", 9999999, false)), 398, 294, g);
+		drawText(Integer.toString(activity.buy("Worship Apollo", 9999999, false)), 98, 142, g);
+		drawText(Integer.toString(activity.buy("Worship Posiedon", 9999999, false)), 248, 142, g);
+		drawText(Integer.toString(activity.buy("Worship Zues", 9999999, false)), 398, 142, g);
+		drawText(Integer.toString(activity.buy("Worship Hades", 9999999, false)), 98, 215, g);
+		drawText(Integer.toString(activity.buy("Worship Ares", 9999999, false)), 248, 215, g);
+		drawText(Integer.toString(activity.buy("Worship Athena", 9999999, false)), 398, 215, g);
+		drawText(Integer.toString(activity.buy("Worship Hermes", 9999999, false)), 98, 289, g);
+		drawText(Integer.toString(activity.buy("Worship Hephaestus", 9999999, false)), 248, 289, g);
+		drawText(Integer.toString(activity.buy("Worship Hera", 9999999, false)), 398, 289, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(120);
@@ -2215,10 +1600,7 @@ public final class Controller extends View
 		drawBitmap(imageLibrary.loadImage("menu_buyskins", 480, 320), 0, 0, g);
 		paint.setTextSize(20);
 		paint.setTextAlign(Align.LEFT);
-		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
-		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
+		drawMoneyTop(g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(120);
@@ -2262,7 +1644,7 @@ public final class Controller extends View
 		
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(8);
-		paint.setColor(Color.RED);
+		paint.setColor(highlightChoiceColor);
 		paint.setAlpha(120);
 		switch (activity.currentSkin)
 		{
@@ -2310,20 +1692,17 @@ public final class Controller extends View
 		paint.setTextSize(40);
 		paint.setTextAlign(Align.CENTER);
 		drawText(buyingItem, 240, 103, g);
-		paint.setTextSize(20);
+		paint.setTextSize(28);
 		paint.setTextAlign(Align.LEFT);
 		String[] describe = activity.getItemDescribe(buyingItem);
-		drawText(describe[0], 75, 173, g);
-		drawText(describe[1], 75, 203, g);
-		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
-		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
+		drawText(describe[0], 75, 163, g);
+		drawText(describe[1], 75, 200, g);
+		drawMoneyTop(g);
 		paint.setStyle(Paint.Style.FILL);
-		paint.setTextSize(30);
+		paint.setTextSize(38);
 		paint.setColor(platinumColor);
 		paint.setTextAlign(Align.CENTER);
-		drawText(Integer.toString(activity.buy(buyingItem, 9999999, false)), 260, 272, g);
+		drawText(Integer.toString(activity.buy(buyingItem, 9999999, false)), 260, 268, g);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(120);
 		if(!activity.canBuyReal(buyingItem))
@@ -2346,22 +1725,19 @@ public final class Controller extends View
 		drawBitmap(imageLibrary.loadImage("menu_premium", 480, 320), 0, 0, g);
 		paint.setTextSize(20);
 		paint.setTextAlign(Align.LEFT);
-		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
-		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
+		drawMoneyTop(g);
 		paint.setTextSize(25);
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.buy("1000g", 9999999, false)), 98, 147, g);
-		drawText(Integer.toString(activity.buy("8000g", 9999999, false)), 248, 147, g);
-		drawText(Integer.toString(activity.buy("40000g", 9999999, false)), 398, 147, g);
-		drawText(Integer.toString(activity.buy("Iron Golem", 9999999, false)), 98, 220, g);
-		drawText(Integer.toString(activity.buy("Gold Golem", 9999999, false)), 248, 220, g);
-		drawText(Integer.toString(activity.buy("Reserve", 9999999, false)), 398, 220, g);
-		drawText(Integer.toString(activity.buy("Excess", 9999999, false)), 98, 294, g);
-		drawText(Integer.toString(activity.buy("Replentish", 9999999, false)), 248, 294, g);
-		drawText(Integer.toString(activity.buy("Trailing", 9999999, false)), 398, 294, g);
+		drawText(Integer.toString(activity.buy("1000g", 9999999, false)), 98, 142, g);
+		drawText(Integer.toString(activity.buy("8000g", 9999999, false)), 248, 142, g);
+		drawText(Integer.toString(activity.buy("40000g", 9999999, false)), 398, 142, g);
+		drawText(Integer.toString(activity.buy("Iron Golem", 9999999, false)), 98, 215, g);
+		drawText(Integer.toString(activity.buy("Gold Golem", 9999999, false)), 248, 215, g);
+		drawText(Integer.toString(activity.buy("Reserve", 9999999, false)), 398, 215, g);
+		drawText(Integer.toString(activity.buy("Excess", 9999999, false)), 98, 289, g);
+		drawText(Integer.toString(activity.buy("Replentish", 9999999, false)), 248, 289, g);
+		drawText(Integer.toString(activity.buy("Trailing", 9999999, false)), 398, 289, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(120);
@@ -2391,20 +1767,18 @@ public final class Controller extends View
 		paint.setTextSize(40);
 		paint.setTextAlign(Align.CENTER);
 		drawText(buyingItem, 240, 103, g);
-		paint.setTextSize(20);
+		paint.setTextSize(28);
 		paint.setTextAlign(Align.LEFT);
 		String[] describe = activity.getItemDescribe(buyingItem);
-		drawText(describe[0], 75, 173, g);
-		drawText(describe[1], 75, 203, g);
-		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
-		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
+		drawText(describe[0], 62, 163, g);
+		drawText(describe[1], 62, 200, g);
+		paint.setTextSize(24);
+		drawMoneyTop(g);
 		paint.setStyle(Paint.Style.FILL);
-		paint.setTextSize(30);
+		paint.setTextSize(38);
 		paint.setColor(goldColor);
 		paint.setTextAlign(Align.CENTER);
-		drawText(Integer.toString(activity.buy(buyingItem, 9999999, false)), 260, 272, g);
+		drawText(Integer.toString(activity.buy(buyingItem, 9999999, false)), 260, 268, g);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(120);
 		if(!activity.canBuyGame(buyingItem))
@@ -2422,7 +1796,7 @@ public final class Controller extends View
 		drawBitmap(imageLibrary.loadImage("menu_choosegod", 480, 320), 0, 0, g);
 		paint.setStyle(Paint.Style.STROKE);
 		paint.setStrokeWidth(8);
-		paint.setColor(Color.RED);
+		paint.setColor(highlightChoiceColor);
 		paint.setAlpha(120);
 		if(playerType == 2)
 		{
@@ -2453,16 +1827,16 @@ public final class Controller extends View
 		drawBitmap(imageLibrary.loadImage("menu_paused", 480, 320), 0, 0, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
-		paint.setTextSize(40);
-		paint.setTextAlign(Align.LEFT);
-		drawText(Integer.toString(activity.pHeal), 48, 73, g);
-		drawText(Integer.toString(activity.pCool), 148, 73, g);
-		drawText(Integer.toString(activity.pWater), 48, 173, g);
-		drawText(Integer.toString(activity.pEarth), 148, 173, g);
-		drawText(Integer.toString(activity.pAir), 48, 273, g);
-		drawText(Integer.toString(activity.pFire), 148, 273, g);
-		drawText(Integer.toString(activity.pGolem), 239, 123, g);
-		drawText(Integer.toString(activity.pHammer), 239, 223, g);
+		paint.setTextSize(45);
+		paint.setTextAlign(Align.CENTER);
+		drawText(Integer.toString(activity.pHeal), 50, 70, g);
+		drawText(Integer.toString(activity.pCool), 150, 70, g);
+		drawText(Integer.toString(activity.pWater), 50, 170, g);
+		drawText(Integer.toString(activity.pEarth), 150, 170, g);
+		drawText(Integer.toString(activity.pAir), 50, 270, g);
+		drawText(Integer.toString(activity.pFire), 150, 270, g);
+		drawText(Integer.toString(activity.pGolem), 241, 120, g);
+		drawText(Integer.toString(activity.pHammer), 241, 220, g);
 		paint.setAlpha(151);
 		if(activity.pHeal == 0)
 		{
@@ -2571,21 +1945,6 @@ public final class Controller extends View
 		}
 	}
 	/**
-	 * draw death screen
-	 * @param g canvas to draw to
-	 */
-	protected void drawLost(Canvas g)
-	{
-		drawBehindPause(g);
-		drawBitmap(imageLibrary.loadImage("menu_lost", 480, 320), 0, 0, g);
-		paint.setTextSize(20);
-		paint.setTextAlign(Align.LEFT);
-		paint.setColor(Color.BLACK);
-		activity.gameCurrency -= (int)(moneyMade/2);
-		drawText(Integer.toString(activity.gameCurrency) + " (+" + Integer.toString((int)moneyMade) + "-"+Integer.toString((int)(moneyMade/2))+")", 153, 146, g);
-		drawText(Integer.toString(activity.realCurrency), 153, 193, g);
-	}
-	/**
 	 * draw buy real money screen
 	 * @param g canvas to draw to
 	 */
@@ -2600,24 +1959,17 @@ public final class Controller extends View
 		drawBitmap(imageLibrary.loadImage("menu_buycash", 480, 320), 0, 0, g);
 		paint.setTextSize(20);
 		paint.setTextAlign(Align.LEFT);
-		paint.setColor(platinumColor);
-		drawText(Integer.toString(activity.realCurrency), 185, 30, g);
-		paint.setColor(goldColor);
-		drawText(Integer.toString(activity.gameCurrency), 320, 30, g);
+		drawMoneyTop(g);
 	}
-	/**
-	 * draw win fight screen
-	 * @param g canvas to draw to
-	 */
-	protected void drawWon(Canvas g)
+	protected void drawMoneyTop(Canvas g)
 	{
-		drawBehindPause(g);
-		drawBitmap(imageLibrary.loadImage("menu_won", 480, 320), 0, 0, g);
-		paint.setTextSize(20);
+		paint.setTextSize(24);
 		paint.setTextAlign(Align.LEFT);
 		paint.setColor(Color.BLACK);
-		drawText(Integer.toString(activity.gameCurrency) + " (+" + Integer.toString((int)moneyMade) + ")", 153, 146, g);
-		drawText(Integer.toString(activity.realCurrency), 153, 193, g);
+		paint.setColor(platinumColor);
+		drawText(Integer.toString(activity.realCurrency), 185, 26, g);
+		paint.setColor(goldColor);
+		drawText(Integer.toString(activity.gameCurrency), 320, 26, g);
 	}
 	/**
 	 * chooses what to draw
@@ -2646,29 +1998,13 @@ public final class Controller extends View
 				{
 					drawBuyAll(g);
 				}
-				else if(currentPause.equals("startfight"))
-				{
-					drawStartFight(g);
-				}
 				else if(currentPause.equals("buy"))
 				{
 					drawBuy(g);
 				}
-				else if(currentPause.equals("won"))
-				{
-					drawWon(g);
-				}
-				else if(currentPause.equals("lost"))
-				{
-					drawLost(g);
-				}
 				else if(currentPause.equals("chooseGod"))
 				{
 					drawChooseGod(g);
-				}
-				else if(currentPause.equals("chooseLevel"))
-				{
-					drawChooseLevel(g);
 				}
 				else if(currentPause.equals("worship"))
 				{
@@ -2713,24 +2049,24 @@ public final class Controller extends View
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.GRAY);
 		drawRect(90, 10, 390, 310, g);
-			xShiftLevel = 150 - (int) player.x;
-			yShiftLevel = 150 - (int) player.y;
-			if(player.x < 150)
-			{
-				xShiftLevel = 0;
-			}
-			if(player.y < 150)
-			{
-				yShiftLevel = 0;
-			}
-			if(player.x > levelWidth - 150)
-			{
-				xShiftLevel = 300 - levelWidth;
-			}
-			if(player.y > levelHeight - 150)
-			{
-				yShiftLevel = 300 - levelHeight;
-			}
+		xShiftLevel = 150 - (int) player.x;
+		yShiftLevel = 150 - (int) player.y;
+		if(player.x < 150)
+		{
+			xShiftLevel = 0;
+		}
+		if(player.y < 150)
+		{
+			yShiftLevel = 0;
+		}
+		if(player.x > levelWidth - 150)
+		{
+			xShiftLevel = 300 - levelWidth;
+		}
+		if(player.y > levelHeight - 150)
+		{
+			yShiftLevel = 300 - levelHeight;
+		}
 		curXShift = xShiftLevel;
 		curYShift = yShiftLevel;
 		drawBitmap(drawLevel(), xShiftLevel + 90, yShiftLevel + 10, g);
@@ -2740,6 +2076,21 @@ public final class Controller extends View
 		drawRect(480, -1000, 1480, 1320, g);
 		drawRect(-1000, -1000, 1480, 0, g);
 		drawRect(-1000, 320, 1480, 1320, g);
+		if(playerBursted<6)
+		{
+			paint.setColor(godColors[player.humanType]);
+			paint.setStyle(Paint.Style.FILL);
+			paint.setAlpha(255-(30*playerBursted));
+			drawRect(90, 10, 390, 310, g);
+		}
+		if(playerHit<6)
+		{
+			paint.setColor(Color.RED);
+			paint.setStyle(Paint.Style.FILL);
+			paint.setAlpha(100-(15*playerHit));
+			drawRect(90, 10, 390, 310, g);
+		}
+		paint.setAlpha(255);
 		paint.setColor(Color.GREEN);
 		if(warningTimer > 0)
 		{
@@ -2773,48 +2124,6 @@ public final class Controller extends View
 			else
 			{
 				drawBitmap(imageLibrary.powerUpBigs[player.powerID - 1], 10, 25, g);
-			}
-		}
-		if(hasKey)
-		{
-			if(activity.stickOnRight)
-			{
-				drawBitmap(imageLibrary.powerUpBigs[4], 400, 25, g);
-			}
-			else
-			{
-				drawBitmap(imageLibrary.powerUpBigs[4], 10, 25, g);
-			}
-		}
-		if(levelNum == 10)
-		{
-			paint.setStyle(Paint.Style.FILL);
-			paint.setColor(Color.BLACK);
-			paint.setTextAlign(Align.CENTER);
-			paint.setAlpha(180);
-			if(!activity.stickOnRight)
-			{
-				drawRect(395, 5, 475, 315, g);
-				paint.setAlpha(255);
-				drawBitmap(imageLibrary.coins[0], 420, 30, g);
-				drawBitmap(imageLibrary.coins[1], 420, 130, g);
-				paint.setTextSize(20);
-				paint.setColor(platinumColor);
-				drawText(Integer.toString(activity.realCurrency), 435, 90, g);
-				paint.setColor(goldColor);
-				drawText(Integer.toString(activity.gameCurrency), 435, 190, g);
-			}
-			else
-			{
-				drawRect(5, 5, 85, 220, g);
-				paint.setAlpha(255);
-				drawBitmap(imageLibrary.coins[0], 30, 30, g);
-				drawBitmap(imageLibrary.coins[1], 30, 130, g);
-				paint.setTextSize(20);
-				paint.setColor(platinumColor);
-				drawText(Integer.toString(activity.realCurrency), 45, 70, g);
-				paint.setColor(goldColor);
-				drawText(Integer.toString(activity.gameCurrency), 45, 170, g);
 			}
 		}
 	}
@@ -2958,6 +2267,16 @@ public final class Controller extends View
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEPlayer;
 	}
 	/**
+	 * changes difficulty of level
+	 * @param difficultyLevelSet new difficulty to set
+	 */
+	protected void changeDifficulty(int difficultyLevelSet)
+	{
+		difficultyLevel = difficultyLevelSet;
+		difficultyLevelMultiplier = 15 / (double)(difficultyLevel + 5); // set difficulty multiplier
+		activity.saveGame(); // saves game state in case of interuption
+	}
+	/**
 	 * Tests an array to find lowest null index
 	 * @ param array Array to check in for null indexes
 	 * @ return Returns lowest index that equals null
@@ -2984,6 +2303,17 @@ public final class Controller extends View
 		warningTimer = 50;
 		warningText = warning;
 		//TODO
+	}
+	/**
+	 * Starts warning label
+	 * @param warning
+	 */
+	protected void startWarningImediate(String warning)
+	{
+		AlertDialog.Builder bld = new AlertDialog.Builder(context);
+		bld.setMessage(warning);
+		bld.setNeutralButton("OK", null);
+		bld.create().show();
 	}
 	/**
 	 * checks whether a projectile could travel between two points
@@ -3125,6 +2455,8 @@ public final class Controller extends View
 	{
 		boolean hitBack = false;
 		float m1 = (y2 - y1) / (x2 - x1);
+		if(m1>50)m1=50;
+		if(m1<-50)m1=-50;
 		float b1 = y1 - (m1 * x1);
 		float circM;
 		float circB;
@@ -3470,22 +2802,6 @@ public final class Controller extends View
 		}
 	}
 	/**
-	 * returns difficultyLevel
-	 * @return difficultyLevel
-	 */
-	protected int getDifficultyLevel()
-	{
-		return difficultyLevel;
-	}
-	/**
-	 * returns difficultyLevelMultiplier
-	 * @return difficultyLevelMultiplier
-	 */
-	protected double getDifficultyLevelMultiplier()
-	{
-		return difficultyLevelMultiplier;
-	}
-	/**
 	 * returns random integer between 0 and i-1
 	 * @param i returns int between one less than this and 0
 	 * @return random integer between 0 and i-1
@@ -3501,22 +2817,6 @@ public final class Controller extends View
 	protected double getRandomDouble()
 	{
 		return randomGenerator.nextDouble();
-	}
-	/**
-	 * returns levelNum
-	 * @return levelNum
-	 */
-	protected int getLevelNum()
-	{
-		return levelNum;
-	}
-	/**
-	 * returns whether game has ended
-	 * @return whether game has ended
-	 */
-	protected boolean getGameEnded()
-	{
-		return gameEnded;
 	}
 	/**
 	 * sets values for an index of all rectangle tall wall value arrays
@@ -3675,7 +2975,7 @@ public final class Controller extends View
 	 */
 	protected void drawBitmapLevel(Bitmap picture, int x, int y, Canvas g)
 	{
-		if(inView(x, y, picture.getWidth(), picture.getHeight())) g.drawBitmap(picture, x, y, paint);
+		g.drawBitmap(picture, x, y, paint);
 	}
 	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
@@ -3684,25 +2984,35 @@ public final class Controller extends View
 	{
 		int width = sprite.getVisualImage().getWidth();
 		int height = sprite.getVisualImage().getHeight();
-		if(inView((int) sprite.x - (width / 2) - 10, (int) sprite.y - (height / 2) - 10, width + 20, height + 20))
-		{
 			rotateImages.reset();
 			rotateImages.postTranslate(-width / 2, -height / 2);
 			rotateImages.postRotate((float) sprite.rotation);
 			rotateImages.postTranslate((float) sprite.x, (float) sprite.y);
 			g.drawBitmap(sprite.getVisualImage(), rotateImages, paint);
 			sprite = null;
-		}
+	}
+	/**
+	 * returns difficultyLevel
+	 * @return difficultyLevel
+	 */
+	protected int getDifficultyLevel()
+	{
+		return difficultyLevel;
+	}
+	/**
+	 * returns difficultyLevelMultiplier
+	 * @return difficultyLevelMultiplier
+	 */
+	protected double getDifficultyLevelMultiplier()
+	{
+		return difficultyLevelMultiplier;
 	}
 	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Rect, Rect, Paint) and auto scales
 	 */
 	protected void drawBitmapRectLevel(Bitmap picture, Rect rectangle, Canvas g)
 	{
-		if(inView(rectangle.left, rectangle.top, rectangle.bottom - rectangle.top, rectangle.right - rectangle.left))
-		{
 			g.drawBitmap(picture, null, rectangle, paint);
-		}
 	}
 	/**
 	 * Replaces canvas.drawText(String, int, int, Paint) and auto scales
@@ -3711,5 +3021,31 @@ public final class Controller extends View
 	{
 		// TODO
 		g.drawText(text, x, y, paint);
+	}
+	/**
+	 * checks whether object is in view
+	 * @param lowx objects low x
+	 * @param lowy objects low y
+	 * @param width objects width
+	 * @param height objects height
+	 * @return whether object is in view
+	 */
+	private boolean inView(int lowx, int lowy, int width, int height)
+	{
+		lowx += curXShift;
+		int highx = lowx + width;
+		lowy += curYShift;
+		int highy = lowy + height;
+		return !(lowx > 300 || highx < 0 || lowy > 300 || highy < 0);
+	}
+	/**
+	 * checks whether enemy is in view
+	 * @param x enemy x
+	 * @param y enemy y
+	 * @return whether enemy is in view
+	 */
+	protected boolean enemyInView(double x, double y)
+	{
+		return !(x + curXShift > 400 || x + curXShift < -100 || y + curYShift > 400 || y + curYShift < -100);
 	}
 }
