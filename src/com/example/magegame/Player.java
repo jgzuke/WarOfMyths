@@ -24,6 +24,8 @@ public final class Player extends Human
 	private int projectileSpeed = 10;
 	protected double touchX;
 	protected boolean touching;
+	protected int powerUpTimer = 0;
+	protected int powerID = 0;
 	public Player(Controller creator)
 	{
 		mainController = creator;
@@ -69,6 +71,7 @@ public final class Player extends Human
 	Override
 	protected void frameCall()
 	{
+		powerUpTimer--;
 		if(usedDionysusWine)
 		{
 			super.getHit(100);
@@ -82,48 +85,43 @@ public final class Player extends Human
 		{
 			speedCur = 4*Math.pow(mainController.activity.wHermes, 0.5);
 		}
+		if(powerUpTimer>0 && powerID == 3)
+		{
+			speedCur ++;
+		}
+		int cooldown;
+		cooldown = mainController.activity.wAthena*mainController.activity.wHermes;
+		if(humanType==2)
+		{
+			cooldown *= spMod;
+		}
 		if(abilityTimer_roll < 120)
 		{
-			if(humanType==2)
-			{
-				abilityTimer_roll += spMod*mainController.activity.wAthena*mainController.activity.wHermes;
-			} else
-			{
-				abilityTimer_roll += mainController.activity.wAthena*mainController.activity.wHermes;
-			}
+			abilityTimer_roll += cooldown;
 		}
 		if(abilityTimer_teleport < 350)
-		{
-			if(humanType==2)
-			{
-				abilityTimer_teleport += spMod*mainController.activity.wAthena*mainController.activity.wHermes*2;
-			} else
-			{
-				abilityTimer_teleport += mainController.activity.wAthena*mainController.activity.wHermes*2;
-			}
+		{			
+			abilityTimer_teleport += cooldown;
 		}
-		if(abilityTimer_burst < 500)
-		{
+		cooldown = mainController.activity.wAthena;
 			if(humanType==1)
 			{
-				abilityTimer_burst += spMod*mainController.activity.wAthena;
-			} else
-			{
-				abilityTimer_burst += mainController.activity.wAthena;
+				cooldown *= spMod;
 			}
+			if(powerUpTimer>0 && powerID == 1)
+			{
+				cooldown *= 2;
+			}
+		if(abilityTimer_burst < 500)
+		{
+			abilityTimer_burst += cooldown;
 		}
 		if(abilityTimer_powerBall < 40)
 		{
-			if(humanType==1)
-			{
-				abilityTimer_powerBall += 3*spMod*mainController.activity.wAthena;
-			} else
-			{
-				abilityTimer_powerBall += 3*mainController.activity.wAthena;
-			}
+			abilityTimer_powerBall += cooldown*3;
 		}
 		rollTimer--;
-		if(currentFrame == 58)
+		if(currentFrame == 51)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -201,7 +199,7 @@ public final class Player extends Human
 			{
 				rollTimer = 11;
 				playing = true;
-				currentFrame = 48;
+				currentFrame = 40;
 				xMoveRoll = Math.cos(rads) * speedCur * 2.2;
 				yMoveRoll = Math.sin(rads) * speedCur * 2.2;
 				abilityTimer_roll -= 50;
@@ -277,12 +275,16 @@ public final class Player extends Human
 	@Override
 	protected void getHit(int damage)
 	{
+		if(powerUpTimer>0 && powerID == 2)
+		{
+			damage *= 0.5;
+		}
 			damage *= damageMultiplier;
 			if(humanType == 3)
 			{
 				damage /= spMod;
 			}
-			//super.getHit(damage);
+			super.getHit(damage);
 			sp -= sp*damage/2000;
 			if(deleted)
 			{
@@ -303,6 +305,37 @@ public final class Player extends Human
 					mainController.activity.startMenu(true);
 				//}
 			}
+	}
+	protected void getPowerUp(int PowerID)
+	{
+		switch(PowerID)
+		{
+		case 1:
+			hp += getHpMax()/2;
+			if(hp>getHpMax())hp=getHpMax();
+			break;
+		case 2:
+			abilityTimer_roll = 120;
+			abilityTimer_teleport = 350;
+			abilityTimer_burst = 500;
+			break;
+		case 3:
+			powerUpTimer=300;
+			powerID=1;
+			break;
+		case 4:
+			powerUpTimer=300;
+			powerID=2;
+			break;
+		case 5:
+			powerUpTimer=300;
+			powerID=3;
+			break;
+		case 6:
+			powerUpTimer=300;
+			powerID=4;
+			break;
+		}
 	}
 	protected double getAbilityTimer_roll() {
 		return abilityTimer_roll;

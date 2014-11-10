@@ -59,6 +59,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.Paint.Style;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 
@@ -66,6 +67,7 @@ import java.util.Random;
 public final class Controller extends AllViews
 {
 	protected Enemy[] enemies = new Enemy[30];
+	private PowerUp[] powerUps = new PowerUp[30];
 	private PowerBall[] powerBalls = new PowerBall[30];
 	private PowerBallAOE[] powerBallAOEs = new PowerBallAOE[30];
 	private Graphic_Teleport[] graphic_Teleport = new Graphic_Teleport[30];
@@ -101,6 +103,7 @@ public final class Controller extends AllViews
 	protected int levelHeight = 300;
 	protected int xShiftLevel;
 	protected int yShiftLevel;
+	protected boolean gamePaused = false;
 	/* 
 	 * Initializes all undecided variables, loads level, creates player and enemy objects, and starts frameCaller
 	 */
@@ -137,6 +140,7 @@ public final class Controller extends AllViews
 		// TODO change to black ball
 		imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001", 80, 80);
 		imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(5, "powerball0001_", 35, 15);
+		gamePaused = false;
 	}
 	protected void startFighting(int playerTypeSet, int levelNumSet, int difficultyLevelSet)
 	{
@@ -383,6 +387,7 @@ public final class Controller extends AllViews
 		paint.setStyle(Paint.Style.STROKE);
 		drawRect(400-fix, 116, 470-fix, 132, g);
 		drawRect(400-fix, 163, 470-fix, 179, g);
+		paint.setTextSize(12);
 		drawText(Integer.toString(player.getHp()), 417-fix, 129, g);
 		drawText(Integer.toString((int)(3500*player.getSp())), 417-fix, 176, g);
 		paint.setStyle(Paint.Style.FILL);
@@ -480,6 +485,20 @@ public final class Controller extends AllViews
 				else
 				{
 					powerBallAOEs[i].frameCall();
+				}
+			}
+		}
+		for(int i = 0; i < powerUps.length; i++)
+		{
+			if(powerUps[i] != null)
+			{
+				if(powerUps[i].isDeleted())
+				{
+					powerUps[i] = null;
+				}
+				else
+				{
+					powerUps[i].frameCall();
 				}
 			}
 		}
@@ -607,6 +626,13 @@ public final class Controller extends AllViews
 				drawBitmap(graphic_Teleport[i].getVisualImage(), (int)(graphic_Teleport[i].getX() - (graphic_Teleport[i].getImageWidth() / 2)), (int)(graphic_Teleport[i].getY() - (graphic_Teleport[i].getImageWidth() / 2)), g);
 			}
 		}
+		for(int i = 0; i < powerUps.length; i++)
+		{
+			if(powerUps[i] != null)
+			{
+				drawBitmap(powerUps[i].getVisualImage(), (int)powerUps[i].getX() - 15, (int)powerUps[i].getY() - 15, g);
+			}
+		}
 		drawHealthBars(g);
 		return drawTo;
 	}
@@ -614,11 +640,60 @@ public final class Controller extends AllViews
 	 * Draws objects and calls other drawing functions (background and stats)
 	 * @see android.view.View#onDraw(android.graphics.Canvas)
 	 */
+	protected void drawPaused(Canvas g)
+	{
+		drawNotPaused(g);
+		drawBitmap(imageLibrary.loadImage("menu_pausedfight", 480, 320), 0, 0, g);
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(Color.BLACK);
+		paint.setTextSize(40);
+		drawText(Integer.toString(activity.pHeal), 48, 73, g);
+		drawText(Integer.toString(activity.pCool), 148, 73, g);
+		drawText(Integer.toString(activity.pWater), 48, 173, g);
+		drawText(Integer.toString(activity.pEarth), 148, 173, g);
+		drawText(Integer.toString(activity.pAir), 48, 273, g);
+		drawText(Integer.toString(activity.pFire), 148, 273, g);
+		paint.setAlpha(151);
+		if(activity.pHeal==0)
+		{
+			drawCircle(60, 60, 37, g);
+		}
+		if(activity.pCool==0)
+		{
+			drawCircle(160, 60, 37, g);
+		}
+		if(activity.pWater==0)
+		{
+			drawCircle(60, 160, 37, g);
+		}
+		if(activity.pEarth==0)
+		{
+			drawCircle(160, 160, 37, g);
+		}
+		if(activity.pAir==0)
+		{
+			drawCircle(60, 260, 37, g);
+		}
+		if(activity.pFire==0)
+		{
+			drawCircle(160, 260, 37, g);
+		}
+	}
 	@ Override
 	protected void onDraw(Canvas g)
 	{
 		g.translate(screenMinX, screenMinY);
 		g.scale((float) screenDimensionMultiplier, (float) screenDimensionMultiplier);
+		if(gamePaused)
+		{
+			drawPaused(g);
+		} else
+		{
+			drawNotPaused(g);
+		}
+	}
+	private void drawNotPaused(Canvas g)
+	{
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.GRAY);
 		drawRect(90, 10, 390, 310, g);
@@ -661,11 +736,20 @@ public final class Controller extends AllViews
 		drawBitmap(background, 0, 0, g);
 		drawContestantStats(g);
 		paint.setStyle(Paint.Style.STROKE);
+		if(player.powerUpTimer>0)
+		{
+			drawBitmap(imageLibrary.loadImage("powerup000"+Integer.toString(player.powerID+2), 50, 50), 410, 25, g);
+		}
 	}
 	protected void createPowerBallEnemy(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
 		PowerBall_Enemy ballEnemy = new PowerBall_Enemy(this, (int) x, (int) y, power, xVel, yVel, rotation);
 		powerBalls[lowestPositionEmpty(powerBalls)] = ballEnemy;
+	}
+	protected void createPowerUp(double X, double Y)
+	{
+		PowerUp powerUp = new PowerUp(this, X, Y);
+		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
 	}
 	protected void createPowerBallPlayer(double rotation, double xVel, double yVel, int power, double x, double y)
 	{

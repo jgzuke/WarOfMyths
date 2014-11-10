@@ -59,12 +59,17 @@ abstract public class Enemy extends Human
 	{
 		if(!deleted)
 		{
+			if(mainController.player.powerUpTimer>0 && mainController.player.powerID == 4)
+			{
+				damage *= 2;
+			}
 			super.getHit(damage);
 			mainController.player.sp += damage*0.00005;
 			if(deleted)
 			{
 				mainController.player.sp += 0.25;
 				int power = 150;
+				mainController.createPowerUp(x, y);
 				mainController.createPowerBallEnemy(0, 10, 0, power, x, y);
 				mainController.createPowerBallEnemy(45, 7, 7, power, x, y);
 				mainController.createPowerBallEnemy(90, 0, 10, power, x, y);
@@ -115,7 +120,7 @@ abstract public class Enemy extends Human
 	{
 		runTimer = 10;
 		playing = true;
-                if(currentFrame > 48)
+                if(currentFrame > 20)
                 {
                     currentFrame = 0;
                 }
@@ -223,7 +228,7 @@ abstract public class Enemy extends Human
 		}
 		setRunTimer(4);
 		playing = true;
-		if(currentFrame > 48)
+		if(currentFrame > 20)
 		{
 			currentFrame = 0;
 		}
@@ -295,7 +300,7 @@ abstract public class Enemy extends Human
 			setRunTimer(7);
 		}
 		playing = true;
-		if(currentFrame > 48)
+		if(currentFrame > 20)
 		{
 			currentFrame = 0;
 		}

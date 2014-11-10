@@ -11,13 +11,14 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	Override
 	protected void frameCall()
 	{
-		if(currentFrame == 94)
+		if(currentFrame == 86)
 		{
 			currentFrame = 0;
 			playing = false;
 			attacking = false;
 		}
-		if(currentFrame == 84)
+		
+		if(currentFrame == 76)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -28,7 +29,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	Override
 	protected void getHit(int damage)
 	{
-		if(85 < currentFrame && currentFrame < 96) damage /= 8;
+		if(77 < currentFrame && currentFrame < 88) damage /= 8;
 		super.getHit(damage);
 	}@
 	Override
@@ -41,7 +42,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 			{
 				rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
 				rotation = rads * r2d;
-				currentFrame = 86;
+				currentFrame = 78;
 				attacking = true;
 				playing = true;
 			}
@@ -59,7 +60,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		{
 			rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
 			rotation = rads * r2d;
-			currentFrame = 86;
+			currentFrame = 78;
 			attacking = true;
 			playing = true;
 		}
@@ -76,7 +77,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		distanceFound = checkDistance(x, y, mainController.getPlayerX(), mainController.getPlayerY());
 		if(distanceFound < 20)
 		{
-			currentFrame = 49;
+			currentFrame = 41;
 			attacking = true;
 			playing = true;
 		}
@@ -111,7 +112,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	Override
 	protected void attacking()
 	{
-		if(currentFrame == 64)
+		if(currentFrame == 56)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 20, y + Math.sin(rads) * 20, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
@@ -123,7 +124,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
-		if(currentFrame == 78)
+		if(currentFrame == 70)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 20, y + Math.sin(rads) * 20, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)

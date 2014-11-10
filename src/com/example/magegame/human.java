@@ -23,7 +23,7 @@ abstract public class Human extends DrawnSprite
 	protected void frameCall()
 	{
 		hp ++;
-		if(currentFrame == 47)
+		if(currentFrame == 40)
 		{
 			currentFrame = 0;
 		}

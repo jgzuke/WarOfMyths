@@ -15,7 +15,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 	Override
 	protected void frameCall()
 	{
-		if(currentFrame == 159)
+		if(currentFrame == 107)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -42,7 +42,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		distanceFound = checkDistance(x, y, mainController.player.x, mainController.player.y);
 		if(distanceFound < 30)
 		{
-			currentFrame = 49;
+			currentFrame = 41;
 			attacking = true;
 			playing = true;
 		}
@@ -75,7 +75,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 	Override
 	protected void attacking()
 	{
-		if(currentFrame == 79)
+		if(currentFrame == 54)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
@@ -87,7 +87,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
-		if(currentFrame == 121)
+		if(currentFrame == 83)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
@@ -99,7 +99,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
-		if(currentFrame == 126)
+		if(currentFrame == 87)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
@@ -110,7 +110,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 				mainController.activity.playEffect(R.raw.sword3);
 			}
 		}
-		if(currentFrame == 131)
+		if(currentFrame == 89)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)

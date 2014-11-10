@@ -63,7 +63,7 @@ public final class Enemy_Mage extends Enemy
 		{
 			abilityTimer_powerBall += 3*Math.pow(mainController.getDifficultyLevelMultiplier(), 0.5);
 		}
-		if(currentFrame == 58)
+		if(currentFrame == 51)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -404,7 +404,7 @@ public final class Enemy_Mage extends Enemy
 	{
 		rollTimer = 11;
 		playing = true;
-		currentFrame = 48;
+		currentFrame = 40;
 		xMoveRoll = Math.cos(rads) * speedCur * 2.2;
 		yMoveRoll = Math.sin(rads) * speedCur * 2.2;
 	}

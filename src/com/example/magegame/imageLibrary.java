@@ -12,16 +12,17 @@ public final class ImageLibrary
 	protected boolean swordsmanLoaded = false;
 	protected boolean axemanLoaded = false;
 	protected boolean archerLoaded = false;
-	protected Bitmap[] player_Image = new Bitmap[59];
-	protected Bitmap[] mage_Image = new Bitmap[59];
-	protected Bitmap[] pikeman_Image = new Bitmap[159]; 
-	protected Bitmap[] swordsman_Image = new Bitmap[95];
-	protected Bitmap[] axeman_Image = new Bitmap[95]; 
-	protected Bitmap[] archer_Image = new Bitmap[125];
+	protected Bitmap[] player_Image = new Bitmap[51];
+	protected Bitmap[] mage_Image = new Bitmap[51];
+	protected Bitmap[] pikeman_Image = new Bitmap[107]; 
+	protected Bitmap[] swordsman_Image = new Bitmap[87];
+	protected Bitmap[] axeman_Image = new Bitmap[87]; 
+	protected Bitmap[] archer_Image = new Bitmap[117];
 	protected Bitmap[][] powerBall_Image = new Bitmap[4][5];
 	protected Bitmap[] powerBallAOE_Image = new Bitmap[4];
 	protected Bitmap[][] teleport_Image = new Bitmap[2][15];
 	protected Bitmap[] warnings = new Bitmap[2];
+	protected Bitmap[] powerUps = new Bitmap[6];
 	private String getting;
 	protected Resources res;
 	protected String packageName;
@@ -46,10 +47,11 @@ public final class ImageLibrary
 	{
 		//teleport_Image[0] = loadArray1D(15, "teleportstart", 160, 160);
 		//teleport_Image[1] = loadArray1D(15, "teleportfinish", 160, 160);
-		mage_Image = loadArray1D(59, "mage", 30, 30);
+		mage_Image = loadArray1D(51, "mage", 30, 30);
 		warnings[0] = loadImage("warn0001", 147, 27);
 		warnings[1] = loadImage("warn0002", 173, 74);
-		player_Image = loadArray1D(59, "player", 30, 30);
+		player_Image = loadArray1D(51, "player", 30, 30);
+		powerUps = loadArray1D(6, "powerup", 30, 30);
 		if(activity.control != null)
 		{
 			if(activity.control.gameRunning)
@@ -82,8 +84,8 @@ public final class ImageLibrary
 	{
 		//recycleArray(15, teleport_Image[0]);
 		//recycleArray(15, teleport_Image[1]);
-		recycleArray(59, mage_Image);
-		recycleArray(59, player_Image);
+		recycleArray(51, mage_Image);
+		recycleArray(51, player_Image);
 		recycleArray(2, warnings);
 		changeArrayLoaded("archer", false);
 		changeArrayLoaded("pikeman", false);
@@ -112,22 +114,22 @@ public final class ImageLibrary
 		{
 			if(toChange.equals("archer") && !archerLoaded)
 			{
-				archer_Image = loadArray1D(125, "archer", 80, 50);
+				archer_Image = loadArray1D(117, "archer", 80, 50);
 				archerLoaded = true;
 			}
 			else if(toChange.equals("pikeman") && !pikemanLoaded)
 			{
-				pikeman_Image = loadArray1D(159, "pikeman", 110, 40);
+				pikeman_Image = loadArray1D(107, "pikeman", 110, 40);
 				pikemanLoaded = true;
 			}
 			else if(toChange.equals("axeman") && !axemanLoaded)
 			{
-				axeman_Image = loadArray1D(95, "axeman", 80, 60);
+				axeman_Image = loadArray1D(87, "axeman", 80, 60);
 				axemanLoaded = true;
 			}
 			else if(toChange.equals("swordsman") && !swordsmanLoaded)
 			{
-				swordsman_Image = loadArray1D(95, "swordsman", 110, 70);
+				swordsman_Image = loadArray1D(87, "swordsman", 110, 70);
 				swordsmanLoaded = true;
 			}
 		}

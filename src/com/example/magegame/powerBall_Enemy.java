@@ -41,6 +41,9 @@ public final class PowerBall_Enemy extends PowerBall
 		}
 		if(mainController.checkHitBack(x, y))
 		{
+			power /= 2;
+			x -= xForward;
+			y -= yForward;
 			mainController.createPowerBallEnemyAOE(x, y, power);
 			deleted = true;
 		}

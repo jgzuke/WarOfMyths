@@ -73,9 +73,62 @@ public class PlayerGestureDetector implements OnTouchListener {
     }
 	protected void clickDown(float x, float y, int ID, boolean firstPointer)
 	{
+		if(main.gamePaused)
+		{
+			clickDownPaused(x, y, ID, firstPointer);
+		} else
+		{
+			clickDownNotPaused(x, y, ID, firstPointer);
+		}
+	}
+	protected void clickDownPaused(float x, float y, int ID, boolean firstPointer)
+	{
+		boolean clicked = true;
 		if(main.pointOnSquare(x, y, 420, 0, 480, 60))
         {
-        	main.activity.startMenu(false);
+			main.gamePaused = false;
+        } else if(main.pointOnSquare(x, y, 245, 111, 432, 209))
+        {
+        	main.activity.startMenu(true);
+        } else if(main.pointOnCircle(x, y, 60, 60, 35) && main.activity.pHeal>0)
+        {
+        	player.getPowerUp(1);
+        	main.activity.pHeal--;
+        } else if(main.pointOnCircle(x, y, 160, 60, 35) && main.activity.pCool>0)
+        {
+        	player.getPowerUp(2);
+        	main.activity.pCool--;
+        } else if(main.pointOnCircle(x, y, 60, 160, 35) && main.activity.pWater>0)
+        {
+        	player.getPowerUp(3);
+        	main.activity.pWater--;
+        } else if(main.pointOnCircle(x, y, 160, 160, 35) && main.activity.pEarth>0)
+        {
+        	player.getPowerUp(4);
+        	main.activity.pEarth--;
+        } else if(main.pointOnCircle(x, y, 60, 260, 35) && main.activity.pAir>0)
+        {
+        	player.getPowerUp(5);
+        	main.activity.pAir--;
+        } else if(main.pointOnCircle(x, y, 160, 260, 35) && main.activity.pFire>0)
+        {
+        	player.getPowerUp(6);
+        	main.activity.pFire--;
+        } else
+        {
+        	clicked = false;
+        }
+		if(clicked)
+		{
+			main.invalidate();
+		}
+	}
+	protected void clickDownNotPaused(float x, float y, int ID, boolean firstPointer)
+	{
+		if(main.pointOnSquare(x, y, 420, 0, 480, 60))
+        {
+        	main.gamePaused = true;
+        	main.invalidate();
         } else if(main.pointOnSquare(x, y, buttonShiftX+12, 82, buttonShiftX+82, 152))
         {
         	player.teleport(visualX(x), visualY(y));

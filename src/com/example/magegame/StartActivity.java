@@ -44,6 +44,12 @@ public class StartActivity extends Activity
 	protected int uArtemisArrow = 1;
 	protected int uDionysusWine = 1;
 	protected int uHestiasBlessing = 1;
+	protected int pHeal = 1;
+	protected int pCool = 1;
+	protected int pWater = 1;
+	protected int pEarth = 1;
+	protected int pAir = 1;
+	protected int pFire = 1;
 	
 	private ViewSwitcher viewSwitcher;
 	private Handler mHandler = new Handler();
@@ -68,7 +74,10 @@ public class StartActivity extends Activity
 			{
 				if(control.gameRunning)
 				{
-					control.frameCall();
+					if(!control.gamePaused)
+					{
+						control.frameCall();
+					}
 				}
 			}
 			if(menuRun != null)

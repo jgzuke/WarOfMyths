@@ -44,6 +44,9 @@ public final class PowerBall_Player extends PowerBall
 		}
 		if(mainController.checkHitBack(x, y) || mainController.checkHitBack(x-(xForward/2), y-(yForward/2)))
 		{
+			power /= 2;
+			x -= xForward;
+			y -= yForward;
 			explode();
 		}
 	}
