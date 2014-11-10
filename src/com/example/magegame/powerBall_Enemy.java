@@ -13,7 +13,7 @@ public final class PowerBall_Enemy extends PowerBall
 		realY = y;
 		xForward = Xforward;
 		yForward = Yforward;
-		visualImage = mainController.imageLibrary.powerBall_Image[0][mainController.getRandomInt(5)];
+		visualImage = mainController.imageLibrary.powerBall_ImageEnemy[mainController.getRandomInt(5)];
 		setImageDimensions();
 		power = Power;
 		rotation = Rotation;
@@ -22,8 +22,15 @@ public final class PowerBall_Enemy extends PowerBall
 	protected void frameCall()
 	{
 		super.frameCall();
-		visualImage = mainController.imageLibrary.powerBall_Image[0][mainController.getRandomInt(5)];
-		if(mainController.player.getRollTimer() < 1)
+		if(mainController.checkHitBack(x, y) && !deleted)
+		{
+			x -= xForward;
+			y -= yForward;
+			mainController.createPowerBallEnemyAOE(x, y, 10);
+			deleted = true;
+			mainController.activity.playEffect("electric");
+		}
+		if(mainController.player.getRollTimer() < 1 && !deleted)
 		{
 			xDif = x - mainController.player.x;
 			yDif = y - mainController.player.y;
@@ -32,20 +39,13 @@ public final class PowerBall_Enemy extends PowerBall
 				mainController.player.getHit(power);
 				mainController.createPowerBallEnemyAOE(x, y, power);
 				deleted = true;
-				if(mainController.getRandomInt(3) == 0)
+				mainController.activity.playEffect("electric");
+				if(mainController.getRandomDouble()*(0.5+mainController.getDifficultyLevelMultiplier()) > 1.2)
 				{
 					mainController.player.rads = Math.atan2(yForward, xForward);
 					mainController.player.stun();
 				}
 			}
-		}
-		if(mainController.checkHitBack(x, y))
-		{
-			power /= 2;
-			x -= xForward;
-			y -= yForward;
-			mainController.createPowerBallEnemyAOE(x, y, power);
-			deleted = true;
 		}
 	}
 }

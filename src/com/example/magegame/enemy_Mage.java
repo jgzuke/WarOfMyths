@@ -6,8 +6,15 @@
  */
 package com.example.magegame;
 
+import android.util.Log;
+
 public final class Enemy_Mage extends Enemy
 {
+	private double projectileVelocity;
+	private double pXSpot=0;
+	private double pYSpot=0;
+	private double pXVelocity=0;
+	private double pYVelocity=0;
 	private int reactTimer = 0;
 	private int rollTimer = 0;
 	private double xMoveRoll;
@@ -17,7 +24,6 @@ public final class Enemy_Mage extends Enemy
 	private double abilityTimer_burst = 0;
 	private double abilityTimer_powerBall = 0;
 	private boolean rolledSideways;
-	private boolean playerAreaProtected = true;
 	private boolean enemyAreaProtected = true;
 	private int rollPathChooseCounter;
 	private double rollPathChooseRotationStore;
@@ -51,6 +57,10 @@ public final class Enemy_Mage extends Enemy
 	Override
 	protected void frameCall()
 	{
+		pXVelocity = mainController.player.x-pXSpot;
+		pYVelocity = mainController.player.y-pYSpot;
+		pXSpot = mainController.player.x;
+		pYSpot = mainController.player.y;
 		visualImage = mainController.imageLibrary.mage_Image[currentFrame];
 		rollTimer--;
 		reactionTimeRating = mainController.getDifficultyLevel();
@@ -63,7 +73,7 @@ public final class Enemy_Mage extends Enemy
 		{
 			abilityTimer_powerBall += 3*Math.pow(mainController.getDifficultyLevelMultiplier(), 0.5);
 		}
-		if(currentFrame == 51)
+		if(currentFrame == 30)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -71,7 +81,6 @@ public final class Enemy_Mage extends Enemy
 		if(getCheckLOSTimer() < 1)
 		{
 			enemyAreaProtected = checkAreaProtected(x, y);
-			playerAreaProtected = checkAreaProtected(mainController.player.x, mainController.player.y);
 		}
 		if(rollTimer < 1 && getRunTimer() < 1 && reactTimer < 1)
 		{
@@ -234,7 +243,7 @@ public final class Enemy_Mage extends Enemy
 		double playerDistance = checkDistance(x, y, mainController.player.x, mainController.player.y);
 		if(playerDistance < 30)
 		{
-			if(playerAreaProtected == true && abilityTimer_burst > 400)
+			if(abilityTimer_burst > 400)
 			{
 				setReactTimer();
 				reaction = "Power Burst";
@@ -291,7 +300,7 @@ public final class Enemy_Mage extends Enemy
 		while(areaProtectedRotation < 360)
 		{
 			areaProtectedRads = areaProtectedRotation / r2d;
-			if(mainController.checkObstructions(X, Y, areaProtectedRads, 50))
+			if(mainController.checkObstructionsShort(X, Y, areaProtectedRads, 50))
 			{
 				areaProtectedCount++;
 			}
@@ -311,7 +320,7 @@ public final class Enemy_Mage extends Enemy
 	{
 		rads = Math.atan2(-(mainController.player.y - y), -(mainController.player.x - x));
 		rotation = rads * r2d;
-		if(!mainController.checkObstructions(x, y, areaProtectedRads, 42))
+		if(!mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
 		{
 			roll();
 		}
@@ -324,7 +333,7 @@ public final class Enemy_Mage extends Enemy
 				rollPathChooseCounter += 10;
 				rotation = rollPathChooseRotationStore + rollPathChooseCounter;
 				rads = rotation / r2d;
-				if(!mainController.checkObstructions(x, y, areaProtectedRads, 42))
+				if(!mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
 				{
 					roll();
 					rollPathChooseCounter = 180;
@@ -333,7 +342,7 @@ public final class Enemy_Mage extends Enemy
 				{
 					rotation = rollPathChooseRotationStore - rollPathChooseCounter;
 					rads = rotation / r2d;
-					if(!mainController.checkObstructions(x, y, areaProtectedRads, 42))
+					if(!mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
 					{
 						roll();
 						rollPathChooseCounter = 180;
@@ -360,10 +369,10 @@ public final class Enemy_Mage extends Enemy
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 		rotation = rads * r2d;
 		rads = (rotation + 90) / r2d;
-		if(mainController.checkObstructions(x, y, areaProtectedRads, 42))
+		if(mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
 		{
 			rads = (rotation - 90) / r2d;
-			if(mainController.checkObstructions(x, y, areaProtectedRads, 42))
+			if(mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
 			{
 				rolledSideways = false;
 			}
@@ -376,7 +385,7 @@ public final class Enemy_Mage extends Enemy
 		} else
 		{
 			rads = (rotation - 90) / r2d;
-			if(mainController.checkObstructions(x, y, areaProtectedRads, 42))
+			if(mainController.checkObstructionsShort(x, y, areaProtectedRads, 42))
 			{
 				rotation += 90;
 				rads = rotation / r2d;
@@ -404,11 +413,16 @@ public final class Enemy_Mage extends Enemy
 	{
 		rollTimer = 11;
 		playing = true;
-		currentFrame = 40;
-		xMoveRoll = Math.cos(rads) * speedCur * 2.2;
-		yMoveRoll = Math.sin(rads) * speedCur * 2.2;
+		currentFrame = 21;
+		xMoveRoll = Math.cos(rads) * 8;
+		yMoveRoll = Math.sin(rads) * 8;
 	}
-	
+	private void burst()
+	{
+		abilityTimer_burst = 0;
+		mainController.createPowerBallEnemyBurst(x, y, 130);
+		mainController.activity.playEffect("burst");
+	}
 	/*
 	 * Releases stored powerBall towards player
 	 */
@@ -416,38 +430,33 @@ public final class Enemy_Mage extends Enemy
 	{
 		if(abilityTimer_powerBall > 30)
 		{
+			projectileVelocity = 2+(mainController.getDifficultyLevelMultiplier()*5);
 			playing = false;
 			currentFrame = 0;
+			double timeToHit = (checkDistance(x, y, mainController.player.x, mainController.player.y))/projectileVelocity;
+			timeToHit *= (mainController.getRandomDouble()*0.7)+0.4;
+			double newPX;
+			double newPY;
 			if(mainController.player.isTeleporting())
 			{
-				rads = Math.atan2((mainController.player.getXSave() - y), (mainController.player.getYSave() - x));
+				newPX = mainController.player.getXSave();
+				newPY = mainController.player.getYSave();
 			}
 			else
 			{
-				rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
+				newPX = mainController.player.x+(pXVelocity*timeToHit);
+				newPY = mainController.player.y+(pYVelocity*timeToHit);
 			}
+			double xDif = newPX-x;
+			double yDif = newPY-y;
+			rads = Math.atan2(yDif, xDif);
 			rotation = rads * r2d;
-			rads -= 0.07;
-			rads += mainController.getRandomDouble()*0.14;
-			mainController.createPowerBallEnemy(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 130, x, y);
+			mainController.createPowerBallEnemy(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
 			abilityTimer_powerBall -= 30;
+			mainController.activity.playEffect("shoot");
 		}
 	}
-	protected void powerBurst()
-	{
-		if(abilityTimer_burst > 400)
-		{
-			mainController.createPowerBallEnemy(0, 10, 0, 130, x, y);
-			mainController.createPowerBallEnemy(45, 7, 7, 130, x, y);
-			mainController.createPowerBallEnemy(90, 0, 10, 130, x, y);
-			mainController.createPowerBallEnemy(135, -7, 7, 130, x, y);
-			mainController.createPowerBallEnemy(180, -10, 0, 130, x, y);
-			mainController.createPowerBallEnemy(225, -7, -7, 130, x, y);
-			mainController.createPowerBallEnemy(270, 0, -10, 130, x, y);
-			mainController.createPowerBallEnemy(315, 7, -7, 130, x, y);
-			abilityTimer_burst -= 400;
-		}
-	}
+	
 	/*
 	 * Acts out stored reaction
 	 */
@@ -479,7 +488,7 @@ public final class Enemy_Mage extends Enemy
 			run();
 			break;
 		case 7:
-			powerBurst();
+			burst();
 			break;
 		}
 	}
@@ -490,7 +499,7 @@ public final class Enemy_Mage extends Enemy
 		playing = true;
 		xMoveRoll = Math.cos(rads) * speedCur * 0.7;
 		yMoveRoll = Math.sin(rads) * speedCur * 0.7;
-        currentFrame = 1;                                 
+        currentFrame = 0;                                 
         reactTimer = 0;
 	}
 	protected int getReactTimer() {
@@ -502,14 +511,16 @@ public final class Enemy_Mage extends Enemy
 	protected double getYMoveRoll() {
 		return yMoveRoll;
 	}
-	protected int getRollTimer() {
-		return rollTimer;
-	}
 	protected void setRollTimer(int rollTimer) {
 		this.rollTimer = rollTimer;
 	}
 	@Override
 	protected void stun(int time) {
 		
+	}
+	@ Override
+	protected int getRollTimer()
+	{
+		return rollTimer;
 	}
 }

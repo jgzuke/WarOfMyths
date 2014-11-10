@@ -11,14 +11,14 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	Override
 	protected void frameCall()
 	{
-		if(currentFrame == 86)
+		if(currentFrame == 54)
 		{
 			currentFrame = 0;
 			playing = false;
 			attacking = false;
 		}
 		
-		if(currentFrame == 76)
+		if(currentFrame == 46)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -29,7 +29,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	Override
 	protected void getHit(int damage)
 	{
-		if(77 < currentFrame && currentFrame < 88) damage /= 8;
+		if(currentFrame > 46) damage /= 8;
 		super.getHit(damage);
 	}@
 	Override
@@ -42,7 +42,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 			{
 				rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
 				rotation = rads * r2d;
-				currentFrame = 78;
+				currentFrame = 47;
 				attacking = true;
 				playing = true;
 			}
@@ -60,7 +60,7 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		{
 			rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
 			rotation = rads * r2d;
-			currentFrame = 78;
+			currentFrame = 47;
 			attacking = true;
 			playing = true;
 		}
@@ -75,11 +75,17 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 		rads = Math.atan2((mainController.getPlayerY() - y), (mainController.getPlayerX() - x));
 		rotation = rads * r2d;
 		distanceFound = checkDistance(x, y, mainController.getPlayerX(), mainController.getPlayerY());
-		if(distanceFound < 20)
+		if(distanceFound < 40)
 		{
-			currentFrame = 41;
 			attacking = true;
 			playing = true;
+			if(mainController.getRandomDouble() > 0.65)
+			{
+				currentFrame = 47;
+			} else
+			{
+				currentFrame = 21;
+			}
 		}
 		else
 		{
@@ -112,28 +118,47 @@ abstract public class Enemy_Shield extends Enemy_Muggle
 	Override
 	protected void attacking()
 	{
-		if(currentFrame == 56)
+		if(currentFrame == 28)
 		{
-			distanceFound = checkDistance(x + Math.cos(rads) * 20, y + Math.sin(rads) * 20, mainController.player.x, mainController.player.y);
-			if(distanceFound < 30)
+			distanceFound = checkDistance(x + Math.cos(rads) * 35, y + Math.sin(rads) * 35, mainController.player.x, mainController.player.y);
+			if(distanceFound < 25)
 			{
-				mainController.player.getHit((int)(600*mainController.getDifficultyLevelMultiplier()));
-				mainController.activity.playEffect(R.raw.sword1);
+				mainController.player.getHit((int)(300*mainController.getDifficultyLevelMultiplier()));
+				mainController.activity.playEffect("sword1");
 			} else
 			{
-				mainController.activity.playEffect(R.raw.sword3);
+				mainController.activity.playEffect("swordmiss");
 			}
 		}
-		if(currentFrame == 70)
+		if(currentFrame == 40)
 		{
-			distanceFound = checkDistance(x + Math.cos(rads) * 20, y + Math.sin(rads) * 20, mainController.player.x, mainController.player.y);
-			if(distanceFound < 30)
+			distanceFound = checkDistance(x + Math.cos(rads) * 25, y + Math.sin(rads) * 25, mainController.player.x, mainController.player.y);
+			if(distanceFound < 25)
 			{
-				mainController.player.getHit((int)(400*mainController.getDifficultyLevelMultiplier()));
-				mainController.activity.playEffect(R.raw.sword2);
+				mainController.player.getHit((int)(450*mainController.getDifficultyLevelMultiplier()));
+				mainController.activity.playEffect("sword2");
+				if(mainController.getRandomInt(3) == 0)
+				{
+					mainController.player.rads = Math.atan2(mainController.player.y-y, mainController.player.x-x);
+					mainController.player.stun();
+				}
 			} else
 			{
-				mainController.activity.playEffect(R.raw.sword3);
+				mainController.activity.playEffect("swordmiss");
+			}
+		}
+		if(currentFrame == 50)
+		{
+			distanceFound = checkDistance(x + Math.cos(rads) * 25, y + Math.sin(rads) * 25, mainController.player.x, mainController.player.y);
+			if(distanceFound < 25)
+			{
+				mainController.player.getHit((int)(100*mainController.getDifficultyLevelMultiplier()));
+				mainController.activity.playEffect("earth");
+				mainController.player.rads = Math.atan2(mainController.player.y-y, mainController.player.x-x);
+				mainController.player.stun();
+			} else
+			{
+				mainController.activity.playEffect("swordmiss");
 			}
 		}
 	}

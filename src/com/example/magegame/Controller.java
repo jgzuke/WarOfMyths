@@ -57,38 +57,48 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Align;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Paint.Style;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.os.Handler;
 
 import java.util.Random;
 public final class Controller extends AllViews
 {
+	protected int currentTutorial = 1;
 	protected Enemy[] enemies = new Enemy[30];
 	private PowerUp[] powerUps = new PowerUp[30];
 	private PowerBall[] powerBalls = new PowerBall[30];
 	private PowerBallAOE[] powerBallAOEs = new PowerBallAOE[30];
-	private Graphic_Teleport[] graphic_Teleport = new Graphic_Teleport[30];
 	private Wall_Rectangle[] walls = new Wall_Rectangle[30];
+	private Graphic_Teleport[] graphic_Teleport = new Graphic_Teleport[30];
 	private Wall_Circle[] wallCircles = new Wall_Circle[30];
+	private Wall_Ring[] wallRings = new Wall_Ring[30];
+	private Wall_Pass[] wallPasses = new Wall_Pass[30];
 	private Rect aoeRect = new Rect();
 	private int wallWidth = 10;
 	private boolean gameEnded = false;
-	private int currentCircle = 0;
-	private int currentRectangle = 0;
 	protected Player player;
 	protected Context context;
 	protected ImageLibrary imageLibrary;
-	private Random randomGenerator;
-	private int playerColour;
-	private int difficultyLevel;
+	private Random randomGenerator = new Random();
+	private int difficultyLevel = 10;
 	private double difficultyLevelMultiplier;
-	private int playerType;
-	protected int levelNum;
+	protected int playerType = 0;
+	protected int levelNum = 0;
 	private int warningTimer;
 	private int warningType;
+	private int[] oPassageX1;
+	private int[] oPassageX2;
+	private int[] oPassageY1;
+	private int[] oPassageY2;
+	private int[] oRingX;
+	private int[] oRingY;
+	private int[] oRingInner;
+	private int[] oRingOuter;
 	private int[] oRectX1;
 	private int[] oRectX2;
 	private int[] oRectY1;
@@ -96,6 +106,21 @@ public final class Controller extends AllViews
 	private int[] oCircX;
 	private int[] oCircY;
 	private int[] oCircRadius;
+	private double[] oCircRatio;
+	private int[] oRectX1Short;
+	private int[] oRectX2Short;
+	private int[] oRectY1Short;
+	private int[] oRectY2Short;
+	private int[] oCircXShort;
+	private int[] oCircYShort;
+	private int[] oCircRadiusShort;
+	private double[] oCircRatioShort;
+	private int currentCircle = 0;
+	private int currentRectangle = 0;
+	private int currentCircleShort = 0;
+	private int currentRectangleShort = 0;
+	private int currentRing = 0;
+	private int currentPassage = 0;
 	private Bitmap background;
 	private PlayerGestureDetector detect;
 	private double spChangeForType;
@@ -104,93 +129,136 @@ public final class Controller extends AllViews
 	protected int xShiftLevel;
 	protected int yShiftLevel;
 	protected boolean gamePaused = false;
+	private Handler mHandler = new Handler();
+	protected String currentPause;
+	private Bitmap check;
+	protected String buyingItem;
+	protected int startingLevel;
+	protected boolean drainHp = false;
+	protected boolean lowerHp = false;
+	protected boolean limitSpells = false;
+	protected boolean enemyRegen = false;
+	protected int winnings = 0;
+	private Runnable frameCaller = new Runnable()
+	{
+		public void run()
+		{
+				if(!gamePaused && activity.gameRunning)
+				{
+					frameCall();
+				}
+			mHandler.postDelayed(this, 50);
+		}
+	};
 	/* 
 	 * Initializes all undecided variables, loads level, creates player and enemy objects, and starts frameCaller
 	 */
-	public Controller(Context startSet, StartActivity activitySet, ImageLibrary imageLibrarySet)
+	public Controller(Context startSet, StartActivity activitySet)
 	{
 		super(startSet);
 		activity = activitySet;
-		imageLibrary = imageLibrarySet;
+		context = startSet;
+		imageLibrary = new ImageLibrary(startSet, this);
 		screenMinX = activitySet.screenMinX;
 		screenMinY = activitySet.screenMinY;
 		screenDimensionMultiplier = activitySet.screenDimensionMultiplier;
 		paint.setAntiAlias(true);
 		paint.setFilterBitmap(true);
 		paint.setDither(true);
-		context = startSet;
-		randomGenerator = new Random();
-		detect = new PlayerGestureDetector(this);
+    	setBackgroundColor(Color.WHITE);
+        setKeepScreenOn(true);
+        player = new Player(this);
+        detect = new PlayerGestureDetector(this);
 		setOnTouchListener(detect);
-		player = new Player(this);
 		detect.setPlayer(player);
-	}
-	protected void primeFighting()
+		changePlayerType(0);
+		changeDifficulty(10);
+		startFighting(0);
+        frameCaller.run();
+        check = imageLibrary.loadImage("menu_check", 20, 20);
+		changePlayOptions();
+    }
+	protected void endFighting()
 	{
 		player.resetVariables();
 		enemies = new Enemy[30];
 		powerBalls = new PowerBall[30];
 		powerBallAOEs = new PowerBallAOE[30];
+		powerUps = new PowerUp[30];
 		graphic_Teleport = new Graphic_Teleport[30];
 		walls = new Wall_Rectangle[30];
 		wallCircles = new Wall_Circle[30];
+		wallRings = new Wall_Ring[30];
+		powerUps = new PowerUp[30];
 		gameEnded = false;
 		currentCircle = 0;
 		currentRectangle = 0;
-		// TODO change to black ball
-		imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001", 80, 80);
-		imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(5, "powerball0001_", 35, 15);
-		gamePaused = false;
+		currentCircleShort = 0;
+		currentRectangleShort = 0;
+		currentRing = 0;
+		currentPassage = 0;
+		imageLibrary.currentLevelTop = null;
+		activity.saveGame();
 	}
-	protected void startFighting(int playerTypeSet, int levelNumSet, int difficultyLevelSet)
+	protected void startFighting(int levelNumSet)
+	{
+		endFighting();
+		levelNum = levelNumSet;
+		loadLevel();
+	}
+	protected void changeDifficulty(int difficultyLevelSet)
+	{
+		difficultyLevel = difficultyLevelSet;
+		difficultyLevelMultiplier = 17 / (double)(difficultyLevel + 7);
+	}
+	protected void changePlayOptions()
+	{
+		detect.getSide();
+		background = drawStart();
+		invalidate();
+	}
+	protected void changePlayerType(int playerTypeSet)
 	{
 		playerType = playerTypeSet;
 		player.humanType = playerType;
-		difficultyLevel = difficultyLevelSet;
-		levelNum = levelNumSet;
-		difficultyLevelMultiplier = 20 / (double)(difficultyLevel + 10);
+		imageLibrary.loadPlayerPowerBall();
 		switch(playerType)
 		{
 		case 0:
-			imageLibrary.powerBallAOE_Image[0] = imageLibrary.loadImage("powerballaoe0001", 80, 80);
-			imageLibrary.powerBall_Image[0] = imageLibrary.loadArray1D(5, "powerball0001_", 35, 15);
-			player.spChangeForType = activity.wApollo;
-			playerColour = Color.rgb(255, 0, 0);
+			player.spChangeForType = activity.wApollo/10;
 			break;
 		case 1:
-			imageLibrary.powerBallAOE_Image[1] = imageLibrary.loadImage("powerballaoe0002", 80, 80);
-			imageLibrary.powerBall_Image[1] = imageLibrary.loadArray1D(5, "powerball0002_", 35, 15);
-			player.spChangeForType = activity.wPoseidon;
-			playerColour = Color.rgb(0, 0, 255);
+			player.spChangeForType = activity.wPoseidon/10;
 			break;
 		case 2:
-			imageLibrary.powerBallAOE_Image[2] = imageLibrary.loadImage("powerballaoe0003", 80, 80);
-			imageLibrary.powerBall_Image[2] = imageLibrary.loadArray1D(5, "powerball0003_", 35, 15);
-			player.spChangeForType = activity.wZues;
-			playerColour = Color.rgb(170, 119, 221);
+			player.spChangeForType = activity.wZues/10;
 			break;
 		case 3:
-			imageLibrary.powerBallAOE_Image[3] = imageLibrary.loadImage("powerballaoe0004", 80, 80);
-			imageLibrary.powerBall_Image[3] = imageLibrary.loadArray1D(5, "powerball0004_", 35, 15);
-			player.spChangeForType = activity.wHades;
-			playerColour = Color.rgb(102, 51, 0);
+			player.spChangeForType = activity.wHades/10;
 			break;
 		}
-		loadLevel();
-		detect.getSide();
 		background = drawStart();
 	}
 	/*
 	 * Loads the level the user picked and initializes teleport and wall array variables
 	 */
-	protected Wall_Rectangle makeWall_Rectangle(int x, int y, int width, int height)
+	protected Wall_Rectangle makeWall_Rectangle(int x, int y, int width, int height, boolean HitPlayer, boolean tall)
 	{
-		Wall_Rectangle wall1 = new Wall_Rectangle(this, x-2, y-2, width+4, height+4);
+		Wall_Rectangle wall1 = new Wall_Rectangle(this, x-2, y-2, width+4, height+4, HitPlayer, tall);
 		return wall1;
 	}
-	protected Wall_Circle makeWall_Circle(int x, int y, int rad)
+	protected Wall_Ring makeWall_Ring(int x, int y, int radIn, int radOut)
 	{
-		Wall_Circle wall1 = new Wall_Circle(this, x, y, rad+2);
+		Wall_Ring wall1 = new Wall_Ring(this, x, y, radIn-2, radOut+2);
+		return wall1;
+	}
+	protected void makeWall_Pass(int x, int y, int width, int height)
+	{
+		Wall_Pass wall1 = new Wall_Pass(this, x-2, y-2, width+4, height+4);
+	}
+	protected Wall_Circle makeWall_Circle(int x, int y, int rad, double ratio, boolean tall)
+	{
+		Wall_Circle wall1 = new Wall_Circle(this, x, y, rad+2, ratio, tall);
 		return wall1;
 	}
 	protected void createWallRectangleValueArrays(int length)
@@ -205,107 +273,334 @@ public final class Controller extends AllViews
 		oCircX = new int[length];
 		oCircY = new int[length];
 		oCircRadius = new int[length];
+		oCircRatio =  new double[length];
+	}
+	protected void createWallRectangleValueArraysShort(int length)
+	{
+		oRectX1Short = new int[length];
+		oRectX2Short = new int[length];
+		oRectY1Short = new int[length];
+		oRectY2Short = new int[length];
+	}
+	protected void createWallCircleValueArraysShort(int length)
+	{
+		oCircXShort = new int[length];
+		oCircYShort = new int[length];
+		oCircRadiusShort = new int[length];
+		oCircRatioShort =  new double[length];
+	}
+	protected void createWallRingValueArrays(int length)
+	{
+		oRingX = new int[length];
+		oRingY = new int[length];
+		oRingInner = new int[length];
+		oRingOuter =  new int[length];
+	}
+	protected void createWallPassageValueArrays(int length)
+	{
+		oPassageX1 = new int[length];
+		oPassageX2 = new int[length];
+		oPassageY1 = new int[length];
+		oPassageY2 =  new int[length];
 	}
 	protected void loadLevel()
 	{
 		if(levelNum == 0)
 		{
 			imageLibrary.changeArrayLoaded("swordsman", true);
-			createWallRectangleValueArrays(8);
-			createWallCircleValueArrays(0);
+			createWallRectangleValueArrays(23);
+			createWallCircleValueArrays(20);
+			createWallRectangleValueArraysShort(26);
+			createWallCircleValueArraysShort(28);
 			levelWidth = 500;
-			levelHeight = 500;
-			enemies[4] = new Enemy_Mage(this, 105, 250);
-			player.x = 325;
-			player.y = 250;
-			enemies[0] = new Enemy_Swordsman(this, 85, 85);
-			enemies[1] = new Enemy_Swordsman(this, 415, 85);
-			enemies[2] = new Enemy_Swordsman(this, 85, 415);
-			enemies[3] = new Enemy_Swordsman(this, 415, 415);
-			walls[0] = makeWall_Rectangle(50, 50, 400, 10);
-			walls[1] = makeWall_Rectangle(50, 440, 400, 10);
-			walls[2] = makeWall_Rectangle(110, 110, 115, 10);
-			walls[3] = makeWall_Rectangle(275, 110, 115, 10);
-			walls[4] = makeWall_Rectangle(110, 380, 115, 10);
-			walls[5] = makeWall_Rectangle(275, 380, 115, 10);
-			walls[6] = makeWall_Rectangle(110, 110, 10, 280);
-			walls[7] = makeWall_Rectangle(380, 110, 10, 280);
+			levelHeight = 650;
+			player.x = 250;
+			player.y = 280;
+			enemies[0] = new Enemy_Swordsman(this, 375, 191);
+			enemies[1] = new Enemy_Swordsman(this, 482, 191);
+			
+			walls[0] = makeWall_Rectangle(0, 0, 10, 40, true, true);
+			walls[1] = makeWall_Rectangle(0, 66, 10, 44, true, true);
+			walls[2] = makeWall_Rectangle(0, 137, 10, 40, true, true);
+			walls[3] = makeWall_Rectangle(490, 0, 10, 40, true, true);
+			walls[4] = makeWall_Rectangle(490, 66, 10, 44, true, true);
+			walls[5] = makeWall_Rectangle(490, 137, 10, 40, true, true);
+			
+			walls[6] = makeWall_Rectangle(0, 0, 39, 10, true, true);
+			walls[7] = makeWall_Rectangle(68, 0, 36, 10, true, true);
+			walls[8] = makeWall_Rectangle(134, 0, 36, 10, true, true);
+			walls[9] = makeWall_Rectangle(199, 0, 36, 10, true, true);
+			walls[10] = makeWall_Rectangle(264, 0, 36, 10, true, true);
+			walls[11] = makeWall_Rectangle(329, 0, 36, 10, true, true);
+			walls[12] = makeWall_Rectangle(395, 0, 36, 10, true, true);
+			walls[13] = makeWall_Rectangle(461, 0, 39, 10, true, true);
+			
+			walls[14] = makeWall_Rectangle(0, 163, 230, 10, true, true);
+			walls[15] = makeWall_Rectangle(270, 163, 230, 10, true, true);
+			walls[16] = makeWall_Rectangle(0, 385, 219, 10, true, true);
+			walls[17] = makeWall_Rectangle(281, 385, 219, 10, true, true);
+			
+			walls[18] = makeWall_Rectangle(141, 172, 10, 90, true, true);
+			walls[19] = makeWall_Rectangle(141, 295, 10, 90, true, true);
+			walls[20] = makeWall_Rectangle(347, 172, 10, 90, true, true);
+			walls[21] = makeWall_Rectangle(347, 295, 10, 90, true, true);
+			walls[22] = makeWall_Rectangle(347, 255, 10, 47, false, true);
+			
+			walls[23] = makeWall_Rectangle(0, 165, 148, 47, true, false);//storage
+			walls[24] = makeWall_Rectangle(351, 165, 98, 36, true, false);//barrels
+			walls[25] = makeWall_Rectangle(62, 251, 27, 72, true, false);//barrels
+			
+			wallCircles[0] = makeWall_Circle(475, 420, 15, 1, true);//hades
+			wallCircles[1] = makeWall_Circle(20, 420, 15, 1, true);//apollo
+			wallCircles[2] = makeWall_Circle(20, 625, 15, 1, true);//posiedon
+			wallCircles[3] = makeWall_Circle(475, 625, 15, 1, true);//zues
+			
+			wallCircles[4] = makeWall_Circle(423, 466, 8, 1, true);//same again
+			wallCircles[5] = makeWall_Circle(68, 466, 8, 1, true);
+			wallCircles[6] = makeWall_Circle(68, 580, 8, 1, true);
+			wallCircles[7] = makeWall_Circle(423, 580, 8, 1, true);
+			
+			wallCircles[8] = makeWall_Circle(174, 420, 15, 1, true);//heph
+			wallCircles[9] = makeWall_Circle(174, 630, 15, 1, true);//athena
+			wallCircles[10] = makeWall_Circle(326, 420, 15, 1, true);//hermes
+			wallCircles[11] = makeWall_Circle(326, 630, 15, 1, true);//ares
+			
+			wallCircles[12] = makeWall_Circle(195, 219, 8, 1, true);
+			wallCircles[13] = makeWall_Circle(318, 224, 8, 1, true);
+			wallCircles[14] = makeWall_Circle(306, 373, 8, 1, true);
+			wallCircles[15] = makeWall_Circle(371, 129, 8, 1, true);
+			wallCircles[16] = makeWall_Circle(473, 87, 8, 1, true);
+			wallCircles[17] = makeWall_Circle(281, 20, 8, 1, true);
+			wallCircles[18] = makeWall_Circle(151, 35, 8, 1, true);
+			wallCircles[19] = makeWall_Circle(24, 91, 8, 1, true);
+			
+			wallCircles[20] = makeWall_Circle(99, 377, 6, 1, false);//ambrosia
+			wallCircles[21] = makeWall_Circle(15, 322, 6, 1, false);//cooldown
+			wallCircles[22] = makeWall_Circle(127, 334, 6, 1, false);//posiedon
+			wallCircles[23] = makeWall_Circle(16, 263, 6, 1, false);//hades
+			wallCircles[24] = makeWall_Circle(126, 234, 6, 1, false);//zues
+			wallCircles[25] = makeWall_Circle(53, 376, 6, 1, false);//apollo
+			
+			wallCircles[26] = makeWall_Circle(406, 212, 6, 1, false);
+			wallCircles[27] = makeWall_Circle(488, 321, 6, 1, false);
 		}
 		if(levelNum == 1)
 		{
 			imageLibrary.changeArrayLoaded("swordsman", true);
-			createWallRectangleValueArrays(1);
+			createWallRectangleValueArrays(3);
 			createWallCircleValueArrays(0);
+			createWallRectangleValueArraysShort(3);
+			createWallCircleValueArraysShort(0);
 			levelWidth = 500;
-			levelHeight = 500;
-			walls[0] = makeWall_Rectangle(150, 150, 100, 100);
-			enemies[3] = new Enemy_Swordsman(this, 370, 290);
-			/*imageLibrary.changeArrayLoaded("swordsman", true);
-			createWallRectangleValueArrays(6);
-			createWallCircleValueArrays(1);
-			levelWidth = 500;
-			levelHeight = 500;
-			enemies[4] = new Enemy_Mage(this, 110, 160);
-			enemies[0] = new Enemy_Swordsman(this, 110, 30);
-			enemies[1] = new Enemy_Swordsman(this, 370, 30);
-			enemies[2] = new Enemy_Swordsman(this, 110, 290);
-			enemies[3] = new Enemy_Swordsman(this, 370, 290);
-			walls[0] = makeWall_Rectangle(130, 220, 50, 60);
-			walls[1] = makeWall_Rectangle(260, 350, 50, 60);
-			walls[2] = makeWall_Rectangle(130, 220, 260, 270);
-			walls[3] = makeWall_Rectangle(260, 350, 260, 270);
-			walls[4] = makeWall_Rectangle(130, 140, 50, 270);
-			walls[5] = makeWall_Rectangle(340, 350, 50, 270);
-			wallCircles[6] = makeWall_Circle(240, 160, 60);
-			*/
+			levelHeight = 300;
+			player.x = 250;
+			player.y = 150;
+			walls[0] = makeWall_Rectangle(110, 0, 10, 300, true, true);
+			walls[1] = makeWall_Rectangle(380, 0, 10, 125, true, true);
+			walls[2] = makeWall_Rectangle(380, 175, 10, 125, true, true);
 		}
 		if(levelNum == 2)
 		{
 			imageLibrary.changeArrayLoaded("swordsman", true);
-			createWallRectangleValueArrays(6);
-			createWallCircleValueArrays(0);
-			enemies[4] = new Enemy_Mage(this, 110, 160);
-			enemies[0] = new Enemy_Swordsman(this, 160, 110);
-			enemies[1] = new Enemy_Swordsman(this, 320, 110);
-			enemies[2] = new Enemy_Swordsman(this, 160, 210);
-			enemies[3] = new Enemy_Swordsman(this, 320, 210);
-			walls[0] = makeWall_Rectangle(130, 140, 50, 60);
-			walls[1] = makeWall_Rectangle(340, 350, 50, 60);
-			walls[2] = makeWall_Rectangle(130, 140, 180, 270);
-			walls[3] = makeWall_Rectangle(340, 350, 180, 270);
-			walls[4] = makeWall_Rectangle(130, 350, 130, 140);
-			walls[5] = makeWall_Rectangle(130, 350, 180, 190);
+			imageLibrary.changeArrayLoaded("archer", true);
+			createWallRectangleValueArrays(5);
+			createWallCircleValueArrays(3);
+			createWallRectangleValueArraysShort(7);
+			createWallCircleValueArraysShort(3);
+			levelWidth = 500;
+			levelHeight = 300;
+			player.x = 476;
+			player.y = 112;
+			enemies[0] = new Enemy_Archer(this, 338, 35);
+			enemies[1] = new Enemy_Swordsman(this, 269, 85);
+			enemies[2] = new Enemy_Archer(this, 30, 192);
+			enemies[3] = new Enemy_Swordsman(this, 61, 249);
+			walls[0] = makeWall_Rectangle(15, 8, 100, 70, true, true);
+			walls[1] = makeWall_Rectangle(103, -9, 141, 153, true, true);
+			walls[2] = makeWall_Rectangle(119, 125, 108, 59, true, true);
+			
+			walls[3] = makeWall_Rectangle(356, 67, 96, 121, true, true);
+			walls[4] = makeWall_Rectangle(345, 175, 122, 135, true, true);
+			
+			walls[5] = makeWall_Rectangle(136, 177, 13, 80, true, false);
+			walls[6] = makeWall_Rectangle(136, 245, 56, 13, true, false);
+			wallCircles[0] = makeWall_Circle(108, 178, 15, 1, true);
+			wallCircles[1] = makeWall_Circle(335, 221, 15, 1, true);
+			wallCircles[2] = makeWall_Circle(460, 71, 15, 1, true);
 		}
 		if(levelNum == 3)
 		{
-			imageLibrary.changeArrayLoaded("swordsman", true);
-			createWallRectangleValueArrays(4);
-			createWallCircleValueArrays(0);
-			enemies[4] = new Enemy_Mage(this, 110, 160);
-			enemies[0] = new Enemy_Swordsman(this, 190, 30);
-			enemies[1] = new Enemy_Swordsman(this, 290, 30);
-			enemies[2] = new Enemy_Swordsman(this, 190, 290);
-			enemies[3] = new Enemy_Swordsman(this, 290, 290);
-			walls[0] = makeWall_Rectangle(185, 195, 50, 270);
-			walls[1] = makeWall_Rectangle(235, 245, -10, 140);
-			walls[2] = makeWall_Rectangle(235, 245, 180, 330);
-			walls[3] = makeWall_Rectangle(285, 295, 50, 270);
+			imageLibrary.changeArrayLoaded("axeman", true);
+			imageLibrary.changeArrayLoaded("pikeman", true);
+			createWallRectangleValueArrays(0);
+			createWallCircleValueArrays(7);
+			createWallRectangleValueArraysShort(2);
+			createWallCircleValueArraysShort(7);
+			levelWidth = 400;
+			levelHeight = 400;
+			player.x = 370;
+			player.y = 200;
+			enemies[0] = new Enemy_Pikeman(this, 244, 239);
+			enemies[1] = new Enemy_Pikeman(this, 91, 114);
+			enemies[2] = new Enemy_Pikeman(this, 139, 180);
+			enemies[3] = new Enemy_Axeman(this, 309, 184);
+			enemies[4] = new Enemy_Axeman(this, 103, 180);
+			enemies[5] = new Enemy_Axeman(this, 166, 114);
+			walls[0] = makeWall_Rectangle(80, 127, 79, 33, true, false);
+			walls[1] = makeWall_Rectangle(263, 179, 30, 78, true, false);
+			wallCircles[0] = makeWall_Circle(148, 69, 15, 1, true);
+			wallCircles[1] = makeWall_Circle(252, 74, 15, 1, true);
+			wallCircles[2] = makeWall_Circle(35, 200, 15, 1, true);
+			wallCircles[3] = makeWall_Circle(108, 357, 15, 1, true);
+			wallCircles[4] = makeWall_Circle(230, 370, 15, 1, true);
+			wallCircles[5] = makeWall_Circle(374, 203, 15, 1, true);
+			wallCircles[6] = makeWall_Circle(202, 201, 8, 1, false);
 		}
 		if(levelNum == 4)
 		{
 			imageLibrary.changeArrayLoaded("swordsman", true);
-			createWallRectangleValueArrays(4);
+			imageLibrary.changeArrayLoaded("pikeman", true);
+			createWallRectangleValueArrays(2);
 			createWallCircleValueArrays(0);
-			enemies[4] = new Enemy_Mage(this, 110, 160);
-			enemies[0] = new Enemy_Swordsman(this, 215, 30);
-			enemies[1] = new Enemy_Swordsman(this, 265, 30);
-			enemies[2] = new Enemy_Swordsman(this, 215, 290);
-			enemies[3] = new Enemy_Swordsman(this, 265, 290);
-			walls[0] = makeWall_Rectangle(130, 350, 130, 140);
-			walls[1] = makeWall_Rectangle(235, 245, -10, 140);
-			walls[2] = makeWall_Rectangle(235, 245, 180, 330);
-			walls[3] = makeWall_Rectangle(130, 350, 180, 190);
+			createWallRectangleValueArraysShort(9);
+			createWallCircleValueArraysShort(1);
+			levelWidth = 500;
+			levelHeight = 300;
+			player.x = 452;
+			player.y = 265;
+			enemies[0] = new Enemy_Pikeman(this, 22, 44);
+			enemies[1] = new Enemy_Swordsman(this, 36, 202);
+			enemies[2] = new Enemy_Pikeman(this, 192, 51);
+			enemies[3] = new Enemy_Swordsman(this, 286, 48);
+			enemies[4] = new Enemy_Mage(this, 460, 62);
+			enemies[5] = new Enemy_Mage(this, 120, 48);
+			walls[0] = makeWall_Rectangle(35, 58, 79, 31, true, false);
+			walls[1] = makeWall_Rectangle(202, 59, 79, 31, true, false);
+			walls[2] = makeWall_Rectangle(37, 217, 79, 31, true, false);
+			walls[3] = makeWall_Rectangle(209, 220, 79, 31, true, false);
+			walls[4] = makeWall_Rectangle(375, 14, 79, 31, true, false);
+			walls[5] = makeWall_Rectangle(419, 92, 90, 65, true, false);
+			walls[6] = makeWall_Rectangle(357, -13, 10, 207, true, true);
+			walls[7] = makeWall_Rectangle(357, 225, 10, 85, true, true);
+			walls[8] = makeWall_Rectangle(375, 185, 153, 10, true, false);
+			wallCircles[0] = makeWall_Circle(180, 160, 15, 1, false);
 		}
+		if(levelNum == 5)
+		{
+			imageLibrary.changeArrayLoaded("swordsman", true);
+			imageLibrary.changeArrayLoaded("pikeman", true);
+			imageLibrary.changeArrayLoaded("rogue", true);
+			createWallRectangleValueArrays(17);
+			createWallCircleValueArrays(0);
+			createWallRectangleValueArraysShort(25);
+			createWallCircleValueArraysShort(1);
+			levelWidth = 450;
+			levelHeight = 650;
+			player.x = 452;
+			player.y = 265;
+			enemies[0] = new Enemy_Pikeman(this, 207, 578);
+			enemies[1] = new Enemy_Pikeman(this, 311, 549);
+			enemies[2] = new Enemy_Pikeman(this, 397, 573);
+			enemies[3] = new Enemy_Swordsman(this, 175, 219);
+			enemies[4] = new Enemy_Swordsman(this, 281, 222);
+			enemies[5] = new Enemy_Swordsman(this, 267, 313);
+			enemies[6] = new Enemy_Swordsman(this, 362, 133);
+			enemies[7] = new Enemy_Swordsman(this, 355, 70);
+			enemies[8] = new Enemy_Mage(this, 250, 136);
+			enemies[9] = new Enemy_Mage(this, 177, 96);
+			enemies[10] = new Enemy_Mage(this, 61, 38);
+			enemies[11] = new Enemy_Rogue(this, 72, 536);
+			enemies[12] = new Enemy_Rogue(this, 17, 91);
+			wallCircles[0] = makeWall_Circle(116, 33, 15, 1, false);
+			walls[0] = makeWall_Rectangle(-92, -116, 138, 192, true, false);
+			walls[1] = makeWall_Rectangle(158, -98, 119, 175, true, false);
+			walls[2] = makeWall_Rectangle(212, -128, 22, 296, true, true);
+			walls[3] = makeWall_Rectangle(221, -124, 92, 241, true, false);
+			walls[4] = makeWall_Rectangle(392, -131, 192, 252, true, true);
+			walls[5] = makeWall_Rectangle(-49, 106, 105, 14, true, true);
+			walls[6] = makeWall_Rectangle(-27, 112, 40, 232, true, true);
+			walls[7] = makeWall_Rectangle(42, 161, 14, 182, true, true);
+			walls[8] = makeWall_Rectangle(50, 157, 350, 20, true, true);
+			walls[9] = makeWall_Rectangle(394, 162, 14, 182, true, true);
+			walls[10] = makeWall_Rectangle(97, 249, 80, 33, true, false);
+			walls[11] = makeWall_Rectangle(99, 364, 78, 32, true, false);
+			walls[12] = makeWall_Rectangle(272, 368, 79, 32, true, false);
+			walls[13] = makeWall_Rectangle(-31, 469, 41, 49, true, true);
+			walls[14] = makeWall_Rectangle(-44, 512, 137, 11, true, true);
+			walls[15] = makeWall_Rectangle(88, 519, 11, 92, true, true);
+			walls[16] = makeWall_Rectangle(60, 552, 34, 62, true, false);
+			walls[17] = makeWall_Rectangle(46, 468, 441, 11, true, true);
+			walls[18] = makeWall_Rectangle(140, 473, 346, 19, true, true);
+			walls[19] = makeWall_Rectangle(275, 249, 77, 33, true, false);
+			walls[20] = makeWall_Rectangle(134, 474, 11, 139, true, true);
+			walls[21] = makeWall_Rectangle(437, 111, 41, 232, true, true);
+			walls[22] = makeWall_Rectangle(50, 167, 40, 48, true, true);
+			walls[23] = makeWall_Rectangle(360, 172, 40, 40, true, true);
+			walls[24] = makeWall_Rectangle(108, 120, 115, 48, true, false);
+		}
+		if(levelNum == 6)
+		{
+			imageLibrary.changeArrayLoaded("swordsman", true);
+			imageLibrary.changeArrayLoaded("archer", true);
+			createWallRectangleValueArrays(8);
+			createWallRectangleValueArraysShort(10);
+			createWallCircleValueArraysShort(9);
+			levelWidth = 400;
+			levelHeight = 600;
+			player.x = 350;
+			player.y = 300;
+			enemies[0] = new Enemy_Archer(this, 150, 25);
+			enemies[1] = new Enemy_Archer(this, 221, 54);
+			enemies[2] = new Enemy_Archer(this, 283, 24);
+			enemies[3] = new Enemy_Archer(this, 258, 253);
+			enemies[4] = new Enemy_Mage(this, 146, 304);
+			enemies[5] = new Enemy_Mage(this, 194, 559);
+			enemies[6] = new Enemy_Swordsman(this, 165, 143);
+			enemies[7] = new Enemy_Swordsman(this, 202, 420);
+			enemies[8] = new Enemy_Swordsman(this, 64, 569);
+			enemies[9] = new Enemy_Swordsman(this, 318, 565);
+			
+			walls[0] = makeWall_Rectangle(-62, -112, 79, 186, true, false);
+			walls[1] = makeWall_Rectangle(381, -143, 62, 221, true, false);
+			walls[2] = makeWall_Rectangle(43, 96, 10, 190, true, true);
+			walls[3] = makeWall_Rectangle(43, 317, 10, 186, true, true);
+			walls[4] = makeWall_Rectangle(88, 137, 10, 322, true, true);
+			walls[5] = makeWall_Rectangle(302, 137, 10, 322, true, true);
+			walls[6] = makeWall_Rectangle(346, 98, 10, 185, true, true);
+			walls[7] = makeWall_Rectangle(346, 316, 10, 186, true, true);
+			walls[8] = makeWall_Rectangle(49, 497, 303, 10, true, true);
+			walls[9] = makeWall_Rectangle(49, 92, 303, 10, true, true);
+			wallCircles[0] = makeWall_Circle(200, 14, 9, 1, false);
+			wallCircles[1] = makeWall_Circle(237, 11, 9, 1, false);
+			wallCircles[2] = makeWall_Circle(212, 85, 9, 1, false);
+			wallCircles[3] = makeWall_Circle(239, 83, 9, 1, false);
+			wallCircles[4] = makeWall_Circle(157, 221, 14, 1, false);
+			wallCircles[5] = makeWall_Circle(258, 182, 14, 1, false);
+			wallCircles[6] = makeWall_Circle(218, 293, 14, 1, false);
+			wallCircles[7] = makeWall_Circle(147, 404, 14, 1, false);
+			wallCircles[8] = makeWall_Circle(254, 403, 14, 1, false);
+		}
+		if(levelNum == 7)
+		{
+			imageLibrary.changeArrayLoaded("swordsman", true);
+			createWallRectangleValueArrays(4);
+			createWallRectangleValueArraysShort(4);
+			createWallRingValueArrays(1);
+			createWallPassageValueArrays(2);
+			levelWidth = 400;
+			levelHeight = 500;
+			player.x = 379;
+			player.y = 250;
+			enemies[0] = new Enemy_Swordsman(this, 379, 250);
+			makeWall_Pass(168, 73, 62, 98);
+			makeWall_Pass(168, 358, 62, 98);
+			wallRings[0] = makeWall_Ring(197, 253, 130, 150);
+			walls[0] = makeWall_Rectangle(118, -152, 20, 282, true, true);
+			walls[1] = makeWall_Rectangle(263, 61, 19, 71, true, true);
+			walls[2] = makeWall_Rectangle(118, 375, 19, 283, true, true);
+			walls[3] = makeWall_Rectangle(262, 375, 19, 68, true, true);
+		}
+		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
 	}
 	protected int fixXBoundsHpBar(int minX, int maxX)
 	{
@@ -342,6 +637,8 @@ public final class Controller extends AllViews
 		{
 			if(enemies[i] != null)
 			{
+				if(!enemies[i].rogue || enemies[i].currentFrame!=49)
+				{
 					minX = (int) enemies[i].getX() - 20;
 					maxX = (int) enemies[i].getX() + 20;
 					minY = (int) enemies[i].getY() - 30;
@@ -364,6 +661,7 @@ public final class Controller extends AllViews
 				paint.setColor(Color.BLACK);
 				paint.setStyle(Paint.Style.STROKE);
 				drawRect(minX, minY, maxX, maxY, g);
+				}
 			}
 		}
 	}
@@ -380,7 +678,7 @@ public final class Controller extends AllViews
 		//drawRect(395, 240, 475, 316, g);
 		//drawRect(5, 240, 85, 316, g);
 		paint.setColor(Color.RED);
-		drawRect(400-fix, 116, 400-fix + (70 * player.getHp() / player.getHpMax()), 132, g);
+		drawRect(400-fix, 116, 400-fix + (70 * player.getHp() / (int)(700 * activity.wHephaestus)), 132, g);
 		paint.setColor(Color.GREEN);
 		drawRect(400-fix, 163, 400-fix + (int)(70 * player.getSp()), 179, g);
 		paint.setColor(Color.BLACK);
@@ -432,20 +730,6 @@ public final class Controller extends AllViews
 	 */
 	protected void frameCall()
 	{
-		for(int i = 0; i < walls.length; i++)
-		{
-			if(walls[i] != null)
-			{
-				walls[i].frameCall();
-			}
-		}
-		for(int i = 0; i < wallCircles.length; i++)
-		{
-			if(wallCircles[i] != null)
-			{
-				wallCircles[i].frameCall();
-			}
-		}
 		for(int i = 0; i < graphic_Teleport.length; i++)
 		{
 			if(graphic_Teleport[i] != null)
@@ -516,7 +800,7 @@ public final class Controller extends AllViews
 					enemies[i].frameCall();
 					if(enemies[i] != null)
 					{
-						alive = true;
+						if(!enemies[i].rogue) alive = true;
 						if(enemies[i].getX() < 10) enemies[i].setX(10);
 						if(enemies[i].getX() > levelWidth-10) enemies[i].setX(levelWidth-10);
 						if(enemies[i].getY() < 10) enemies[i].setY(10);
@@ -525,13 +809,13 @@ public final class Controller extends AllViews
 				}
 			}
 		}
-		if(!alive)
+		if(!alive&& levelNum > 1)
 		{
 			if(levelNum == activity.levelBeaten)
 			{
 				activity.levelBeaten++;
 			}
-			activity.startMenu(false);
+			activity.startMenu(true);
 		} else
 		{
 			if(!player.isDeleted())
@@ -546,47 +830,223 @@ public final class Controller extends AllViews
 				}
 			}
 		}
-		invalidate();
+		if(activity.gameRunning)
+		{
+			if(levelNum == 0)
+			{
+				if(distSquared(player.getX(), player.getY(), 68, 466)<800)
+				{
+					if(playerType != 0)changePlayerType(0);
+				} else if(distSquared(player.getX(), player.getY(), 68, 580)<800)
+				{
+					if(playerType != 1)changePlayerType(1);
+				} else if(distSquared(player.getX(), player.getY(), 423, 580)<800)
+				{
+					if(playerType != 2)changePlayerType(2);
+				} else if(distSquared(player.getX(), player.getY(), 423, 466)<800)
+				{
+					if(playerType != 3)changePlayerType(3);
+				}
+				if(imageLibrary.directionsTutorial==null&&distSquared(player.getX(), player.getY(), 250, 280)<400)
+				{
+					imageLibrary.directionsTutorial = imageLibrary.loadImage("menu_directions", 235, 140);
+				} else if(imageLibrary.directionsTutorial!=null&&distSquared(player.getX(), player.getY(), 250, 280)>400)
+				{
+					imageLibrary.directionsTutorial.recycle();
+					imageLibrary.directionsTutorial = null;
+				}
+				if(player.x<15&& player.y>113 && player.y<134)
+		        {
+					gamePaused = true;
+					currentPause = "startfight";
+					startingLevel = 1;
+					currentTutorial = 1;
+					invalidate();
+					player.x += 15;
+		        } else if(player.x<15 && player.y>41 && player.y<64)
+		        {
+		        	if(activity.levelBeaten >= 1)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 2;
+						invalidate();
+						player.x += 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.y<15 && player.x>42 && player.x<66)
+		        {
+		        	if(activity.levelBeaten >= 2)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 3;
+						invalidate();
+						player.y += 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.y<15 && player.x>107 && player.x<131)
+		        {
+		        	if(activity.levelBeaten >= 3)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 4;
+						invalidate();
+						player.y += 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.y<15 && player.x>173 && player.x<197)
+		        {
+		        	if(activity.levelBeaten >= 4)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 5;
+						invalidate();
+						player.y += 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.y<15 && player.x>237 && player.x<260)
+		        {
+		        	if(activity.levelBeaten >= 5)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 6;
+						invalidate();
+						player.y += 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.y<15 && player.x>304 && player.x<326)
+		        {
+		        	if(activity.levelBeaten >= 6)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 7;
+						invalidate();
+						player.y += 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.y<15 && player.x>369 && player.x<392)
+		        {
+		        	if(activity.levelBeaten >= 7)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 8;
+						invalidate();
+						player.y += 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.y<15 && player.x>433 && player.x<457)
+		        {
+		        	if(activity.levelBeaten >= 8)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 9;
+						invalidate();
+						player.y += 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.x>485 && player.y>42 && player.y<62)
+		        {
+		        	if(activity.levelBeaten >= 9)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 10;
+						invalidate();
+						player.x -= 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        } else if(player.x>485 && player.y>113 && player.y<134)
+		        {
+		        	if(activity.levelBeaten >= 10)
+		        	{
+						gamePaused = true;
+						currentPause = "startfight";
+						startingLevel = 11;
+						invalidate();
+						player.x -= 15;
+		        	} else
+		        	{
+		        		levelLocked();
+		        	}
+		        }
+			}
+			for(int i = 0; i < walls.length; i++)
+			{
+				if(walls[i] != null)
+				{
+					walls[i].frameCall();
+				}
+			}
+			for(int i = 0; i < wallCircles.length; i++)
+			{
+				if(wallCircles[i] != null)
+				{
+					wallCircles[i].frameCall();
+				}
+			}
+			for(int i = 0; i < wallRings.length; i++)
+			{
+				if(wallRings[i] != null)
+				{
+					wallRings[i].frameCall();
+				}
+			}
+			invalidate();
+		}
 	}
-	 /*
-	 * draws background, player screens, level etc (TODO generate bitmap to draw instead)
-	 */
+	protected double distSquared(double x1, double y1, double x2, double y2)
+	{
+		return Math.pow(x1-x2, 2)+Math.pow(y1-y2, 2);
+	}
 	protected Bitmap drawStart()
 	{
 		Bitmap drawTo = Bitmap.createBitmap(480, 320, Bitmap.Config.ARGB_8888);
 		Canvas g = new Canvas(drawTo);
-		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(playerColour);
-		drawRect(0, 0, 480, 10, g);
-		drawRect(0, 310, 480, 320, g);
-		drawRect(0, 0, 90, 320, g);
-		drawRect(390, 0, 480, 320, g);
 		if(activity.stickOnRight)
 		{
-			drawBitmap(imageLibrary.loadImage("fullscreen0001", 480, 320), 0, 0, g);
-			drawBitmap(imageLibrary.loadImage("symbol000" + Integer.toString(playerType+1), 80, 80), 395, 10, g);
+			drawBitmap(imageLibrary.loadImage("screen000"+Integer.toString(playerType+5), 480, 320), 0, 0, g);
 		} else
 		{
-			drawBitmap(imageLibrary.loadImage("fullscreen0002", 480, 320), 0, 0, g);
-			drawBitmap(imageLibrary.loadImage("symbol000" + Integer.toString(playerType+1), 80, 80), 5, 10, g);
+			drawBitmap(imageLibrary.loadImage("screen000"+Integer.toString(playerType+1), 480, 320), 0, 0, g);
 		}
 		return drawTo;
 	}
 	protected Bitmap drawLevel()
 	{
-		Bitmap drawTo = Bitmap.createBitmap(levelWidth, levelHeight, Bitmap.Config.ARGB_8888);
+		Bitmap drawTo = Bitmap.createBitmap(imageLibrary.currentLevel);
 		Canvas g = new Canvas(drawTo);
-		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(Color.WHITE);
-		drawRect(0, 0, levelWidth, levelHeight, g);
-		paint.setColor(Color.GRAY);
-		for(int i = 0; i < oRectX1.length; i++)
+		if(levelNum == 0 && imageLibrary.directionsTutorial != null)
 		{
-			drawRect(oRectX1[i], oRectY1[i], oRectX2[i], oRectY2[i], g);
+			drawBitmap(imageLibrary.directionsTutorial, 133, 211, g);
 		}
-		for(int i = 0; i < oCircX.length; i++)
+		if(levelNum == 1)
 		{
-			drawCircle(oCircX[i], oCircY[i], oCircRadius[i], g);
+			drawBitmap(imageLibrary.directionsTutorial, 145, 29, g);
 		}
 		if(player != null)
 		{
@@ -623,7 +1083,7 @@ public final class Controller extends AllViews
 		{
 			if(graphic_Teleport[i] != null)
 			{
-				drawBitmap(graphic_Teleport[i].getVisualImage(), (int)(graphic_Teleport[i].getX() - (graphic_Teleport[i].getImageWidth() / 2)), (int)(graphic_Teleport[i].getY() - (graphic_Teleport[i].getImageWidth() / 2)), g);
+				drawBitmapRotated(graphic_Teleport[i], g);
 			}
 		}
 		for(int i = 0; i < powerUps.length; i++)
@@ -633,6 +1093,14 @@ public final class Controller extends AllViews
 				drawBitmap(powerUps[i].getVisualImage(), (int)powerUps[i].getX() - 15, (int)powerUps[i].getY() - 15, g);
 			}
 		}
+		if(imageLibrary.currentLevelTop != null)
+		{
+			drawBitmap(imageLibrary.currentLevelTop, 0, 0, g);
+		}
+		if(player.powerUpTimer>0)
+		{
+			drawBitmap(imageLibrary.effects[player.powerID-1], (int)player.x-30, (int)player.y-30, g);
+		}
 		drawHealthBars(g);
 		return drawTo;
 	}
@@ -640,10 +1108,118 @@ public final class Controller extends AllViews
 	 * Draws objects and calls other drawing functions (background and stats)
 	 * @see android.view.View#onDraw(android.graphics.Canvas)
 	 */
+	protected void drawStartFight(Canvas g)
+	{
+		drawNotPaused(g);
+		drawBitmap(imageLibrary.loadImage("menu_startfight", 480, 320), 0, 0, g);
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(Color.BLACK);
+		paint.setAlpha(120);
+		if(difficultyLevel == 10)
+		{
+			winnings = 5;
+			drawRect(30, 104, 130, 144, g);
+		}
+		if(difficultyLevel == 6)
+		{
+			winnings = 10;
+			drawRect(130, 29, 230, 69, g);
+		}
+		if(difficultyLevel == 3)
+		{
+			winnings = 20;
+			drawRect(250, 29, 350, 69, g);
+		}
+		if(difficultyLevel == 0)
+		{
+			winnings = 50;
+			drawRect(350, 104, 450, 144, g);
+		}
+		winnings = (int)(winnings*getLevelWinningsMultiplier(startingLevel));
+		if(drainHp)
+		{
+			winnings *= 2;
+			drawRect(16, 234, 116, 304, g);
+		}
+		if(lowerHp)
+		{
+			winnings *= 2;
+			drawRect(132, 234, 232, 304, g);
+		}
+		if(limitSpells)
+		{
+			winnings *= 2;
+			drawRect(248, 234, 348, 304, g);
+		}	
+		if(enemyRegen)
+		{
+			winnings *= 2;
+			drawRect(364, 234, 464, 304, g);
+		}	
+		paint.setAlpha(255);
+		paint.setTextAlign(Align.CENTER);
+		paint.setTextSize(40);
+		drawText("Level "+Integer.toString(startingLevel), 240, 113, g);
+		paint.setTextSize(25);
+		drawText("Winnings: "+Integer.toString(winnings), 240, 153, g);
+	}
+	private double getLevelWinningsMultiplier(int level)
+	{
+		switch(level)
+		{
+			case 1:
+				return 0;
+			case 2:
+				return 1.1;
+			case 3:
+				return 1.3;
+			case 4:
+				return 1.5;
+			case 5:
+				return 2.2;
+			default:
+				return 1;
+		}
+	}
+	protected void drawBuy(Canvas g)
+	{
+		drawNotPaused(g);
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(Color.BLACK);
+		paint.setAlpha(100);
+		drawRect(90, 10, 390, 50, g);
+		paint.setAlpha(255);
+		drawBitmap(imageLibrary.loadImage("menu_buy", 480, 320), 0, 0, g);
+		paint.setTextSize(40);
+		paint.setTextAlign(Align.CENTER);
+		drawText(buyingItem, 240, 103, g);
+		paint.setTextSize(25);
+		drawText("Cost: "+Integer.toString(activity.buy(buyingItem, 9999999, false)), 240, 143, g);
+		paint.setTextSize(20);
+		paint.setTextAlign(Align.LEFT);
+		String[] describe = activity.getItemDescribe(buyingItem);
+		drawText(describe[0], 75, 173, g);
+		drawText(describe[1], 75, 203, g);
+		paint.setColor(Color.LTGRAY);
+		drawText(Integer.toString(activity.realCurrency), 135, 40, g);
+		paint.setColor(Color.YELLOW);
+		drawText(Integer.toString(activity.gameCurrency), 270, 40, g);
+		paint.setStyle(Paint.Style.FILL);
+		paint.setColor(Color.BLACK);
+		paint.setAlpha(120);
+		if(!activity.canBuyGame(buyingItem))
+		{
+			drawRect(66, 231, 214, 276, g);
+		}
+		if(!activity.canBuyReal(buyingItem))
+		{
+			drawRect(266, 231, 414, 276, g);
+		}
+	}
 	protected void drawPaused(Canvas g)
 	{
 		drawNotPaused(g);
-		drawBitmap(imageLibrary.loadImage("menu_pausedfight", 480, 320), 0, 0, g);
+		drawBitmap(imageLibrary.loadImage("menu_paused", 480, 320), 0, 0, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setTextSize(40);
@@ -662,38 +1238,81 @@ public final class Controller extends AllViews
 		{
 			drawCircle(160, 60, 37, g);
 		}
-		if(activity.pWater==0)
+		if(activity.pWater==0||playerType == 1)
 		{
 			drawCircle(60, 160, 37, g);
 		}
-		if(activity.pEarth==0)
+		if(activity.pEarth==0||playerType == 3)
 		{
 			drawCircle(160, 160, 37, g);
 		}
-		if(activity.pAir==0)
+		if(activity.pAir==0||playerType == 2)
 		{
 			drawCircle(60, 260, 37, g);
 		}
-		if(activity.pFire==0)
+		if(activity.pFire==0||playerType == 0)
 		{
 			drawCircle(160, 260, 37, g);
+		}
+	}
+	protected void drawOptions(Canvas g)
+	{
+		drawNotPaused(g);
+		drawBitmap(imageLibrary.loadImage("menu_options", 480, 320), 0, 0, g);
+		if(activity.stickOnRight)
+		{
+			drawBitmap(check, 227, 147, g);
+		} else
+		{
+			drawBitmap(check, 338, 147, g);
+		}
+		if(!activity.shootTapScreen)
+		{
+			drawBitmap(check, 249, 174, g);
+		} else
+		{
+			drawBitmap(check, 417, 174, g);
+		}
+		if(activity.shootTapDirectional)
+		{
+			drawBitmap(check, 236, 200, g);
+		} else
+		{
+			drawBitmap(check, 450, 200, g);
 		}
 	}
 	@ Override
 	protected void onDraw(Canvas g)
 	{
-		g.translate(screenMinX, screenMinY);
-		g.scale((float) screenDimensionMultiplier, (float) screenDimensionMultiplier);
-		if(gamePaused)
+		if(activity.gameRunning)
 		{
-			drawPaused(g);
-		} else
-		{
-			drawNotPaused(g);
+			g.translate(screenMinX, screenMinY);
+			g.scale((float) screenDimensionMultiplier, (float) screenDimensionMultiplier);
+			paint.setAlpha(255);
+			if(gamePaused)
+			{
+				if(currentPause.equals("paused"))
+				{
+					drawPaused(g);
+				} else if(currentPause.equals("options"))
+				{
+					drawOptions(g);
+				} else if(currentPause.equals("startfight"))
+				{
+					drawStartFight(g);
+				} else if(currentPause.equals("buy"))
+				{
+					drawBuy(g);
+				}
+			} else
+			{
+				drawNotPaused(g);
+			}
 		}
 	}
 	private void drawNotPaused(Canvas g)
 	{
+		paint.setTextAlign(Align.LEFT);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.GRAY);
 		drawRect(90, 10, 390, 310, g);
@@ -738,13 +1357,44 @@ public final class Controller extends AllViews
 		paint.setStyle(Paint.Style.STROKE);
 		if(player.powerUpTimer>0)
 		{
-			drawBitmap(imageLibrary.loadImage("powerup000"+Integer.toString(player.powerID+2), 50, 50), 410, 25, g);
+			if(activity.stickOnRight)
+			{
+				drawBitmap(imageLibrary.powerUpBigs[player.powerID-1], 410, 25, g);
+			} else
+			{
+				drawBitmap(imageLibrary.powerUpBigs[player.powerID-1], 20, 25, g);
+			}
+		}
+		if(levelNum == 0)
+		{
+			paint.setStyle(Paint.Style.FILL);
+			paint.setColor(Color.BLACK);
+			paint.setTextAlign(Align.LEFT);
+			paint.setAlpha(120);
+			drawRect(90, 10, 390, 50, g);
+			paint.setAlpha(255);
+			drawBitmap(imageLibrary.coins[0], 95, 15, g);
+			drawBitmap(imageLibrary.coins[1], 230, 15, g);
+			paint.setTextSize(20);
+			paint.setColor(Color.LTGRAY);
+			drawText(Integer.toString(activity.realCurrency), 135, 40, g);
+			paint.setColor(Color.YELLOW);
+			drawText(Integer.toString(activity.gameCurrency), 270, 40, g);
+		}
+		if(levelNum == 1)
+		{
+			drawBitmap(imageLibrary.next, 200, 280, g);
 		}
 	}
 	protected void createPowerBallEnemy(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
 		PowerBall_Enemy ballEnemy = new PowerBall_Enemy(this, (int) x, (int) y, power, xVel, yVel, rotation);
 		powerBalls[lowestPositionEmpty(powerBalls)] = ballEnemy;
+	}
+	protected void createCrossbowBolt(double rotation, double xVel, double yVel, int power, double x, double y)
+	{
+		CrossbowBolt boltEnemy = new CrossbowBolt(this, (int) x, (int) y, power, xVel, yVel, rotation);
+		powerBalls[lowestPositionEmpty(powerBalls)] = boltEnemy;
 	}
 	protected void createPowerUp(double X, double Y)
 	{
@@ -758,23 +1408,28 @@ public final class Controller extends AllViews
 	}
 	protected void createPowerBallEnemyAOE(double x, double y, double power)
 	{
-		PowerBallAOE_Enemy ballAOEEnemy = new PowerBallAOE_Enemy(this, (int) x, (int) y, power);
+		PowerBallAOE_Enemy ballAOEEnemy = new PowerBallAOE_Enemy(this, (int) x, (int) y, power, true);
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEEnemy;
 	}
 	protected void createPowerBallPlayerAOE(double x, double y, double power)
 	{
-		PowerBallAOE_Player ballAOEPlayer = new PowerBallAOE_Player(this, (int) x, (int) y, power);
+		PowerBallAOE_Player ballAOEPlayer = new PowerBallAOE_Player(this, (int) x, (int) y, power, true);
 		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEPlayer;
 	}
-	protected void teleportStart(double x, double y)
+	protected void createPowerBallEnemyBurst(double x, double y, double power)
 	{
-		Graphic_Teleport teleportStart = new Graphic_Teleport(this, x, y, true);
-		graphic_Teleport[lowestPositionEmpty(graphic_Teleport)] = teleportStart;
+		PowerBallAOE_Enemy ballAOEEnemy = new PowerBallAOE_Enemy(this, (int) x, (int) y, power, false);
+		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEEnemy;
 	}
-	protected void teleportFinish(double x, double y)
+	protected void createPowerBallPlayerBurst(double x, double y, double power)
 	{
-		Graphic_Teleport teleportFinish = new Graphic_Teleport(this, x, y, false);
-		graphic_Teleport[lowestPositionEmpty(graphic_Teleport)] = teleportFinish;
+		PowerBallAOE_Player ballAOEPlayer = new PowerBallAOE_Player(this, (int) x, (int) y, power, false);
+		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEPlayer;
+	}
+	protected void createTeleport(double x, double y, double rotation)
+	{
+		Graphic_Teleport teleportStart = new Graphic_Teleport(this, x, y, rotation);
+		graphic_Teleport[lowestPositionEmpty(graphic_Teleport)] = teleportStart;
 	}
 	/*
 	 * Tests an array to find lowest null index
@@ -810,6 +1465,16 @@ public final class Controller extends AllViews
 		warningTimer = 30;
 		warningType = 0;
 	}
+	protected void levelLocked()
+	{
+		warningTimer = 30;
+		warningType = 1;
+	}
+	protected void alreadyWorshipping()
+	{
+		//warningTimer = 30;
+		//warningType = 1;
+	}
 	/*
 	 * Checks for a clear line starting at set coordinates and going for a set distance at set velocity
 	 * @param fromX Starting x coordinate
@@ -822,15 +1487,15 @@ public final class Controller extends AllViews
 	 */
 	
 	
-	protected boolean checkObstructionsPoint(double x1, double y1, double x2, double y2)
+	protected boolean checkObstructionsPoint(float x1, float y1, float x2, float y2)
 	{	
 		boolean hitBack = false;
-		double m1 = (y2-y1)/(x2-x1);
-		double b1 = y1-(m1*x1);
-		double circM;
-		double circB;
-		double tempX;
-		double tempY;
+		float m1 = (y2-y1)/(x2-x1);
+		float b1 = y1-(m1*x1);
+		float circM;
+		float circB;
+		float tempX;
+		float tempY;
 		if(x1 < 0 || x1 > levelWidth || y1 < 0 || y1 > levelHeight)
 		{
 			hitBack = true;
@@ -849,7 +1514,7 @@ public final class Controller extends AllViews
 				if(x1 < tempX && tempX < x2)
 				{
 					tempY = (circM * tempX)+ circB;
-					if(Math.sqrt(Math.pow(tempX-oCircX[i],2)+Math.pow(tempY-oCircY[i],2))<oCircRadius[i])
+					if(Math.sqrt(Math.pow(tempX-oCircX[i],2)+Math.pow((tempY-oCircY[i])/oCircRatio[i],2))<oCircRadius[i])
 					{
 						hitBack = true;
 					}
@@ -908,69 +1573,50 @@ public final class Controller extends AllViews
 					}
 				}
 			}
+			for(int i = 0; i < currentRing; i++)
+			{
+				if(!hitBack)
+				{
+					double a = Math.pow(m1, 2)+1;
+					double b = 2*((m1*b1)-(m1*oRingY[i])-(oRingX[i]));
+					double c = Math.pow(b1, 2)+(Math.pow(oRingY[i], 2))-(2*b1*oRingY[i])+Math.pow(oRingX[i], 2)-Math.pow(140, 2);
+					double temp = (-4*a*c)+Math.pow(b, 2);
+					if(temp>=0)
+					{
+						double change = Math.sqrt(temp);
+						double pointX1 = (-b+change)/(2*a);
+						double pointX2 = (-b-change)/(2*a);
+						if(x1 < pointX1 && pointX1 < x2)
+						{
+							double pointY = (m1 * pointX1)+ b1;
+							if(!checkHitBackPass(pointX1, pointY))
+							{
+								hitBack = true;
+							}
+						}
+						if(x1 < pointX2 && pointX2 < x2)
+						{
+							double pointY = (m1 * pointX2)+ b1;
+							if(!checkHitBackPass(pointX2, pointY))
+							{
+								hitBack = true;
+							}
+						}
+					}
+				}
+			}
 		return hitBack;
 	}
 	
-	protected boolean checkObstructions(double x1, double y1, double rads, int distance)
-	{
-		double x2 = x1 + (Math.cos(rads) * distance);
-		double y2 = y1 + (Math.sin(rads) * distance);
-		return checkObstructionsPoint(x1, y1, x2, y2);
-	}
-	protected boolean checkObstructionsPointBackup(double x1, double y1, double x2, double y2)
-	{
-		if(x1>x2)
-		{
-			double temp = x1;
-			x1 = x2;
-			x2 = temp;
-			temp = y1;
-			y1 = y2;
-			y2 = temp;
-		}
-		double m1 = (y2-y1)/(x2-x1);
-		double xChecked = x1;
-		double yChecked = y1;
-		boolean checkObstructionsObstructed = false;
-		double xMove = Math.sqrt(4/(1+m1));
-		double yMove = m1*xMove;
-		if(m1>1)
-		{
-			yMove = 3;
-			xMove = yMove/m1;
-		} else
-		{
-			xMove = 3;
-			yMove = m1*xMove;
-		}
-		while(xChecked < x2)
-		{			
-			if(checkHitBack(xChecked, yChecked))
-			{
-				checkObstructionsObstructed = true;
-				xChecked = x2;
-			}
-			xChecked += xMove;
-			yChecked += yMove;
-		}
-		return checkObstructionsObstructed;
-		
-		/*if(x1>x2)
-		{
-			double temp = x1;
-			x1 = x2;
-			x2 = temp;
-			temp = y1;
-			y1 = y2;
-			y2 = temp;
-		}
+	protected boolean checkObstructionsPointShort(float x1, float y1, float x2, float y2)
+	{	
 		boolean hitBack = false;
-		double m1 = (y2-y1)/(x2-x1);
-		double b1 = y1-(m1*x1);
-		double circM;
-		double circB;
-		double tempX;
-		double tempY;
+		float m1 = (y2-y1)/(x2-x1);
+		float b1 = y1-(m1*x1);
+		float circM;
+		float circB;
+		float tempX;
+		float tempY;
 		if(x1 < 0 || x1 > levelWidth || y1 < 0 || y1 > levelHeight)
 		{
 			hitBack = true;
@@ -979,65 +1625,114 @@ public final class Controller extends AllViews
 		{
 			hitBack = true;
 		}
-			for(int i = 0; i < currentRectangle; i++)
+		for(int i = 0; i < currentCircleShort; i++)
+		{
+			if(!hitBack)
 			{
-				if(!hitBack)
+				circM = -(1/m1);
+				circB = oCircYShort[i]-(circM*oCircXShort[i]);
+				tempX = (circB-b1)/(m1-circM);
+				if(x1 < tempX && tempX < x2)
 				{
-					//Right and left Checks
-					if(x1 < oRectX1[i] && oRectX1[i] < x2)
+					tempY = (circM * tempX)+ circB;
+					if(Math.sqrt(Math.pow(tempX-oCircXShort[i],2)+Math.pow((tempY-oCircYShort[i])/oCircRatioShort[i],2))<oCircRadiusShort[i])
 					{
-						tempY = (m1*oRectX1[i])+b1;
-						if((y1 < tempY && tempY < y2) || (y2 > tempY && tempY > y2))
-						{
-							hitBack = true;
-						}
-					}
-					if(x1 < oRectX2[i] && oRectX2[i] < x2)
-					{
-						tempY = (m1*oRectX2[i])+b1;
-						if((y1 < tempY && tempY < y2) || (y2 > tempY && tempY > y2))
-						{
-							hitBack = true;
-						}
-					}
-					//Top and Bottom checks
-					if((y1 < oRectY1[i] && oRectY1[i] < y2) || (y1 > oRectY1[i] && oRectY1[i] > y2))
-					{
-						tempX = (m1*oRectY1[i])+b1;
-						if(x1 < tempX && tempX < x2)
-						{
-							hitBack = true;
-						}
-					}
-					if((y1 < oRectY2[i] && oRectY2[i] < y2) || (y1 > oRectY2[i] && oRectY2[i] > y2))
-					{
-						tempX = (m1*oRectY2[i])+b1;
-						if(x1 < tempX && tempX < x2)
+						if(!checkHitBackPass(tempX, tempY))
 						{
 							hitBack = true;
 						}
 					}
 				}
 			}
-			for(int i = 0; i < currentCircle; i++)
+		}
+		if(x1>x2)
+		{
+			tempX = x1;
+			x1 = x2;
+			x2 = tempX;
+		}
+		if(y1>y2)
+		{
+			tempY = y1;
+			y1 = y2;
+			y2 = tempY;
+		}
+			for(int i = 0; i < currentRectangleShort; i++)
 			{
 				if(!hitBack)
 				{
-					circM = -(1/m1);
-					circB = oCircY[i]-(circM*oCircX[i]);
-					tempX = (circB-b1)/(m1-circM);
-					if(x1 < tempX && tempX < x2)
+					//Right and left Checks
+					if(x1 < oRectX1Short[i] && oRectX1Short[i] < x2)
 					{
-						tempY = (circM * tempX)+ circB;
-						if(Math.sqrt(Math.pow(tempX-oCircX[i],2)+Math.pow(tempY-oCircY[i],2))<oCircRadius[i])
+						tempY = (m1*oRectX1Short[i])+b1;
+						if(oRectY1Short[i] < tempY && tempY < oRectY2Short[i])
 						{
-							hitBack = true;
+							if(!checkHitBackPass(oRectX1Short[i], tempY))
+							{
+								hitBack = true;
+							}
+						}
+					}
+					if(!hitBack)
+					{
+						if(x1 < oRectX2Short[i] && oRectX2Short[i] < x2)
+						{
+							tempY = (m1*oRectX2Short[i])+b1;
+							if(oRectY1Short[i] < tempY && tempY < oRectY2Short[i])
+							{
+								if(!checkHitBackPass(oRectX2Short[i], tempY))
+								{
+									hitBack = true;
+								}
+							}
+						}
+					}
+					//Top and Bottom checks
+					if(!hitBack)
+					{
+						if(y1 < oRectY1Short[i] && oRectY1Short[i] < y2)
+						{
+							tempX = (oRectY1Short[i]-b1)/m1;
+							if(oRectX1Short[i] < tempX && tempX < oRectX2Short[i])
+							{
+								if(!checkHitBackPass(tempX, oRectY1Short[i]))
+								{
+									hitBack = true;
+								}
+							}
+						}
+					}
+					if(!hitBack)
+					{
+						if(y1 < oRectY2Short[i] && oRectY2Short[i] < y2)
+						{
+							tempX = (oRectY2Short[i]-b1)/m1;
+							if(oRectX1Short[i] < tempX && tempX < oRectX2Short[i])
+							{
+								if(!checkHitBackPass(tempX, oRectY2Short[i]))
+								{
+									hitBack = true;
+								}
+							}
 						}
 					}
 				}
-		}
-		return hitBack;*/
+			}
+		return hitBack;
 	}
+	protected boolean checkObstructions(double x1, double y1, double rads, int distance)
+	{
+		double x2 = x1 + (Math.cos(rads) * distance);
+		double y2 = y1 + (Math.sin(rads) * distance);
+		return checkObstructionsPoint((float)x1, (float)y1, (float)x2, (float)y2);
+	}
+	protected boolean checkObstructionsShort(double x1, double y1, double rads, int distance)
+	{
+		double x2 = x1 + (Math.cos(rads) * distance);
+		double y2 = y1 + (Math.sin(rads) * distance);
+		return checkObstructionsPointShort((float)x1, (float)y1, (float)x2, (float)y2);
+	}
+	
 	protected boolean checkHitBack(double X, double Y)
 	{
 		boolean hitBack = false;
@@ -1067,13 +1762,49 @@ public final class Controller extends AllViews
 			{
 				if(hitBack == false)
 				{
-					if(Math.pow(X - oCircX[i], 2) + Math.pow(Y - oCircY[i], 2) < Math.pow(oCircRadius[i], 2))
+					if(Math.pow(X - oCircX[i], 2) + Math.pow((Y - oCircY[i])/oCircRatio[i], 2) < Math.pow(oCircRadius[i], 2))
 					{
 						hitBack = true;
 					}
 				}
 			}
 		}
+		if(hitBack == false)
+		{
+			for(int i = 0; i < currentRing; i++)
+			{
+				if(hitBack == false)
+				{
+					double dist = Math.pow(X - oRingX[i], 2) + Math.pow((Y - oRingY[i]), 2);
+					if(dist < Math.pow(oRingOuter[i], 2)&&dist > Math.pow(oRingInner[i], 2))
+					{
+						hitBack = true;
+					}
+				}
+			}
+		}
+		if(hitBack)
+		{
+			hitBack = !checkHitBackPass(X, Y);
+		}
+		return hitBack;
+	}
+	protected boolean checkHitBackPass(double X, double Y)
+	{
+		boolean hitBack = false;
+			for(int i = 0; i < currentPassage; i++)
+			{
+				if(hitBack == false)
+				{
+					if(X > oPassageX1[i] && X < oPassageX2[i])
+					{
+						if(Y > oPassageY1[i] && Y < oPassageY2[i])
+						{
+							hitBack = true;
+						}
+					}
+				}
+			}
 		return hitBack;
 	}
 	protected double visualX(double x)
@@ -1173,6 +1904,18 @@ public final class Controller extends AllViews
 	protected int getCurrentRectangle() {
 		return currentRectangle;
 	}
+	protected int getCurrentCircleShort() {
+		return currentCircleShort;
+	}
+	protected int getCurrentRectangleShort() {
+		return currentRectangleShort;
+	}
+	protected int getCurrentCurrentRing() {
+		return currentRing;
+	}
+	protected int getCurrentCurrentPassage() {
+		return currentPassage;
+	}
 	protected boolean getGameEnded() {
 		return gameEnded;
 	}
@@ -1184,6 +1927,72 @@ public final class Controller extends AllViews
 	{
 		currentCircle ++;
 	}
+	protected void incrementCurrentRectangleShort()
+	{
+		currentRectangleShort ++;
+	}
+	protected void incrementCurrentCircleShort()
+	{
+		currentCircleShort ++;
+	}
+	protected void incrementCurrentRing()
+	{
+		currentRing ++;
+	}
+	protected void incrementCurrentPassage()
+	{
+		currentPassage ++;
+	}
+	protected void setORectX1Short(int i, int oRectX1) {
+		this.oRectX1Short[i] = oRectX1;
+	}
+	protected void setORectX2Short(int i, int oRectX2) {
+		this.oRectX2Short[i] = oRectX2;
+	}
+	protected void setORectY1Short(int i, int oRectY1) {
+		this.oRectY1Short[i] = oRectY1;
+	}
+	protected void setOPassageY2(int i, int oRectY2) {
+		this.oPassageY2[i] = oRectY2;
+	}
+	protected void setOPassageX1(int i, int oRectX1) {
+		this.oPassageX1[i] = oRectX1;
+	}
+	protected void setOPassageX2(int i, int oRectX2) {
+		this.oPassageX2[i] = oRectX2;
+	}
+	protected void setOPassageY1(int i, int oRectY1) {
+		this.oPassageY1[i] = oRectY1;
+	}
+	protected void setORectY2Short(int i, int oRectY2) {
+		this.oRectY2Short[i] = oRectY2;
+	}
+	protected void setOCircXShort(int i, int oCircX) {
+		this.oCircXShort[i] = oCircX;
+	}
+	protected void setOCircYShort(int i, int oCircY) {
+		this.oCircYShort[i] = oCircY;
+	}
+	protected void setOCircRadiusShort(int i, int oCircRadius) {
+		this.oCircRadiusShort[i] = oCircRadius;
+	}
+	protected void setOCircRatioShort(int i, double oCircRatio) {
+		this.oCircRatioShort[i] = oCircRatio;
+	}
+	
+	protected void setORingX(int i, int oCircX) {
+		this.oRingX[i] = oCircX;
+	}
+	protected void setORingY(int i, int oCircY) {
+		this.oRingY[i] = oCircY;
+	}
+	protected void setORingInner(int i, int oRingInner) {
+		this.oRingInner[i] = oRingInner;
+	}
+	protected void setORingOuter(int i, int oRingOuter) {
+		this.oRingOuter[i] = oRingOuter;
+	}
+	
 	protected void setORectX1(int i, int oRectX1) {
 		this.oRectX1[i] = oRectX1;
 	}
@@ -1204,5 +2013,8 @@ public final class Controller extends AllViews
 	}
 	protected void setOCircRadius(int i, int oCircRadius) {
 		this.oCircRadius[i] = oCircRadius;
+	}
+	protected void setOCircRatio(int i, double oCircRatio) {
+		this.oCircRatio[i] = oCircRatio;
 	}
 }

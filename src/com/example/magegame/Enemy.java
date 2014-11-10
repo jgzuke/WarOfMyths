@@ -3,8 +3,12 @@
  * @param danger holds powerBalls headed towards object and their coordinates velocity etc
  */
 package com.example.magegame;
+
+import android.util.Log;
+
 abstract public class Enemy extends Human
 {
+	protected boolean rogue = false;
 	private int runTimer = 0;
 	protected double lastPlayerX;
 	protected double lastPlayerY;
@@ -43,6 +47,11 @@ abstract public class Enemy extends Human
 	Override
 	protected void frameCall()
 	{
+		if(mainController.enemyRegen)
+		{
+			hp += 40;
+		}
+		hp += 4;
 		checkLOSTimer--;		
                 runTimer--;		
 		super.frameCall();
@@ -54,6 +63,39 @@ abstract public class Enemy extends Human
 		clearArray(pathedToHit, 30);
 		pathedToHitLength = 0;
 		setImageDimensions();
+		double xdif = x - mainController.player.x;
+		double ydif = y - mainController.player.y;
+		double movementX;
+		double movementY;
+		double moveRads;
+		if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < 400)
+		{
+			moveRads = Math.atan2(ydif, xdif);
+			movementX = x - (Math.cos(moveRads) * 20) - mainController.player.x;
+			movementY = y - (Math.sin(moveRads) * 20) - mainController.player.y;
+			mainController.player.x += movementX/2;
+			mainController.player.y += movementY/2;
+			x -= movementX/2;
+			y -= movementY/2;
+		}
+		for(int i = 0; i < mainController.enemies.length; i++)
+		{
+			if(mainController.enemies[i] != null&& mainController.enemies[i].x != x)
+			{
+				xdif = x - mainController.enemies[i].x;
+				ydif = y - mainController.enemies[i].y;
+				if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < 400)
+				{
+					moveRads = Math.atan2(ydif, xdif);
+					movementX = x - (Math.cos(moveRads) * 20) - mainController.enemies[i].x;
+					movementY = y - (Math.sin(moveRads) * 20) - mainController.enemies[i].y;
+					mainController.enemies[i].x += movementX/2;
+					mainController.enemies[i].y += movementY/2;
+					x -= movementX/2;
+					y -= movementY/2;
+				}
+			}
+		}
 	}
 	protected void getHit(int damage)
 	{
@@ -61,23 +103,19 @@ abstract public class Enemy extends Human
 		{
 			if(mainController.player.powerUpTimer>0 && mainController.player.powerID == 4)
 			{
-				damage *= 2;
+				damage *= 1.5*mainController.activity.wApollo/10;
 			}
 			super.getHit(damage);
-			mainController.player.sp += damage*0.00005;
+			mainController.player.sp += damage*0.00003;
 			if(deleted)
 			{
-				mainController.player.sp += 0.25;
-				int power = 150;
-				mainController.createPowerUp(x, y);
-				mainController.createPowerBallEnemy(0, 10, 0, power, x, y);
-				mainController.createPowerBallEnemy(45, 7, 7, power, x, y);
-				mainController.createPowerBallEnemy(90, 0, 10, power, x, y);
-				mainController.createPowerBallEnemy(135, -7, 7, power, x, y);
-				mainController.createPowerBallEnemy(180, -10, 0, power, x, y);
-				mainController.createPowerBallEnemy(225, -7, -7, power, x, y);
-				mainController.createPowerBallEnemy(270, 0, -10, power, x, y);
-				mainController.createPowerBallEnemy(315, 7, -7, power, x, y);
+				mainController.player.sp += 0.15;
+				if(mainController.getRandomDouble()>0.5)
+				{
+					mainController.createPowerUp(x, y);
+				}
+				mainController.createPowerBallEnemyBurst(x, y, 130);
+				mainController.activity.playEffect("burst");
 			}
 		}
 	}
@@ -88,7 +126,7 @@ abstract public class Enemy extends Human
 	{
 		rads = Math.atan2(-(mainController.player.y - y), -(mainController.player.x - x));
 		rotation = rads * r2d;
-		if(mainController.checkObstructions(x, y, rads, 40))
+		if(mainController.checkObstructionsShort(x, y, rads, 40))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -97,7 +135,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!mainController.checkObstructions(x, y, rads, 40))
+				if(!mainController.checkObstructionsShort(x, y, rads, 40))
 				{
 					runPathChooseCounter = 180;
 				}
@@ -105,7 +143,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!mainController.checkObstructions(x, y,  rads, 40))
+					if(!mainController.checkObstructionsShort(x, y,  rads, 40))
 					{
 						runPathChooseCounter = 180;
 					}
@@ -120,10 +158,7 @@ abstract public class Enemy extends Human
 	{
 		runTimer = 10;
 		playing = true;
-                if(currentFrame > 20)
-                {
-                    currentFrame = 0;
-                }
+        currentFrame = 0;
 	}
 	/*
 	 * Checks whether object can 'see' player
@@ -131,7 +166,7 @@ abstract public class Enemy extends Human
 	protected void checkLOS()
 	{
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
-		if(!mainController.checkObstructionsPoint(x, y, mainController.player.x, mainController.player.y))
+		if(!mainController.checkObstructionsPoint((float)x, (float)y, (float)mainController.player.x, (float)mainController.player.y))
 		{
 			LOS = true;
 		}
@@ -152,7 +187,7 @@ abstract public class Enemy extends Human
 			distanceFound = checkDistance((int) Math.abs(danger[0][dangerCheckCounter] + (danger[2][dangerCheckCounter] / 10 * distanceFound)), (int) Math.abs(danger[1][dangerCheckCounter] + (danger[3][dangerCheckCounter] / 10 * distanceFound)), x, y);
 			if(distanceFound < 20)
 			{
-				if(!mainController.checkObstructionsPoint(danger[0][dangerCheckCounter], danger[1][dangerCheckCounter], x, y))
+				if(!mainController.checkObstructionsPoint((float)danger[0][dangerCheckCounter], (float)danger[1][dangerCheckCounter], (float)x, (float)y))
 				{
 					pathedToHit[pathedToHitLength] = dangerCheckCounter;
 					pathedToHitLength++;         
@@ -179,6 +214,7 @@ abstract public class Enemy extends Human
 	abstract protected void frameReactionsDangerNoLOS();
 	abstract protected void frameReactionsNoDangerLOS();
 	abstract protected void stun(int time);
+	abstract protected int getRollTimer();
 	protected void setRunTimer(int runTimer) {
 		this.runTimer = runTimer;
 	}
@@ -228,11 +264,71 @@ abstract public class Enemy extends Human
 		}
 		setRunTimer(4);
 		playing = true;
+	}
+	
+	
+	/*protected void runToward(double towardsX, double towardsY)
+	{
+		runTowardRecurse(x, y, towardsX, towardsY);
+		setRunTimer(4);
+		playing = true;
 		if(currentFrame > 20)
 		{
 			currentFrame = 0;
 		}
 	}
+	protected boolean runTowardRecurse(double X, double Y, double towardsX, double towardsY)
+	{
+		boolean isClear = false;
+		rads = Math.atan2(towardsY - Y, towardsX - X);
+		rotation = rads * r2d;
+		if(mainController.checkObstructionsShort(X, Y, rads, 25))
+		{
+			int runPathChooseCounter = 0;
+			double runPathChooseRotationStore = rotation;
+			while(runPathChooseCounter < 180)
+			{
+				runPathChooseCounter += 15;
+				rotation = runPathChooseRotationStore + runPathChooseCounter;
+				rads = rotation / r2d;
+				if(!mainController.checkObstructionsShort(X, Y,rads, 25))
+				{
+					if(runTowardRecurse(X+(Math.cos(rads)*25), X+(Math.sin(rads)*25), towardsX, towardsY))
+					{
+						runPathChooseCounter = 180;
+						isClear = true;
+					}
+				}
+				else
+				{
+					rotation = runPathChooseRotationStore - runPathChooseCounter;
+					rads = rotation / r2d;
+					if(!mainController.checkObstructionsShort(X, Y,rads, 25))
+					{
+						if(runTowardRecurse(X+(Math.cos(rads)*25), X+(Math.sin(rads)*25), towardsX, towardsY))
+						{
+							runPathChooseCounter = 180;
+							isClear = true;
+						}
+					}
+				}
+			}
+		} else
+		{
+			if(!(checkDistance(towardsX, towardsY, X, Y)<25))
+			{
+				if(runTowardRecurse(X+(Math.cos(rads)*25), X+(Math.sin(rads)*25), towardsX, towardsY))
+				{
+					isClear = true;
+				}
+			}
+		}
+		return isClear;
+	}*/
+	
+	
+	
+	
 	/*
 	 * Runs random direction for 25 or if not enough space 10 frames
 	 */
@@ -241,7 +337,7 @@ abstract public class Enemy extends Human
 		boolean canMove = false;
 		rotation = mainController.getRandomInt(360);
 		rads = rotation / r2d;
-		if(mainController.checkObstructions(x, y,rads, 100))
+		if(mainController.checkObstructionsShort(x, y,rads, 100))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -250,7 +346,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!mainController.checkObstructions(x, y,rads, 100))
+				if(!mainController.checkObstructionsShort(x, y,rads, 100))
 				{
 					runPathChooseCounter = 180;
 					canMove = true;
@@ -259,7 +355,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!mainController.checkObstructions(x, y,rads, 100))
+					if(!mainController.checkObstructionsShort(x, y,rads, 100))
 					{
 						runPathChooseCounter = 180;
 						canMove = true;
@@ -267,7 +363,7 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		if(mainController.checkObstructions(x, y,rads, 40))
+		if(mainController.checkObstructionsShort(x, y,rads, 40))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -276,7 +372,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!mainController.checkObstructions(x, y,rads, 40))
+				if(!mainController.checkObstructionsShort(x, y,rads, 40))
 				{
 					runPathChooseCounter = 180;
 				}
@@ -284,7 +380,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!mainController.checkObstructions(x, y,rads, 40))
+					if(!mainController.checkObstructionsShort(x, y,rads, 40))
 					{
 						runPathChooseCounter = 180;
 					}
@@ -300,10 +396,6 @@ abstract public class Enemy extends Human
 			setRunTimer(7);
 		}
 		playing = true;
-		if(currentFrame > 20)
-		{
-			currentFrame = 0;
-		}
 	}
 	protected void incrementLevelCurrentPosition()
 	{

@@ -6,19 +6,30 @@ public class Wall_Circle extends Wall
 	private int oCX;
 	private int oCY;
 	private int oCR;
+	private double oCRatio;
 	private double oCRS;
 	private double rads;
-	private int humanWidth = 10;
-	public Wall_Circle(Controller creator, int OCX, int OCY, int OCR)
+	public Wall_Circle(Controller creator, int OCX, int OCY, int OCR, double OCRatio, boolean Tall)
 	{
+		tall = Tall;
 		oCX = OCX;
 		oCY = OCY;
 		oCR = OCR;
+		oCRatio = OCRatio;
 		mainController = creator;
-		mainController.setOCircX(mainController.getCurrentCircle(), OCX);
-		mainController.setOCircY(mainController.getCurrentCircle(), OCY);
-		mainController.setOCircRadius(mainController.getCurrentCircle(), OCR);
-		mainController.incrementCurrentCircle();
+		mainController.setOCircXShort(mainController.getCurrentCircleShort(), OCX);
+		mainController.setOCircYShort(mainController.getCurrentCircleShort(), OCY);
+		mainController.setOCircRadiusShort(mainController.getCurrentCircleShort(), OCR);
+		mainController.setOCircRatioShort(mainController.getCurrentCircleShort(), OCRatio);
+		mainController.incrementCurrentCircleShort();
+		if(tall)
+		{
+			mainController.setOCircX(mainController.getCurrentCircle(), OCX);
+			mainController.setOCircY(mainController.getCurrentCircle(), OCY);
+			mainController.setOCircRadius(mainController.getCurrentCircle(), OCR);
+			mainController.setOCircRatio(mainController.getCurrentCircle(), OCRatio);
+			mainController.incrementCurrentCircle();
+		}
 		oCR += humanWidth;
 		oCRS = Math.pow(oCR, 2);
 	}
@@ -28,10 +39,13 @@ public class Wall_Circle extends Wall
 			xdif = oCX - mainController.player.x;
 			ydif = oCY - mainController.player.y;
 			rads = Math.atan2(ydif, xdif);
-			if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < oCRS)
+			if(Math.pow(xdif, 2) + Math.pow(ydif/oCRatio, 2) < oCRS)
 			{
-				mainController.player.x = oCX - (Math.cos(rads) * oCR);
-				mainController.player.y = oCY - (Math.sin(rads) * oCR);
+				if(!mainController.checkHitBackPass(mainController.player.x, mainController.player.y))
+				{
+					mainController.player.x = oCX - (Math.cos(rads) * oCR);
+					mainController.player.y = oCY - (Math.sin(rads) * oCR);
+				}
 			}
 		for(int i = 0; i < mainController.enemies.length; i++)
 		{
@@ -40,10 +54,13 @@ public class Wall_Circle extends Wall
 				xdif = oCX - mainController.enemies[i].x;
 				ydif = oCY - mainController.enemies[i].y;
 				rads = Math.atan2(ydif, xdif);
-				if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < oCRS)
+				if(Math.pow(xdif, 2) + Math.pow(ydif/oCRatio, 2) < oCRS)
 				{
-					mainController.enemies[i].x = oCX - (Math.cos(rads) * oCR);
-					mainController.enemies[i].y = oCY - (Math.sin(rads) * oCR);
+					if(!mainController.checkHitBackPass(mainController.enemies[i].x, mainController.enemies[i].y))
+					{
+						mainController.enemies[i].x = oCX - (Math.cos(rads) * oCR);
+						mainController.enemies[i].y = oCY - (Math.sin(rads) * oCR);
+					}
 				}
 			}
 		}

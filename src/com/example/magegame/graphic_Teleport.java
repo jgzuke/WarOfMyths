@@ -4,28 +4,23 @@
 package com.example.magegame;
 public final class Graphic_Teleport extends DrawnSprite
 {
-	private boolean start;
-	private int startInt = 1;
-	public Graphic_Teleport(Controller creator, double X, double Y, boolean Start)
+	public Graphic_Teleport(Controller creator, double X, double Y, double Rotation)
 	{
+		rotation = Rotation;
 		width = 100;
 		height = 100;
 		mainController = creator;
 		x = X;
 		y = Y;
-		start = Start;
-		if(start) startInt = 0;
-		visualImage = mainController.imageLibrary.teleport_Image[startInt][currentFrame];
+		visualImage = mainController.imageLibrary.teleport_Image[currentFrame];
 	}@
 	Override
 	protected void frameCall()
 	{
-		visualImage = mainController.imageLibrary.teleport_Image[startInt][currentFrame];
+		visualImage = mainController.imageLibrary.teleport_Image[currentFrame];
 		setImageDimensions();
-		width *= 3;
-		height = width;
 		currentFrame++;
-		if(currentFrame == 15)
+		if(currentFrame == 9)
 		{
 			deleted = true;
 		}

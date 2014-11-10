@@ -15,7 +15,7 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 	Override
 	protected void frameCall()
 	{
-		if(currentFrame == 107)
+		if(currentFrame == 61)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -40,9 +40,9 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 		rads = Math.atan2((mainController.player.y - y), (mainController.player.x - x));
 		rotation = rads * r2d;
 		distanceFound = checkDistance(x, y, mainController.player.x, mainController.player.y);
-		if(distanceFound < 30)
+		if(distanceFound < 40)
 		{
-			currentFrame = 41;
+			currentFrame = 21;
 			attacking = true;
 			playing = true;
 		}
@@ -75,47 +75,55 @@ public final class Enemy_Pikeman extends Enemy_Muggle
 	Override
 	protected void attacking()
 	{
-		if(currentFrame == 54)
+		if(currentFrame == 29)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
 			{
 				mainController.player.getHit((int)(700*mainController.getDifficultyLevelMultiplier()));
-				mainController.activity.playEffect(R.raw.sword1);
+				mainController.activity.playEffect("sword1");
+				if(mainController.getRandomDouble()*(0.5+mainController.getDifficultyLevelMultiplier()) > 1.2)
+				{
+					mainController.player.rads = Math.atan2(mainController.player.y-y, mainController.player.x-x);
+					mainController.player.stun();
+				}
 			} else
 			{
-				mainController.activity.playEffect(R.raw.sword3);
+				mainController.activity.playEffect("swordmiss");
 			}
 		}
-		if(currentFrame == 83)
+		if(currentFrame == 48)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
 			{
 				mainController.player.getHit((int)(400*mainController.getDifficultyLevelMultiplier()));
-				mainController.activity.playEffect(R.raw.sword2);
+				mainController.activity.playEffect("sword2");
+				if(mainController.getRandomDouble()*(0.5+mainController.getDifficultyLevelMultiplier()) > 1.2)
+				{
+					mainController.player.rads = Math.atan2(mainController.player.y-y, mainController.player.x-x);
+					mainController.player.stun();
+				}
 			} else
 			{
-				mainController.activity.playEffect(R.raw.sword3);
+				mainController.activity.playEffect("swordmiss");
 			}
 		}
-		if(currentFrame == 87)
-		{
-			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
-			if(distanceFound < 30)
-			{
-				mainController.activity.playEffect(R.raw.sword2);
-			} else
-			{
-				mainController.activity.playEffect(R.raw.sword3);
-			}
-		}
-		if(currentFrame == 89)
+		if(currentFrame == 53)
 		{
 			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, mainController.player.x, mainController.player.y);
 			if(distanceFound < 30)
 			{
 				mainController.player.getHit((int)(400*mainController.getDifficultyLevelMultiplier()));
+				mainController.activity.playEffect("sword2");
+				if(mainController.getRandomDouble()*(0.5+mainController.getDifficultyLevelMultiplier()) > 1.2)
+				{
+					mainController.player.rads = Math.atan2(mainController.player.y-y, mainController.player.x-x);
+					mainController.player.stun();
+				}
+			} else
+			{
+				mainController.activity.playEffect("swordmiss");
 			}
 		}
 	}

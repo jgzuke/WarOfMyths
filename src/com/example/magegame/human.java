@@ -22,8 +22,7 @@ abstract public class Human extends DrawnSprite
 	Override
 	protected void frameCall()
 	{
-		hp ++;
-		if(currentFrame == 40)
+		if(currentFrame == 20)
 		{
 			currentFrame = 0;
 		}

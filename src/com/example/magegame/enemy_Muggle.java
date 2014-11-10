@@ -16,7 +16,7 @@ abstract public class Enemy_Muggle extends Enemy
 		x = setX;
 		y = setY;
 		rotation = 0;
-		speedCur = 1 + (mainController.getDifficultyLevelMultiplier()*2);
+		speedCur = 1 + (mainController.getDifficultyLevelMultiplier()*2.5);
 		lastPlayerX = x;
 		lastPlayerY = y;
 	}
@@ -79,7 +79,12 @@ abstract public class Enemy_Muggle extends Enemy
 		}
 		super.frameCall();
 	}
-	
+	@Override
+	protected void getHit(int damage)
+	{
+		damage /= mainController.getDifficultyLevelMultiplier();
+		super.getHit(damage);
+	}
 	/*
 	 * How object acts during an attack
 	 */
@@ -88,5 +93,10 @@ abstract public class Enemy_Muggle extends Enemy
 	protected void stun(int time)
 	{
 		
+	}
+	@ Override
+	protected int getRollTimer()
+	{
+		return 0;
 	}
 }

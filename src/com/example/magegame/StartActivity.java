@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -15,6 +16,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.Window;
@@ -22,148 +24,111 @@ import android.view.WindowManager;
 import android.widget.ViewSwitcher;
 public class StartActivity extends Activity
 {
-	protected AllViews currentView;
 	protected Controller control;
-	protected LoadingScreen loading;
-	protected MenuRunner menuRun;
-	protected ImageLibrary imageLibrary;
 	protected double screenDimensionMultiplier;
 	protected int screenMinX;
 	protected int screenMinY;
-	private int gameCurrency;
-	private int realCurrency;
-	protected int wApollo = 1;
-	protected int wPoseidon = 1;
-	protected int wZues = 1;
-	protected int wHades = 1;
-	protected int wHephaestus = 1;
-	protected int wAres = 1;
-	protected int wAthena = 1;
-	protected int wHermes = 1;
-	protected int uAmbrosia = 1;
-	protected int uArtemisArrow = 1;
-	protected int uDionysusWine = 1;
-	protected int uHestiasBlessing = 1;
-	protected int pHeal = 1;
-	protected int pCool = 1;
-	protected int pWater = 1;
-	protected int pEarth = 1;
-	protected int pAir = 1;
-	protected int pFire = 1;
-	
-	private ViewSwitcher viewSwitcher;
-	private Handler mHandler = new Handler();
+	protected int gameCurrency=500;
+	protected int realCurrency=500;
+	protected byte wApollo = 10;
+	protected byte wPoseidon = 10;
+	protected byte wZues = 10;
+	protected byte wHades = 10;
+	protected byte wHephaestus = 10;
+	protected byte wAres = 10;
+	protected byte wAthena = 10;
+	protected byte wHermes = 10;
+	protected byte pHeal = 1;
+	protected byte pCool = 1;
+	protected byte pWater = 1;
+	protected byte pEarth = 1;
+	protected byte pAir = 1;
+	protected byte pFire = 1;
 	protected boolean stickOnRight = false;
 	protected boolean shootTapScreen = false;
-	protected boolean shootTapDirectional = false;
-	protected byte levelBeaten = 0;
+	protected boolean shootTapDirectional = true;
+	protected byte levelBeaten = 3;
+	protected boolean gameRunning = true;
 	private FileOutputStream fileWrite;
 	private FileInputStream fileRead;
-	private int savePoints = 5;
+	private int savePoints = 25;
 	protected byte[] savedData = new byte[savePoints];
 	private MediaPlayer backMusic;
 	private SoundPool spool;
+	private int[] soundPoolMap = new int[13];
 	private AudioManager audioManager;
 	private float volume;
-	private int soundID;
-	private Runnable frameCaller = new Runnable()
-	{
-		public void run()
-		{
-			if(control != null)
-			{
-				if(control.gameRunning)
-				{
-					if(!control.gamePaused)
-					{
-						control.frameCall();
-					}
-				}
-			}
-			if(menuRun != null)
-			{
-				if(menuRun.gameRunning)
-				{
-					menuRun.frameCall();
-				}
-			}
-			mHandler.postDelayed(this, 50);
-		}
-	};
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        frameCaller.run();
-        viewSwitcher = new ViewSwitcher(this);
-    	setScreenDimensions();
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+		read();
+		boolean firstTime = false;
+		if(savedData[0] == 0)
+    	{
+    		savedData[0] = 1;
+    		setSaveData();
+    		write();
+    		firstTime = true;
+    	} else
+    	{
+    		readSaveData();
+    	}
+        setWindowAndAudio();
+        setScreenDimensions();
+		control = new Controller(this, this);
+        setContentView(control);
+        startMusic();
+    	if(firstTime)
+    	{
+    		startFight(1);
+    	}
+    	control.changePlayOptions();
+    }
+    protected void setWindowAndAudio()
+    {
+    	requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-		loading = new LoadingScreen(this, this);
-		loading.setBackgroundColor(Color.BLACK);
-		changeView(loading);
-    	currentView = loading;
-        setContentView(viewSwitcher);
-        viewSwitcher.setKeepScreenOn(true);
-		imageLibrary = new ImageLibrary(this, this);
-		menuRun = new MenuRunner(this, this);
-    	menuRun.setBackgroundColor(Color.BLACK);
-    	control = new Controller(this, this, imageLibrary);
-    	control.setBackgroundColor(Color.WHITE);
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		spool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		volume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
-		read();
-    	if(savedData[0] == 0)
-    	{
-    		savedData[0] = 1;
-    		write();
-    		menuRun.changeScreen("tutorial0001");
-    	} else
-    	{
-    		menuRun.changeScreen("main");
-    	}
-    	changeView(menuRun);
-    	currentView = menuRun;
-    	menuRun.gameRunning = true;
-    	startStoreMusic();
-		loading = null;
-    	control.primeFighting();
-    }
-    private void changeView(AllViews view)
-    {
-    	View old = viewSwitcher.getNextView();
-    	viewSwitcher.removeView(old);
-    	viewSwitcher.removeView(view);
-    	viewSwitcher.addView(view);
-    	viewSwitcher.showNext();
+    	soundPoolMap[0] = spool.load(this, R.raw.shoot_burn, 1);
+    	soundPoolMap[1] = spool.load(this, R.raw.shoot_electric, 1);
+    	soundPoolMap[2] = spool.load(this, R.raw.shoot_water, 1);
+    	soundPoolMap[3] = spool.load(this, R.raw.shoot_earth, 1);
+    	soundPoolMap[4] = spool.load(this, R.raw.shoot_burst, 1);
+    	soundPoolMap[5] = spool.load(this, R.raw.shoot_shoot, 1);
+    	soundPoolMap[6] = spool.load(this, R.raw.shoot_teleport, 1);
+    	soundPoolMap[7] = spool.load(this, R.raw.enemy_sword1, 1);
+    	soundPoolMap[8] = spool.load(this, R.raw.enemy_sword2, 1);
+    	soundPoolMap[9] = spool.load(this, R.raw.enemy_swordmiss, 1);
+    	soundPoolMap[10] = spool.load(this, R.raw.enemy_arrowhit, 1);
+    	soundPoolMap[11] = spool.load(this, R.raw.enemy_arrowrelease, 1);
+    	soundPoolMap[12] = spool.load(this, R.raw.effect_pageflip, 1);
     }
     protected void startMenu(boolean wonRound)
     {
-    	imageLibrary.recycleImages();
-    	if(!wonRound)
+    	control.drainHp = false;
+    	control.lowerHp = false;
+    	control.limitSpells = false;
+    	control.enemyRegen = false;
+    	control.changeDifficulty(10);
+    	control.imageLibrary.directionsTutorial = control.imageLibrary.loadImage("menu_directions", 235, 140);
+    	if(wonRound)
     	{
-        	menuRun.changeScreen("wonround");
-    	} else
-    	{
-    		menuRun.changeScreen("lostround");
+    		gameCurrency += control.winnings;
+        	if(control.levelNum >= levelBeaten)
+        	{
+        		levelBeaten++;
+        	}
     	}
-    	changeView(menuRun);
-    	currentView = menuRun;
-    	menuRun.gameRunning = true;
-    	control.gameRunning = false;
-    	startStoreMusic();
-    	control.primeFighting();
+    	control.startFighting(0);
+    	control.gamePaused = false;
     }
-    protected void startFight(int playerTypeSet, int levelSet, int difficultySet)
+    protected void startFight(int levelSet)
     {
-    	imageLibrary.loadAllImages();
-    	control.startFighting(playerTypeSet, levelSet, difficultySet);
-    	currentView = control;
-    	changeView(control);
-    	menuRun.gameRunning = false;
-    	control.gameRunning = true;
-    	startMusic();
+    	control.startFighting(levelSet);
+    	control.gamePaused = false;
     }
 	protected void setScreenDimensions()
 	{
@@ -197,7 +162,7 @@ public class StartActivity extends Activity
 	protected void startMusic()
 	{
 		stopMusic();
-        backMusic= MediaPlayer.create((Context)this, R.raw.archangel);
+        backMusic= MediaPlayer.create((Context)this, R.raw.busqueda);
         backMusic.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer backMusic) {
@@ -206,26 +171,21 @@ public class StartActivity extends Activity
         });
         backMusic.setLooping(true);
 	}
-	protected void startStoreMusic()
+	protected void playEffect(String toPlay)
 	{
-		stopMusic();
-        backMusic= MediaPlayer.create((Context)this, R.raw.heart);
-        backMusic.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer backMusic) {
-                backMusic.start();
-            }
-        });
-        backMusic.setLooping(true);
-	}
-	protected void playEffect(int ID)
-	{
-		soundID = spool.load((Context)this, ID, 1);
-		spool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-		    public void onLoadComplete(SoundPool soundPool, int sampleId,int status) {
-				spool.play(soundID, 1, 1, 1, 0, 1f);
-		    }
-		});
+		if(toPlay.equals("burn"))spool.play(soundPoolMap[0], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("electric"))spool.play(soundPoolMap[1], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("water"))spool.play(soundPoolMap[2], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("earth"))spool.play(soundPoolMap[3], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("burst"))spool.play(soundPoolMap[4], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("shoot"))spool.play(soundPoolMap[5], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("teleport"))spool.play(soundPoolMap[6], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("sword1"))spool.play(soundPoolMap[7], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("sword2"))spool.play(soundPoolMap[8], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("swordmiss"))spool.play(soundPoolMap[9], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("arrowhit"))spool.play(soundPoolMap[10], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("arrowrelease"))spool.play(soundPoolMap[11], volume, volume, 1, 0, 1f);
+		if(toPlay.equals("pageflip"))spool.play(soundPoolMap[12], volume, volume, 1, 0, 1f);
 	}
 	protected void stopMusic()
 	{
@@ -238,105 +198,149 @@ public class StartActivity extends Activity
 	}
     protected void buyGame(String toBuy)
     {
-    	gameCurrency -= buy(toBuy, gameCurrency);
+    	gameCurrency -= buy(toBuy, gameCurrency, true);
+    	saveGame();
     }
     protected void buyReal(String toBuy)
     {
-    	realCurrency -= buy(toBuy, realCurrency);
+    	realCurrency -= buy(toBuy, realCurrency, true);
+    	saveGame();
     }
-	protected int buy(String toBuy, int currency)
+    protected boolean canBuyGame(String toBuy)
+    {
+    	boolean buyable = true;
+    	if(buy(toBuy, gameCurrency, false)==0)buyable=false;
+    	return buyable;
+    }
+    protected boolean canBuyReal(String toBuy)
+    {
+    	boolean buyable = true;
+    	if(buy(toBuy, realCurrency, false)==0)buyable=false;
+    	return buyable;
+    }
+	protected int buy(String toBuy, int currency, boolean buying)
     {
     	int ID = getItemID(toBuy);
     	double cost = 0;
+    	boolean afforded = false;
     	switch (ID)
     	{
     	case 1:
-    		cost = Math.pow(4*wApollo, 2);
+    		cost = Math.pow(wApollo, 2.5)*9/316;
     		if(currency>=cost)
     		{
-    			wApollo += 0.1;
+    			if(buying)wApollo ++;
+    			afforded = true;
     		}
     		break;
     	case 2:
-    		cost = Math.pow(4*wPoseidon, 2);
+    		cost = Math.pow(wPoseidon, 2.5)*9/316;
     		if(currency>=cost)
     		{
-    			wPoseidon += 0.1;
+    			if(buying)wPoseidon ++;
+    			afforded = true;
     		}
     		break;
     	case 3:
-    		cost = Math.pow(4*wZues, 2);
+    		cost = Math.pow(wZues, 2.5)*9/316;
     		if(currency>=cost)
     		{
-    			wZues += 0.1;
+    			if(buying)wZues ++;
+    			afforded = true;
     		}
     		break;
     	case 4:
-    		cost = Math.pow(4*wHades, 2);
+    		cost = Math.pow(wHades, 2.5)*9/316;
     		if(currency>=cost)
     		{
-    			wHades += 0.1;
+    			if(buying)wHades ++;
+    			afforded = true;
     		}
     		break;
     	case 5:
-    		cost = Math.pow(4*wHephaestus, 2);
+    		cost = Math.pow(wHephaestus, 2.5)*9/316;
     		if(currency>=cost)
     		{
-    			wHephaestus += 0.1;
+    			if(buying)wHephaestus ++;
+    			afforded = true;
     		}
     		break;
     	case 6:
-    		cost = Math.pow(4*wAres, 2);
+    		cost = Math.pow(wAres, 2.5)*9/316;
     		if(currency>=cost)
     		{
-    			wAres += 0.1;
+    			if(buying)wAres ++;
+    			afforded = true;
     		}
     		break;
     	case 7:
-    		cost = Math.pow(4*wAthena, 2);
+    		cost = Math.pow(wAthena, 2.5)*9/316;
     		if(currency>=cost)
     		{
-    			wAthena += 0.1;
+    			if(buying)wAthena ++;
+    			afforded = true;
     		}
     		break;
     	case 8:
-    		cost = Math.pow(4*wHermes, 2);
+    		cost = Math.pow(wHermes, 2.5)*9/316;
     		if(currency>=cost)
     		{
-    			wHermes += 0.1;
+    			if(buying)wHermes ++;
+    			afforded = true;
     		}
     		break;
     	case 9:
-    		cost = 20;
+    		cost = 10;
     		if(currency>=cost)
     		{
-    			uAmbrosia ++;
+    			if(buying)pHeal ++;
+    			afforded = true;
     		}
     		break;
     	case 10:
-    		cost = 20;
+    		cost = 10;
     		if(currency>=cost)
     		{
-    			uArtemisArrow ++;
+    			if(buying)pCool ++;
+    			afforded = true;
     		}
     		break;
 		case 11:
-			cost = 20;
+			cost = 10;
     		if(currency>=cost)
     		{
-    			uDionysusWine ++;
+    			if(buying)pWater ++;
+    			afforded = true;
     		}
 			break;
 		case 12:
-			cost = 20;
+			cost = 10;
     		if(currency>=cost)
     		{
-    			uHestiasBlessing ++;
+    			if(buying)pEarth ++;
+    			afforded = true;
+    		}
+			break;
+		case 13:
+			cost = 10;
+    		if(currency>=cost)
+    		{
+    			if(buying)pAir ++;
+    			afforded = true;
+    		}
+			break;
+		case 14:
+			cost = 10;
+    		if(currency>=cost)
+    		{
+    			if(buying)pFire ++;
+    			afforded = true;
     		}
 			break;
     	}
-    	if(cost == 0)
+    	if(!afforded)
     	{
+    		cost = 0;
     		//playEffect(R.raw.nomoney);
     	}
     	return (int)cost;
@@ -344,44 +348,112 @@ public class StartActivity extends Activity
     protected int getItemID(String toBuy)
     {
     	int ID = 0;
-    	if(toBuy.equals("wApollo"))
+    	if(toBuy.equals("Worship Apollo"))
     	{
     		ID = 1;
-    	} else if(toBuy.equals("wPoseidon"))
+    	} else if(toBuy.equals("Worship Posiedon"))
     	{
     		ID = 2;
-    	} else if(toBuy.equals("wZues"))
+    	} else if(toBuy.equals("Worship Zues"))
     	{
     		ID = 3;
-    	} else if(toBuy.equals("wHades"))
+    	} else if(toBuy.equals("Worship Hades"))
     	{
     		ID = 4;
-    	} else if(toBuy.equals("wHephaestus"))
+    	} else if(toBuy.equals("Worship Hephaestus"))
     	{
     		ID = 5;
-    	} else if(toBuy.equals("wAres"))
+    	} else if(toBuy.equals("Worship Ares"))
     	{
     		ID = 6;
-    	} else if(toBuy.equals("wAthena"))
+    	} else if(toBuy.equals("Worship Athena"))
     	{
     		ID = 7;
-    	} else if(toBuy.equals("wHermes"))
+    	} else if(toBuy.equals("Worship Hermes"))
     	{
     		ID = 8;
-    	} else if(toBuy.equals("uAmbrosia"))
+    	} else if(toBuy.equals("Ambrosia"))
     	{
     		ID = 9;
-    	} else if(toBuy.equals("uArtemisArrow"))
+    	} else if(toBuy.equals("Cooldown"))
     	{
     		ID = 10;
-    	} else if(toBuy.equals("uDionysusWine"))
+    	} else if(toBuy.equals("Posiedon's Shell"))
     	{
     		ID = 11;
-    	} else if(toBuy.equals("uHestiasBlessing"))
+    	} else if(toBuy.equals("Hades' Helm"))
     	{
     		ID = 12;
+    	} else if(toBuy.equals("Zues's Armor"))
+    	{
+    		ID = 13;
+    	} else if(toBuy.equals("Apollo's Flame"))
+    	{
+    		ID = 14;
     	}
     	return ID;
+    }
+    protected String[] getItemDescribe(String toBuy)
+    {
+    	String[] describe = new String[2];
+    	if(toBuy.equals("Worship Apollo"))
+    	{
+    		describe[0] = "Damage modifier increased while";
+    		describe[1] = "fighting under Apollo";
+    	} else if(toBuy.equals("Worship Posiedon"))
+    	{
+    		describe[0] = "Attack cooldown speed increased";
+    		describe[1] = "while fighting under Posiedon";
+    	} else if(toBuy.equals("Worship Zues"))
+    	{
+    		describe[0] = "Movement speed and roll cooldown";
+    		describe[1] = "increased while fighting under Zues";
+    	} else if(toBuy.equals("Worship Hades"))
+    	{
+    		describe[0] = "Damage reduction increased while";
+    		describe[1] = "fighting under Hades";
+    	} else if(toBuy.equals("Worship Hephaestus"))
+    	{
+    		describe[0] = "Increases health during battles";
+    		describe[1] = "";
+    	} else if(toBuy.equals("Worship Ares"))
+    	{
+    		describe[0] = "Increases damage dealt during";
+    		describe[1] = "battles";
+    	} else if(toBuy.equals("Worship Athena"))
+    	{
+    		describe[0] = "Decreases cooldown time for all";
+    		describe[1] = "attacks or spells during battles";
+    	} else if(toBuy.equals("Worship Hermes"))
+    	{
+    		describe[0] = "Increases movement speed and";
+    		describe[1] = "decreases roll cooldown time";
+    	} else if(toBuy.equals("Ambrosia"))
+    	{
+    		describe[0] = "Heals half of players max Hp, ";
+    		describe[1] = "stopping at full";
+    	} else if(toBuy.equals("Cooldown"))
+    	{
+    		describe[0] = "Teleport, burst and roll";
+    		describe[1] = "cooldowns set to full";
+    	} else if(toBuy.equals("Posiedon's Shell"))
+    	{
+    		describe[0] = "Fight under Posiedon for a short";
+    		describe[1] = "length of time, reducing cooldowns";
+    	} else if(toBuy.equals("Hades' Helm"))
+    	{
+    		describe[0] = "Fight under Hades for a short";
+    		describe[1] = "length of time, increasing armor";
+    	} else if(toBuy.equals("Zues's Armor"))
+    	{
+    		describe[0] = "Fight under Zues for a short length";
+    		describe[1] = "of time, increasing movement speed";
+    	} else if(toBuy.equals("Apollo's Flame"))
+    	{
+    		describe[0] = "Fight under Apollo for a short";
+    		describe[1] = "length of time, increasing damage";
+    	}
+    	return describe;
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu)
@@ -394,50 +466,106 @@ public class StartActivity extends Activity
     {
     	
     }
+    protected String correctDigits(String end, int digits)
+	{
+		while(end.length() < digits)
+		{
+			end = "0" + end;
+		}
+		return end;
+	}
+    protected void saveGame()
+	{
+		setSaveData();
+		write();
+		readSaveData();
+	}
     @Override
     public void onStart() {
         super.onStart();
     }
-
-   @Override
-    public void onResume() {
-        super.onResume();
-        read();
-        stickOnRight = !(savedData[1] == 1);
-    	shootTapScreen = savedData[2] == 1;
-    	shootTapDirectional = !(savedData[3] == 1);
-    	levelBeaten = savedData[4];
-        currentView.gameRunning = true;
-        if(control != null)
-        {
-        	if(control.gameRunning)
-        	{
-        		startMusic();
-        		imageLibrary.loadAllImages();
-        	} else
-        	{
-        		startStoreMusic();
-        	}
-        } else
-        {
-        	startStoreMusic();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        savedData[1] = 1;
+    public void setSaveData()
+    {
+    	savedData[1] = 1;
         savedData[2] = 0;
         savedData[3] = 1;
         if(stickOnRight) savedData[1] = 0;
         if(shootTapScreen) savedData[2] = 1;
         if(shootTapDirectional) savedData[3] = 0;
         savedData[4] = levelBeaten;
+        savedData[5] = (byte)(wApollo);
+        savedData[6] = (byte)(wPoseidon);
+        savedData[7] = (byte)(wZues);
+        savedData[8] = (byte)(wHades);
+        savedData[9] = (byte)(wHephaestus);
+        savedData[10] = (byte)(wAres);
+        savedData[11] = (byte)(wAthena);
+        savedData[12] = (byte)(wHermes);
+        savedData[13] = pHeal;
+        savedData[14] = pCool;
+        savedData[15] = pWater;
+        savedData[16] = pEarth;
+        savedData[17] = pAir;
+        savedData[18] = pFire;
+        String temp = correctDigits(Integer.toBinaryString(gameCurrency), 14);
+        String tempLow = temp.substring(7);
+        String tempHigh = temp.substring(0, 7);
+        byte low = (byte)Integer.parseInt(tempLow, 2);
+        byte high = (byte)Integer.parseInt(tempHigh, 2);
+        savedData[19] = high;
+        savedData[20] = low;
+        temp = correctDigits(Integer.toBinaryString(realCurrency), 14);
+        tempLow = correctDigits(temp.substring(7), 8);
+        tempHigh = correctDigits(temp.substring(0, 7), 8);
+        low = (byte)Integer.parseInt(tempLow, 2);
+        high = (byte)Integer.parseInt(tempHigh, 2);
+        savedData[21] = (byte)high;
+        savedData[22] = (byte)low;
+    }
+    public void readSaveData()
+    {
+    	stickOnRight = savedData[1] == 0;
+    	shootTapScreen = savedData[2] == 1;
+    	shootTapDirectional = savedData[3] == 0;
+    	levelBeaten = savedData[4];
+    	wApollo = savedData[5];
+    	wPoseidon = savedData[6];
+    	wZues = savedData[7];
+    	wHades = savedData[8];
+    	wHephaestus = savedData[9];
+    	wAres = savedData[10];
+    	wAthena = savedData[11];
+    	wHermes = savedData[12];
+    	pHeal = savedData[13];
+    	pCool = savedData[14];
+    	pWater = savedData[15];
+    	pEarth = savedData[16];
+    	pAir = savedData[17];
+    	pFire = savedData[18];
+    	gameCurrency = savedData[20]+(128*savedData[19]);
+    	realCurrency = savedData[22]+(128*savedData[21]);
+    }
+   @Override
+    public void onResume() {
+        super.onResume();
+        read();
+        if(savedData[0] == 1)
+    	{
+	        readSaveData();
+    	}
+        startMusic();
+        control.imageLibrary.loadAllImages();
+        gameRunning = true;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        setSaveData();
     	write();
-        currentView.gameRunning = false;
         stopMusic();
-        imageLibrary.recycleImages();
+        control.imageLibrary.recycleImages();
+        gameRunning = false;
     }
 
     @Override

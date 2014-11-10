@@ -12,26 +12,39 @@ public final class ImageLibrary
 	protected boolean swordsmanLoaded = false;
 	protected boolean axemanLoaded = false;
 	protected boolean archerLoaded = false;
+	protected boolean rogueLoaded = false;
 	protected Bitmap[] player_Image = new Bitmap[51];
 	protected Bitmap[] mage_Image = new Bitmap[51];
+	protected Bitmap[] rogue_Image = new Bitmap[65];
 	protected Bitmap[] pikeman_Image = new Bitmap[107]; 
-	protected Bitmap[] swordsman_Image = new Bitmap[87];
-	protected Bitmap[] axeman_Image = new Bitmap[87]; 
-	protected Bitmap[] archer_Image = new Bitmap[117];
-	protected Bitmap[][] powerBall_Image = new Bitmap[4][5];
-	protected Bitmap[] powerBallAOE_Image = new Bitmap[4];
-	protected Bitmap[][] teleport_Image = new Bitmap[2][15];
+	protected Bitmap[] swordsman_Image = new Bitmap[79];
+	protected Bitmap[] axeman_Image = new Bitmap[79]; 
+	protected Bitmap[] archer_Image = new Bitmap[116];
+	protected Bitmap[] effects = new Bitmap[4];
+	protected Bitmap target_Image;
+	protected Bitmap next;
+	protected Bitmap[] powerBall_ImagePlayer = new Bitmap[5];
+	protected Bitmap powerBallAOE_ImagePlayer;
+	protected Bitmap[] powerBall_ImageEnemy = new Bitmap[5];
+	protected Bitmap powerBallAOE_ImageEnemy;
+	protected Bitmap[] teleport_Image = new Bitmap[15];
 	protected Bitmap[] warnings = new Bitmap[2];
 	protected Bitmap[] powerUps = new Bitmap[6];
+	protected Bitmap[] powerUpBigs = new Bitmap[4];
+	protected Bitmap[] coins = new Bitmap[2];
+	protected Bitmap arrow;
+	protected Bitmap currentLevel;
+	protected Bitmap currentLevelTop;
+	protected Bitmap directionsTutorial;
 	private String getting;
 	protected Resources res;
 	protected String packageName;
-	private StartActivity activity;
+	private Controller control;
 	protected BitmapFactory.Options opts;
 	/*
 	 * Loads all images needed for every game
 	 */
-	public ImageLibrary(Context contextSet, StartActivity activitySet)
+	public ImageLibrary(Context contextSet, Controller controlSet)
 	{
 		opts = new BitmapFactory.Options();
 		opts.inDither = false;
@@ -40,57 +53,95 @@ public final class ImageLibrary
 		opts.inTempStorage = new byte[16 * 1024];
 		packageName = contextSet.getPackageName();
 		res = contextSet.getResources();
-		activity = activitySet;
+		control = controlSet;
 		loadAllImages();
 	}
 	protected void loadAllImages()
 	{
-		//teleport_Image[0] = loadArray1D(15, "teleportstart", 160, 160);
-		//teleport_Image[1] = loadArray1D(15, "teleportfinish", 160, 160);
-		mage_Image = loadArray1D(51, "mage", 30, 30);
+		mage_Image = loadArray1D(31, "human_mage", 30, 30);
 		warnings[0] = loadImage("warn0001", 147, 27);
-		warnings[1] = loadImage("warn0002", 173, 74);
-		player_Image = loadArray1D(51, "player", 30, 30);
+		warnings[1] = loadImage("warn0002", 205, 27);
+		player_Image = loadArray1D(31, "human_player", 30, 30);
 		powerUps = loadArray1D(6, "powerup", 30, 30);
-		if(activity.control != null)
+		powerUpBigs = loadArray1D(4, "powerupbig", 50, 50);
+		coins = loadArray1D(2, "menu_coin", 30, 30);
+		target_Image = loadImage("human_target", 46, 50);
+		teleport_Image = loadArray1D(9, "teleport", 60, 21);
+		// TODO change to black ball
+		powerBallAOE_ImageEnemy = loadImage("powerballaoe0005", 80, 80);
+		powerBall_ImageEnemy = loadArray1D(5, "powerball0005_", 42, 18);
+		next = loadImage("menu_nexttutorial", 80, 40);
+		effects = loadArray1D(4, "effect", 60, 60);
+		arrow = loadImage("arrow", 17, 10);
+		loadLevel(control.levelNum, control.levelWidth, control.levelHeight);
+		//loadSpriteImages();
+		changeArrayLoaded("swordsman", true);
+	}
+	protected void loadLevel(int levelNum, int width, int height)
+	{
+		currentLevel = loadImage("level"+correctDigits(levelNum + 1, 4), width, height);
+		currentLevelTop = loadImage("leveltop"+correctDigits(levelNum + 1, 4), width, height);
+		if(levelNum == 1)
 		{
-			if(activity.control.gameRunning)
-			{
-				switch(activity.control.levelNum)
+			directionsTutorial = loadImage("menu_tutorial0001", 217, 235);
+		}
+	}
+	protected void loadPlayerPowerBall()
+	{
+		powerBallAOE_ImagePlayer = loadImage("powerballaoe000"+Integer.toString(control.playerType+1), 80, 80);
+		powerBall_ImagePlayer = loadArray1D(5, "powerball000"+Integer.toString(control.playerType+1)+"_", 42, 18);
+	}
+	protected void loadSpriteImages()
+	{
+		if(control != null)
+		{
+				switch(control.levelNum)
 				{
 				case 0:
 					changeArrayLoaded("swordsman", true);
-					break;
-				case 1:
-					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("rogue", true);
 					break;
 				case 2:
 					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("archer", true);
 					break;
 				case 3:
-					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("axeman", true);
+					changeArrayLoaded("pikeman", true);
 					break;
 				case 4:
 					changeArrayLoaded("swordsman", true);
+					changeArrayLoaded("pikeman", true);
 					break;
 				case 5:
 					changeArrayLoaded("swordsman", true);
 					break;
 				}
-			}
 		}
 	}
 	protected void recycleImages()
 	{
-		//recycleArray(15, teleport_Image[0]);
-		//recycleArray(15, teleport_Image[1]);
-		recycleArray(51, mage_Image);
-		recycleArray(51, player_Image);
+		if(currentLevel != null)
+		{
+			currentLevel.recycle();
+			currentLevel = null;
+		}
+		if(currentLevelTop != null)
+		{
+			currentLevelTop.recycle();
+			currentLevelTop = null;
+		}
+		recycleArray(31, mage_Image);
+		recycleArray(31, player_Image);
 		recycleArray(2, warnings);
+		recycleArray(4, powerUpBigs);
+		recycleArray(6, powerUps);
+		recycleArray(4, effects);
 		changeArrayLoaded("archer", false);
 		changeArrayLoaded("pikeman", false);
 		changeArrayLoaded("axeman", false);
 		changeArrayLoaded("swordsman", false);
+		changeArrayLoaded("rogue", false);
 	}
 	protected void recycleArray(int length, Bitmap[] array)
 	{
@@ -114,23 +165,28 @@ public final class ImageLibrary
 		{
 			if(toChange.equals("archer") && !archerLoaded)
 			{
-				archer_Image = loadArray1D(117, "archer", 80, 50);
+				archer_Image = loadArray1D(49, "human_archer", 80, 50);
 				archerLoaded = true;
 			}
 			else if(toChange.equals("pikeman") && !pikemanLoaded)
 			{
-				pikeman_Image = loadArray1D(107, "pikeman", 110, 40);
+				pikeman_Image = loadArray1D(62, "human_pikeman", 110, 40);
 				pikemanLoaded = true;
 			}
 			else if(toChange.equals("axeman") && !axemanLoaded)
 			{
-				axeman_Image = loadArray1D(87, "axeman", 80, 60);
+				axeman_Image = loadArray1D(55, "human_axeman", 80, 60);
 				axemanLoaded = true;
 			}
 			else if(toChange.equals("swordsman") && !swordsmanLoaded)
 			{
-				swordsman_Image = loadArray1D(87, "swordsman", 110, 70);
+				swordsman_Image = loadArray1D(55, "human_swordsman", 110, 70);
 				swordsmanLoaded = true;
+			}
+			else if(toChange.equals("rogue") && !rogueLoaded)
+			{
+				rogue_Image = loadArray1D(65, "human_rogue", 60, 40);
+				rogueLoaded = true;
 			}
 		}
 		else
@@ -171,6 +227,15 @@ public final class ImageLibrary
 				}
 				swordsmanLoaded = false;
 			}
+			else if(toChange.equals("rogue") && rogueLoaded)
+			{
+				for(int i = 0; i < rogue_Image.length; i++)
+				{
+					rogue_Image[i].recycle();
+					rogue_Image[i] = null;
+				}
+				rogueLoaded = false;
+			}
 		}
 	}
 	/*
@@ -210,7 +275,6 @@ public final class ImageLibrary
 	 */
 	protected Bitmap loadImage(String imageName, int width, int height)
 	{
-		opts.inSampleSize = 1;
 		int imageNumber = res.getIdentifier(imageName, "drawable", packageName);
 		return Bitmap.createScaledBitmap(BitmapFactory.decodeResource(res, imageNumber, opts), width, height, false);
 	}

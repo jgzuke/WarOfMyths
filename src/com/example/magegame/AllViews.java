@@ -50,14 +50,11 @@ import android.graphics.Rect;
 import android.view.View;
 abstract public class AllViews extends View
 {
-	protected boolean gameRunning = false;
-	protected boolean switchView = false;
 	protected int screenMinX;
 	protected int screenMinY;
 	protected double screenDimensionMultiplier;
 	protected Paint paint = new Paint();
 	protected Matrix rotateImages = new Matrix();
-	protected int percentLoaded = 0;
 	protected StartActivity activity;
 	public AllViews(Context startSet)
 	{
