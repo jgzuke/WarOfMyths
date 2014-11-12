@@ -23,7 +23,7 @@ public final class PowerBall_Enemy extends PowerBall
 		realY = y;
 		xForward = Xforward;
 		yForward = Yforward;
-		visualImage = control.imageLibrary.powerBall_ImageEnemy[control.getRandomInt(5)];
+		visualImage = control.imageLibrary.shotEnemy;
 		setImageDimensions();
 		power = Power;
 		rotation = Rotation;

@@ -15,7 +15,7 @@ public final class PowerBallAOE_Enemy extends PowerBallAOE
 	public PowerBallAOE_Enemy(Controller creator, int X, int Y, double Power, boolean Shrinking)
 	{
 		super(creator, X, Y, Power, Shrinking);
-		visualImage = control.imageLibrary.powerBallAOE_ImageEnemy;
+		visualImage = control.imageLibrary.shotAOEEnemy;
 	}
 	/**
 	 * checks whether it damages player

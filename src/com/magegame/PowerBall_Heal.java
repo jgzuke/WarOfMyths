@@ -41,7 +41,7 @@ public final class PowerBall_Heal extends PowerBall
 		}
 		realX = x;
 		realY = y;
-		visualImage = control.imageLibrary.powerBall_ImagePlayer[control.getRandomInt(5)];
+		visualImage = control.imageLibrary.shotPlayer;
 		setImageDimensions();
 		power = Power;
 		rotation = Rotation;

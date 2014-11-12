@@ -63,7 +63,6 @@ public class StartActivity extends Activity
 	protected byte bExcess = 0;
 	protected byte bReplentish = 0;
 	protected byte bTracking = 0;
-	protected boolean stickOnRight = false;
 	protected boolean shootTapScreen = false;
 	protected boolean shootTapDirectional = true;
 	protected boolean holdShoot = true;
@@ -206,7 +205,6 @@ public class StartActivity extends Activity
 		control.limitSpells = false;
 		control.enemyRegen = false;
 		control.changeDifficulty(10);
-		control.imageLibrary.directionsTutorial = control.imageLibrary.loadImage("menu_directions", 200, 180);
 		control.startFighting(10);
 		control.gamePaused = false;
 	}
@@ -1063,7 +1061,6 @@ public class StartActivity extends Activity
 		savedData[2] = 0;
 		savedData[3] = 1;
 		savedData[29] = 0;
-		if(stickOnRight) savedData[1] = 0;
 		if(shootTapScreen) savedData[2] = 1;
 		if(shootTapDirectional) savedData[3] = 0;
 		if(holdShoot) savedData[29] = 1;
@@ -1142,7 +1139,6 @@ public class StartActivity extends Activity
 	 */
 	public void readSaveData()
 	{
-		stickOnRight = savedData[1] == 0;
 		shootTapScreen = savedData[2] == 1;
 		shootTapDirectional = savedData[3] == 0;
 		holdShoot = savedData[29] == 1;

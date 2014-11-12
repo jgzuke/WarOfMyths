@@ -15,7 +15,7 @@ public final class PowerBallAOE_Player extends PowerBallAOE
 	public PowerBallAOE_Player(Controller creator, int X, int Y, double Power, boolean Shrinking)
 	{
 		super(creator, X, Y, Power, Shrinking);
-		visualImage = control.imageLibrary.powerBallAOE_ImagePlayer;
+		visualImage = control.imageLibrary.shotAOEPlayer;
 	}
 	/**
 	 * checks whether it damages player

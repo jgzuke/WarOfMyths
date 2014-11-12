@@ -36,20 +36,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 		screenDimensionMultiplier = mainSet.screenDimensionMultiplier;
 		screenMinX = mainSet.screenMinX;
 		screenMinY = mainSet.screenMinY;
-		getSide();
-	}
-	/**
-	 * checks which side of screen each joystick is on
-	 */
-	protected void getSide()
-	{
-		if(control.activity.stickOnRight)
-		{
-			buttonShiftX = 0;
-		} else
-		{
-			buttonShiftX = 390;
-		}
+		buttonShiftX = 390;
 	}
 	/**
 	 * sets player as controls player object
@@ -272,11 +259,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 	protected boolean pressedBack(float x, float y)
 	{
 		boolean pressed = false;
-		if(control.pointOnSquare(x, y, 430, 0, 480, 50)&&control.activity.stickOnRight)
-        {
-			pressed = true;
-			control.activity.playEffect("pageflip");
-        } else if(control.pointOnSquare(x, y, 0, 0, 50, 50)&&!control.activity.stickOnRight)
+		if(control.pointOnSquare(x, y, 0, 0, 50, 50))
         {
         	pressed = true;
         	control.activity.playEffect("pageflip");
@@ -1147,11 +1130,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 	        	hitButton = false;
 	        }
 		}
-		if(control.pointOnSquare(setX, setY, 390, 0, 480, 320)&&!control.activity.stickOnRight)
-        {
-			hitButton=true;
-        }
-		if(control.pointOnSquare(setX, setY, 0, 0, 90, 320)&&control.activity.stickOnRight)
+		if(control.pointOnSquare(setX, setY, 390, 0, 480, 320))
         {
 			hitButton=true;
         }
@@ -1224,13 +1203,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 	protected boolean clickDownNotPaused(float x, float y, int ID, boolean firstPointer)
 	{
 		boolean touched = false;
-		if(control.pointOnSquare(x, y, 430, 0, 480, 50)&&control.activity.stickOnRight)
-        {
-        	control.gamePaused = true;
-        	control.currentPause = "paused";
-        	control.invalidate();
-        	touched = true;
-        } else if(control.pointOnSquare(x, y, 0, 0, 50, 50)&&!control.activity.stickOnRight)
+		if(control.pointOnSquare(x, y, 0, 0, 50, 50))
         {
         	control.gamePaused = true;
         	control.currentPause = "paused";

@@ -23,7 +23,7 @@ public final class CrossbowBolt extends PowerBall
 		realY = y;
 		xForward = Xforward;
 		yForward = Yforward;
-		visualImage = control.imageLibrary.arrow;
+		visualImage = control.imageLibrary.shotEnemy;
 		setImageDimensions();
 		power = Power;
 		rotation = Rotation;
