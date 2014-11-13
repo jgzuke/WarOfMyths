@@ -16,13 +16,13 @@ public final class Player extends Human
 	protected double spMod = 1;
 	protected double abilityTimer_roll = 0;
 	protected double abilityTimer_burst = 0;
-	protected double abilityTimer_powerBall = 0;
+	protected double abilityTimer_Proj_Tracker = 0;
 	protected double abilityTimerTransformed_pound = 0;
 	protected double abilityTimerTransformed_hit = 0;
 	private double xSave = 0;
 	private double ySave = 0;
 	private boolean usedDionysusWine = false;
-	protected int projectileSpeed = 13;
+	protected int projectileSpeed = 40;
 	protected double touchX;
 	protected boolean touching;
 	protected boolean touchingShoot;
@@ -69,9 +69,9 @@ public final class Player extends Human
 		sp = 1;
 		abilityTimer_roll = 120;
 		abilityTimer_burst = 250;
-		abilityTimer_powerBall = 0;
+		abilityTimer_Proj_Tracker = 0;
 		usedDionysusWine = false;
-		projectileSpeed = 10;
+		projectileSpeed = 40;
 		touching = false;
 		x = 370;
 		y = 160;
@@ -110,7 +110,7 @@ public final class Player extends Human
 			transformed = 0;
 			control.imageLibrary.transattack.recycle();
 			control.imageLibrary.loadPlayerImage();
-			control.imageLibrary.recycleArray(10, control.imageLibrary.trans);
+			control.imageLibrary.recycleArray(control.imageLibrary.trans);
 		}
 		if(control.drainHp)
 		{
@@ -206,9 +206,9 @@ public final class Player extends Human
 					}
 					for(int i = 0; i<6; i++)
 					{	
-						control.createPowerBallPlayerAOE(newX-20+control.getRandomInt(40), newY-20+control.getRandomInt(40), 130, true);
+						control.createProj_TrackerPlayerAOE(newX-20+control.getRandomInt(40), newY-20+control.getRandomInt(40), 130, true);
 					}
-					control.createPowerBallPlayerBurst(newX, newY, 0);
+					control.createProj_TrackerPlayerBurst(newX, newY, 0);
 					control.activity.playEffect("burst");
 					control.activity.playEffect("burst");
 					control.activity.playEffect("burst");
@@ -240,14 +240,14 @@ public final class Player extends Human
 				cooldown *= 1.5*(double)control.activity.wPoseidon/10;
 			}
 			abilityTimer_burst += cooldown*1.4;
-			abilityTimer_powerBall += cooldown*5;
+			abilityTimer_Proj_Tracker += cooldown*5;
 			if(abilityTimer_burst >= 500)
 			{
 				abilityTimer_burst = 500;
 			}
-			if(abilityTimer_powerBall >= 91+(control.activity.bReserve*20))
+			if(abilityTimer_Proj_Tracker >= 91+(control.activity.bReserve*20))
 			{
-				abilityTimer_powerBall = 91+(control.activity.bReserve*20);
+				abilityTimer_Proj_Tracker = 91+(control.activity.bReserve*20);
 			}
 			if(control.limitSpells)
 			{
@@ -265,18 +265,18 @@ public final class Player extends Human
 			{
 				if(touchingShoot)
 	            {
-	            	if(abilityTimer_powerBall > 30&&minimumShootTime<1)
+	            	if(abilityTimer_Proj_Tracker > 30&&minimumShootTime<1)
 	            	{
 		            	if(control.activity.shootTapDirectional)
 			        	{
 			        		double temp1 = rads;
 			            	rads = Math.atan2(touchShootY, touchShootX);
-			        		releasePowerBall();
+			        		releaseProj_Tracker();
 			        		control.shootStick.rotation=rads*180/Math.PI;
 			        		rads = temp1;
 			        	} else
 			        	{
-			        		releasePowerBall();
+			        		releaseProj_Tracker();
 			        		control.shootStick.rotation=rads*180/Math.PI;
 			        	}
 		            	minimumShootTime = 2;
@@ -324,14 +324,14 @@ public final class Player extends Human
 	/**
 	 * shoots a power ball
 	 */
-	protected void releasePowerBall()
+	protected void releaseProj_Tracker()
 	{
-		if(abilityTimer_powerBall > 30)
+		if(abilityTimer_Proj_Tracker > 30)
 		{
 			if(rollTimer < 0&&control.levelNum!=10)
 			{
-					control.createPowerBallPlayer(rads*r2d, projectileSpeed, 130, x, y);
-					abilityTimer_powerBall -= 30;
+					control.createProj_TrackerPlayer(rads*r2d, projectileSpeed, 130, x, y);
+					abilityTimer_Proj_Tracker -= 30;
 					control.activity.playEffect("shoot");
 			}
 		} else
@@ -404,9 +404,9 @@ public final class Player extends Human
 		{
 			for(int i = 0; i<6; i++)
 			{	
-				control.createPowerBallPlayerAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130, true);
+				control.createProj_TrackerPlayerAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130, true);
 			}
-			control.createPowerBallPlayerBurst(x, y, 0);
+			control.createProj_TrackerPlayerBurst(x, y, 0);
 			abilityTimer_burst -= 300;
 			control.activity.playEffect("burst");
 			control.activity.playEffect("burst");
@@ -477,7 +477,7 @@ public final class Player extends Human
 			break;
 		case 2:
 			abilityTimer_roll = 120;
-			abilityTimer_powerBall = 90;
+			abilityTimer_Proj_Tracker = 90;
 			abilityTimer_burst = 500;
 			break;
 		case 3:
@@ -565,8 +565,8 @@ public final class Player extends Human
 	 * returns power ball timer
 	 * @return power ball timer
 	 */
-	protected double getAbilityTimer_powerBall() {
-		return abilityTimer_powerBall;
+	protected double getAbilityTimer_Proj_Tracker() {
+		return abilityTimer_Proj_Tracker;
 	}
 	/**
 	 * returns roll timer
@@ -591,17 +591,17 @@ public final class Player extends Human
 	}
 	/**
 	 * sets power ball timer
-	 * @param abilityTimer_powerBall time to set
+	 * @param abilityTimer_Proj_Tracker time to set
 	 */
 	protected void setAbilityTimer_burst(int abilityTimer_burst) {
 		this.abilityTimer_burst = abilityTimer_burst;
 	}
 	/**
 	 * sets burst timer
-	 * @param abilityTimer_powerBall time to set
+	 * @param abilityTimer_Proj_Tracker time to set
 	 */
-	protected void setAbilityTimer_powerBall(int abilityTimer_powerBall) {
-		this.abilityTimer_powerBall = abilityTimer_powerBall;
+	protected void setAbilityTimer_Proj_Tracker(int abilityTimer_Proj_Tracker) {
+		this.abilityTimer_Proj_Tracker = abilityTimer_Proj_Tracker;
 	}
 	/**
 	 * returns special

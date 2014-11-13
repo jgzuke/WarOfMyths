@@ -36,7 +36,7 @@ public final class Enemy_Target extends Enemy_Muggle
 			if(timer == 0)
 			{
 				rads = rotation / r2d;
-				control.createPowerBallEnemy(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 130, x, y);
+				control.createProj_TrackerEnemy(rotation, Math.cos(rads) * 10, Math.sin(rads) * 10, 130, x, y);
 				timer = 20;
 			}
 		}

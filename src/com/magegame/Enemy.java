@@ -1,6 +1,6 @@
 /**
  * All enemies, sets reaction methods, contains checks and mathematical functions
- * @param danger holds powerBalls headed towards object and their coordinates velocity etc
+ * @param danger holds Proj_Trackers headed towards object and their coordinates velocity etc
  */
 package com.magegame;
 
@@ -150,12 +150,12 @@ abstract public class Enemy extends Human
 			control.player.abilityTimer_burst += damage*control.activity.bReplentish/30;
 			control.player.abilityTimer_roll += damage*control.activity.bReplentish/50;
 			control.player.abilityTimerTransformed_pound += damage*control.activity.bReplentish/50;
-			control.player.abilityTimer_powerBall += damage*control.activity.bReplentish/100;
+			control.player.abilityTimer_Proj_Tracker += damage*control.activity.bReplentish/100;
 			control.player.sp += damage*0.00003;
 			if(deleted)
 			{
 				control.player.sp += 0.15;
-				control.createPowerBallEnemyAOE(x, y, 140, false);
+				control.createProj_TrackerEnemyAOE(x, y, 140, false);
 				if(!sick)
 				{
 					if(keyHolder)
@@ -247,7 +247,7 @@ abstract public class Enemy extends Human
 		}
 	}
 	/**
-	 * Checks whether any powerBalls are headed for object
+	 * Checks whether any Proj_Trackers are headed for object
 	 */
 	protected void checkDanger()
 	{           

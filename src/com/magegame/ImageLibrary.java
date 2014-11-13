@@ -34,7 +34,7 @@ public final class ImageLibrary
 	protected Bitmap currentLevel;
 	protected Bitmap currentLevelTop;
 	protected Bitmap directionsTutorial;
-	protected Bitmap toTile;
+	protected Bitmap backDrop;
 	private String getting;
 	protected Resources res;
 	protected String packageName;
@@ -121,23 +121,23 @@ public final class ImageLibrary
 		exitFightPortal = loadImage("icon_exitfightportal", 60, 60);
 		backButton = loadImage("icon_exitfight", 40, 40);
 		loadPlayerImage();
-		powerUps = loadArray1D(10, "icon_powerup", 30, 30);
+		powerUps = loadArray1D(11, "icon_powerup", 30, 30);
 		powerUpBigs = loadArray1D(5, "icon_powerupbig", 70, 70);
 		coins = loadArray1D(2, "icon_menu_coin", 30, 30);
 		target_Image = loadImage("human_target", 48, 53);
 		// TODO change to black ball
-		archer_Image = loadArray1D(49, "human_archer", 80, 50);
+		archer_Image = loadArray1D(44, "human_archer", 80, 50);
 		shield_Image = loadArray1D(55, "human_swordsman", 110, 70);
 
 		shotAOEEnemy = loadImage("shotexplodeenemy", 80, 80);
-		shotEnemy = loadImage("shotenemy", 42, 18);
+		shotEnemy = loadImage("shotenemy", 40, 3);
 		shotAOEPlayer = loadImage("shotexplodeplayer", 80, 80);
-		shotPlayer = loadImage("shotplayer", 42, 18);
+		shotPlayer = loadImage("shotplayer", 40, 3);
 		effects = loadArray1D(4, "effect", 60, 60);
 		haskey = loadImage("icon_haskey", 40, 40);
 		isPlayer = loadImage("icon_isplayer", 40, 40);
 		loadLevel(control.levelNum, control.levelWidth, control.levelHeight);
-		toTile = loadImage("level_tile0001", 90, 90);
+		backDrop = loadImage("level_back", 90, 90);
 	}
 	/**
 	 * loads level image layers and background image
@@ -155,11 +155,11 @@ public final class ImageLibrary
 		{
 			currentLevelTop.recycle();
 		}
-		if(toTile!= null)
+		if(backDrop!= null)
 		{
-			toTile.recycle();
+			backDrop.recycle();
 		}
-		toTile = loadImage("level_tile0001", 90, 90);
+		backDrop = loadImage("level_back", 90, 90);
 		currentLevel = loadImage("level"+correctDigits(levelNum, 4), width, height);
 		currentLevelTop = loadImage("leveltop"+correctDigits(levelNum, 4), width, height);
 	}
@@ -178,18 +178,19 @@ public final class ImageLibrary
 			currentLevelTop.recycle();
 			currentLevelTop = null;
 		}
-		recycleArray(31, player_Image);
-		recycleArray(5, powerUpBigs);
-		recycleArray(10, powerUps);
-		recycleArray(4, effects);
+		recycleArray(player_Image);
+		recycleArray(powerUpBigs);
+		recycleArray(powerUps);
+		recycleArray(effects);
 	}
 	/**
 	 * recycles desired array of images
 	 * @param length length of array
 	 * @param array array to recycle
 	 */
-	protected void recycleArray(int length, Bitmap[] array)
+	protected void recycleArray(Bitmap[] array)
 	{
+		int length = array.length;
 		for(int i = 0; i < length; i++)
 		{
 			if(array[i] != null)

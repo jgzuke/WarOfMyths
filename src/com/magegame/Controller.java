@@ -8,8 +8,8 @@
  * @param player Player object that has health etc and generates movement handler
  * @param enemy Enemy object with health etc and ai
  * @param enemies Array of all enemies currently on screen excluding main mage enemy
- * @param powerBalls Array of all enemy or player powerBalls
- * @param powerBallAOEs Array of all enemy or player powerBall explosions
+ * @param Proj_Trackers Array of all enemy or player Proj_Trackers
+ * @param Proj_Tracker_AOEs Array of all enemy or player Proj_Tracker explosions
  * @param spGraphicEnemy Handles the changing of main enemy's sp
  * @param spGraphicPlayer Handles the changing of player's sp
  * @param oRectX1 Array of all walls left x value
@@ -62,8 +62,8 @@ public final class Controller extends View
 	protected Enemy[] enemies = new Enemy[30];
 	protected Structure[] structures = new Structure[10];
 	private PowerUp[] powerUps = new PowerUp[30];
-	private PowerBall[] powerBalls = new PowerBall[30];
-	private PowerBallAOE[] powerBallAOEs = new PowerBallAOE[30];
+	private Proj_Tracker[] Proj_Trackers = new Proj_Tracker[30];
+	private Proj_Tracker_AOE[] Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
 	private Wall_Rectangle[] walls = new Wall_Rectangle[30];
 	private Wall_Circle[] wallCircles = new Wall_Circle[30];
 	private Wall_Ring[] wallRings = new Wall_Ring[30];
@@ -385,8 +385,8 @@ public final class Controller extends View
 		hasKey = false;
 		enemies = new Enemy[30];
 		structures = new Structure[30];
-		powerBalls = new PowerBall[30];
-		powerBallAOEs = new PowerBallAOE[30];
+		Proj_Trackers = new Proj_Tracker[30];
+		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
 		powerUps = new PowerUp[30];
 		walls = new Wall_Rectangle[30];
 		wallCircles = new Wall_Circle[30];
@@ -725,8 +725,8 @@ public final class Controller extends View
 	{
 		enemies = new Enemy[30];
 		structures = new Structure[30];
-		powerBalls = new PowerBall[30];
-		powerBallAOEs = new PowerBallAOE[30];
+		Proj_Trackers = new Proj_Tracker[30];
+		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
 		powerUps = new PowerUp[30];
 		walls = new Wall_Rectangle[30];
 		wallCircles = new Wall_Circle[30];
@@ -750,8 +750,8 @@ public final class Controller extends View
 	{
 		enemies = new Enemy[30]; // SAME AS OTHER endFightSection BUT DOESNT SPAWN ENEMIES
 		structures = new Structure[30];
-		powerBalls = new PowerBall[30];
-		powerBallAOEs = new PowerBallAOE[30];
+		Proj_Trackers = new Proj_Tracker[30];
+		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
 		powerUps = new PowerUp[30];
 		walls = new Wall_Rectangle[30];
 		wallCircles = new Wall_Circle[30];
@@ -893,7 +893,7 @@ public final class Controller extends View
 		{
 			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.getAbilityTimer_burst()) / 500), 111, g);
 			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.getAbilityTimer_roll()) / 120), 215, g);
-			drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.getAbilityTimer_powerBall()) / (91+(activity.bReserve*20))), 310, g);
+			drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.getAbilityTimer_Proj_Tracker()) / (91+(activity.bReserve*20))), 310, g);
 		} else if(player.transformed==1)
 		{
 			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimerTransformed_pound) / 120), 111, g);
@@ -955,31 +955,31 @@ public final class Controller extends View
 	{
 		playerHit++;
 		playerBursted++;
-		for(int i = 0; i < powerBalls.length; i++)
+		for(int i = 0; i < Proj_Trackers.length; i++)
 		{
-			if(powerBalls[i] != null)
+			if(Proj_Trackers[i] != null)
 			{
-				if(powerBalls[i].deleted)
+				if(Proj_Trackers[i].deleted)
 				{
-					powerBalls[i] = null;
+					Proj_Trackers[i] = null;
 				}
 				else
 				{
-					powerBalls[i].frameCall();
+					Proj_Trackers[i].frameCall();
 				}
 			}
 		}
-		for(int i = 0; i < powerBallAOEs.length; i++)
+		for(int i = 0; i < Proj_Tracker_AOEs.length; i++)
 		{
-			if(powerBallAOEs[i] != null)
+			if(Proj_Tracker_AOEs[i] != null)
 			{
-				if(powerBallAOEs[i].deleted)
+				if(Proj_Tracker_AOEs[i].deleted)
 				{
-					powerBallAOEs[i] = null;
+					Proj_Tracker_AOEs[i] = null;
 				}
 				else
 				{
-					powerBallAOEs[i].frameCall();
+					Proj_Tracker_AOEs[i].frameCall();
 				}
 			}
 		}
@@ -1197,7 +1197,7 @@ public final class Controller extends View
 		{
 			while(h < levelHeight)
 			{
-				drawBitmapLevel(imageLibrary.toTile, w, h, g);
+				drawBitmapLevel(imageLibrary.backDrop, w, h, g);
 				h += 90;
 			}
 			w += 90;
@@ -1245,23 +1245,23 @@ public final class Controller extends View
 				drawBitmapRotatedLevel(enemies[i], g);
 			}
 		}
-		for(int i = 0; i < powerBalls.length; i++)
+		for(int i = 0; i < Proj_Trackers.length; i++)
 		{
-			if(powerBalls[i] != null)
+			if(Proj_Trackers[i] != null)
 			{
-				drawBitmapRotatedLevel(powerBalls[i], g);
+				drawBitmapRotatedLevel(Proj_Trackers[i], g);
 			}
 		}
-		for(int i = 0; i < powerBallAOEs.length; i++)
+		for(int i = 0; i < Proj_Tracker_AOEs.length; i++)
 		{
-			if(powerBallAOEs[i] != null)
+			if(Proj_Tracker_AOEs[i] != null)
 			{
-				aoeRect.top = (int)(powerBallAOEs[i].y - (powerBallAOEs[i].getHeight() / 2.5));
-				aoeRect.bottom = (int)(powerBallAOEs[i].y + (powerBallAOEs[i].getHeight() / 2.5));
-				aoeRect.left = (int)(powerBallAOEs[i].x - (powerBallAOEs[i].getWidth() / 2.5));
-				aoeRect.right = (int)(powerBallAOEs[i].x + (powerBallAOEs[i].getWidth() / 2.5));
-				paint.setAlpha(powerBallAOEs[i].getAlpha());
-				drawBitmapRectLevel(powerBallAOEs[i].getVisualImage(), aoeRect, g);
+				aoeRect.top = (int)(Proj_Tracker_AOEs[i].y - (Proj_Tracker_AOEs[i].getHeight() / 2.5));
+				aoeRect.bottom = (int)(Proj_Tracker_AOEs[i].y + (Proj_Tracker_AOEs[i].getHeight() / 2.5));
+				aoeRect.left = (int)(Proj_Tracker_AOEs[i].x - (Proj_Tracker_AOEs[i].getWidth() / 2.5));
+				aoeRect.right = (int)(Proj_Tracker_AOEs[i].x + (Proj_Tracker_AOEs[i].getWidth() / 2.5));
+				paint.setAlpha(Proj_Tracker_AOEs[i].getAlpha());
+				drawBitmapRectLevel(Proj_Tracker_AOEs[i].getVisualImage(), aoeRect, g);
 			}
 		}
 		paint.setAlpha(255);
@@ -2084,17 +2084,17 @@ public final class Controller extends View
 	}
 	/**
 	 * creates an enemy power ball
-	 * @param rotation rotation of powerball
+	 * @param rotation rotation of Proj_Tracker
 	 * @param xVel horizontal velocity of ball
 	 * @param yVel vertical velocity of ball
 	 * @param power power of ball
 	 * @param x x position
 	 * @param y y position
 	 */
-	protected void createPowerBallEnemy(double rotation, double xVel, double yVel, int power, double x, double y)
+	protected void createProj_TrackerEnemy(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
-		PowerBall_Enemy ballEnemy = new PowerBall_Enemy(this, (int) (x+xVel*2), (int) (y+yVel*2), power, xVel, yVel, rotation);
-		powerBalls[lowestPositionEmpty(powerBalls)] = ballEnemy;
+		Proj_Tracker_Enemy ballEnemy = new Proj_Tracker_Enemy(this, (int) (x+xVel*2), (int) (y+yVel*2), power, xVel, yVel, rotation);
+		Proj_Trackers[lowestPositionEmpty(Proj_Trackers)] = ballEnemy;
 	}
 	/**
 	 * creates an enemy crossbow bolt
@@ -2108,7 +2108,7 @@ public final class Controller extends View
 	protected void createCrossbowBolt(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
 		CrossbowBolt boltEnemy = new CrossbowBolt(this, (int) (x+xVel), (int) (y+yVel), power, xVel, yVel, rotation);
-		powerBalls[lowestPositionEmpty(powerBalls)] = boltEnemy;
+		Proj_Trackers[lowestPositionEmpty(Proj_Trackers)] = boltEnemy;
 	}
 	/**
 	 * creates a powerup object the player can pick up
@@ -2169,10 +2169,10 @@ public final class Controller extends View
 	 * @param x x position
 	 * @param y y position
 	 */
-	protected void createPowerBallPlayer(double rotation, double Vel, int power, double x, double y)
+	protected void createProj_TrackerPlayer(double rotation, double Vel, int power, double x, double y)
 	{
-		PowerBall_Player ballPlayer = new PowerBall_Player(this, (int)x, (int)y, power, Vel, rotation);
-		powerBalls[lowestPositionEmpty(powerBalls)] = ballPlayer;
+		Proj_Tracker_Player ballPlayer = new Proj_Tracker_Player(this, (int)x, (int)y, power, Vel, rotation);
+		Proj_Trackers[lowestPositionEmpty(Proj_Trackers)] = ballPlayer;
 	}
 	/**
 	 * creates an emeny AOE explosion
@@ -2181,11 +2181,11 @@ public final class Controller extends View
 	 * @param power power of explosion
 	 * @param damaging whether it damages player
 	 */
-	protected void createPowerBallEnemyAOE(double x, double y, double power, boolean damaging)
+	protected void createProj_TrackerEnemyAOE(double x, double y, double power, boolean damaging)
 	{
-		PowerBallAOE_Enemy ballAOEEnemy = new PowerBallAOE_Enemy(this, (int) x, (int) y, power, true);
+		Proj_Tracker_AOE_Enemy ballAOEEnemy = new Proj_Tracker_AOE_Enemy(this, (int) x, (int) y, power, true);
 		if(!damaging) ballAOEEnemy.damaging = false;
-		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEEnemy;
+		Proj_Tracker_AOEs[lowestPositionEmpty(Proj_Tracker_AOEs)] = ballAOEEnemy;
 	}
 	/**
 	 * creates a player AOE explosion
@@ -2193,11 +2193,11 @@ public final class Controller extends View
 	 * @param y y position
 	 * @param power power of explosion
 	 */
-	protected void createPowerBallPlayerAOE(double x, double y, double power, boolean damaging)
+	protected void createProj_TrackerPlayerAOE(double x, double y, double power, boolean damaging)
 	{
-		PowerBallAOE_Player ballAOEPlayer = new PowerBallAOE_Player(this, (int) x, (int) y, power, true);
+		Proj_Tracker_AOE_Player ballAOEPlayer = new Proj_Tracker_AOE_Player(this, (int) x, (int) y, power, true);
 		if(!damaging) ballAOEPlayer.damaging = false;
-		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEPlayer;
+		Proj_Tracker_AOEs[lowestPositionEmpty(Proj_Tracker_AOEs)] = ballAOEPlayer;
 	}
 	/**
 	 * creates an enemy burst
@@ -2205,10 +2205,10 @@ public final class Controller extends View
 	 * @param y y position
 	 * @param power power of explosion
 	 */
-	protected void createPowerBallEnemyBurst(double x, double y, double power)
+	protected void createProj_TrackerEnemyBurst(double x, double y, double power)
 	{
-		PowerBallAOE_Enemy ballAOEEnemy = new PowerBallAOE_Enemy(this, (int) x, (int) y, power, false);
-		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEEnemy;
+		Proj_Tracker_AOE_Enemy ballAOEEnemy = new Proj_Tracker_AOE_Enemy(this, (int) x, (int) y, power, false);
+		Proj_Tracker_AOEs[lowestPositionEmpty(Proj_Tracker_AOEs)] = ballAOEEnemy;
 	}
 	/**
 	 * creates a player burst
@@ -2216,10 +2216,10 @@ public final class Controller extends View
 	 * @param y y position
 	 * @param power power of explosion
 	 */
-	protected void createPowerBallPlayerBurst(double x, double y, double power)
+	protected void createProj_TrackerPlayerBurst(double x, double y, double power)
 	{
-		PowerBallAOE_Player ballAOEPlayer = new PowerBallAOE_Player(this, (int) x, (int) y, power, false);
-		powerBallAOEs[lowestPositionEmpty(powerBallAOEs)] = ballAOEPlayer;
+		Proj_Tracker_AOE_Player ballAOEPlayer = new Proj_Tracker_AOE_Player(this, (int) x, (int) y, power, false);
+		Proj_Tracker_AOEs[lowestPositionEmpty(Proj_Tracker_AOEs)] = ballAOEPlayer;
 	}
 	/**
 	 * Tests an array to find lowest null index

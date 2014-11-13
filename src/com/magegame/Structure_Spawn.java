@@ -1,6 +1,6 @@
 /**
  * All enemies, sets reaction methods, contains checks and mathematical functions
- * @param danger holds powerBalls headed towards object and their coordinates velocity etc
+ * @param danger holds Proj_Trackers headed towards object and their coordinates velocity etc
  */
 package com.magegame;
 
@@ -35,7 +35,7 @@ public class Structure_Spawn extends Structure
 			control.enemies[index] = new Enemy_Shield(control, (int)x, (int)y);
 			control.enemies[index].sick = true;
 			control.enemies[index].hpMax /= 2.5;
-			control.createPowerBallEnemyAOE(x, y, 140, false);
+			control.createProj_TrackerEnemyAOE(x, y, 140, false);
 			control.activity.playEffect("burst");
 		}
 	}

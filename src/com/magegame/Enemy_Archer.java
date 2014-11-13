@@ -22,13 +22,14 @@ public final class Enemy_Archer extends Enemy_Muggle
 		setHpMax(hp);
 		worth = 4;
 		weight = 1;
+		projectileVelocity = 40*(0.4+control.getDifficultyLevelMultiplier());
 	}
 	@
 	Override
 	protected void frameCall()
 	{
 		visualImage = control.imageLibrary.archer_Image[currentFrame];
-		if(currentFrame == 48)
+		if(currentFrame == 43)
 		{
 			currentFrame = 0;
 			playing = false;
@@ -96,21 +97,24 @@ public final class Enemy_Archer extends Enemy_Muggle
 		}
 	}
 	/**
-	 * Releases arrow towards player
+	 * Aims towards player
 	 */
-	protected void shoot()
+	protected void aim()
 	{
-			projectileVelocity = 10*(0.4+control.getDifficultyLevelMultiplier());
 			double timeToHit = (checkDistance(x, y, control.player.x, control.player.y))/projectileVelocity;
 			timeToHit *= (control.getRandomDouble()*0.7)+0.4;
-			double newPX;
-			double newPY;												//SHOOTS AHEAD OF PLAYER BASED ON VELOCITY LAST FRAME
-				newPX = control.player.x+(pXVelocity*timeToHit);
-				newPY = control.player.y+(pYVelocity*timeToHit);
+			double newPX = control.player.x+(pXVelocity*timeToHit);
+			double newPY = control.player.y+(pYVelocity*timeToHit);
 			double xDif = newPX-x;
 			double yDif = newPY-y;
 			rads = Math.atan2(yDif, xDif); // ROTATES TOWARDS PLAYER
 			rotation = rads * r2d;
+	}
+	/**
+	 * Releases arrow towards player
+	 */
+	protected void shoot()
+	{
 			control.createCrossbowBolt(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
 			control.activity.playEffect("arrowrelease");
 	}
@@ -121,7 +125,11 @@ public final class Enemy_Archer extends Enemy_Muggle
 	@Override
 	protected void attacking()
 	{
-		if(currentFrame == 38) // at the right point in animation fire arrow
+		if(currentFrame == 25) // aims
+		{
+			aim();
+		}
+		if(currentFrame == 35) // at the right point in animation fire arrow
 		{
 			shoot();
 		}

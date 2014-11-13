@@ -1,6 +1,6 @@
 /**
  * All enemies, sets reaction methods, contains checks and mathematical functions
- * @param danger holds powerBalls headed towards object and their coordinates velocity etc
+ * @param danger holds Proj_Trackers headed towards object and their coordinates velocity etc
  */
 package com.magegame;
 
@@ -48,7 +48,7 @@ abstract public class Structure extends DrawnSprite
 			control.player.abilityTimer_burst += damage*control.activity.bReplentish/30;
 			control.player.abilityTimer_roll += damage*control.activity.bReplentish/50;
 			control.player.abilityTimerTransformed_pound += damage*control.activity.bReplentish/50;
-			control.player.abilityTimer_powerBall += damage*control.activity.bReplentish/100;
+			control.player.abilityTimer_Proj_Tracker += damage*control.activity.bReplentish/100;
 			control.player.sp += damage*0.00003;
 			hp -= damage;
 			if(hp < 1)
@@ -56,7 +56,7 @@ abstract public class Structure extends DrawnSprite
 				hp = 0;
 				deleted = true;
 				control.player.sp += 0.30;
-				control.createPowerBallEnemyAOE(x, y, 180, false);
+				control.createProj_TrackerEnemyAOE(x, y, 180, false);
 				control.activity.playEffect("burst");
 				control.createPowerUp(x, y);
 				for(int i = 0; i < worth; i ++)

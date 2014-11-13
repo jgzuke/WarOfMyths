@@ -17,7 +17,7 @@ public final class Enemy_Mage extends Enemy
 	private int minimumShootTime = 5;
 	private String reaction;
 	private double abilityTimer_burst = 0;
-	private double abilityTimer_powerBall = 0;
+	private double abilityTimer_Proj_Tracker = 0;
 	private boolean rolledSideways;
 	private boolean enemyAreaProtected = true;
 	private int rollPathChooseCounter;
@@ -64,9 +64,9 @@ public final class Enemy_Mage extends Enemy
 		{
 			abilityTimer_burst += control.getDifficultyLevelMultiplier();
 		}
-		if(abilityTimer_powerBall < 90)
+		if(abilityTimer_Proj_Tracker < 90)
 		{
-			abilityTimer_powerBall += 3*Math.pow(control.getDifficultyLevelMultiplier(), 0.5);
+			abilityTimer_Proj_Tracker += 3*Math.pow(control.getDifficultyLevelMultiplier(), 0.5);
 		}
 		if(currentFrame == 30)
 		{
@@ -263,15 +263,15 @@ public final class Enemy_Mage extends Enemy
 				{
 					setReactTimer();
 					reaction = "Roll Towards";
-				} else if(abilityTimer_powerBall > 30)
+				} else if(abilityTimer_Proj_Tracker > 30)
 				{
-					releasePowerBall();
+					releaseProj_Tracker();
 				}
 			} else 
 			{
-				if(abilityTimer_powerBall > 30)
+				if(abilityTimer_Proj_Tracker > 30)
 				{
-					releasePowerBall();
+					releaseProj_Tracker();
 				}
 			}
 		}
@@ -424,9 +424,9 @@ public final class Enemy_Mage extends Enemy
 		rotation = rads * r2d;
 		for(int i = 0; i<6; i++)
 		{
-			control.createPowerBallEnemyAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130, true);
+			control.createProj_TrackerEnemyAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130, true);
 		}
-		control.createPowerBallEnemyBurst(x, y, 0);
+		control.createProj_TrackerEnemyBurst(x, y, 0);
 		abilityTimer_burst = 0;
 		control.activity.playEffect("burst");
 		control.activity.playEffect("burst");
@@ -434,11 +434,11 @@ public final class Enemy_Mage extends Enemy
 		control.activity.playEffect("electric");
 	}
 	/**
-	 * Releases powerBall towards player
+	 * Releases Proj_Tracker towards player
 	 */
-	protected void releasePowerBall()
+	protected void releaseProj_Tracker()
 	{
-		if(abilityTimer_powerBall > 30&&minimumShootTime<1)
+		if(abilityTimer_Proj_Tracker > 30&&minimumShootTime<1)
 		{
 			projectileVelocity = 2+(control.getDifficultyLevelMultiplier()*5);
 			double timeToHit = (checkDistance(x, y, control.player.x, control.player.y))/projectileVelocity;
@@ -451,8 +451,8 @@ public final class Enemy_Mage extends Enemy
 			double yDif = newPY-y;
 			rads = Math.atan2(yDif, xDif);
 			rads += 0.2*(0.5-control.getRandomDouble())/Math.pow(control.getDifficultyLevelMultiplier(), 2);
-			control.createPowerBallEnemy(rads*r2d, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
-			abilityTimer_powerBall -= 30;
+			control.createProj_TrackerEnemy(rads*r2d, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
+			abilityTimer_Proj_Tracker -= 30;
 			control.activity.playEffect("shoot");
 			minimumShootTime = 2;
 		}
@@ -466,7 +466,7 @@ public final class Enemy_Mage extends Enemy
 		switch(convertReactionToInt(reaction))
 		{
 		case 1:
-			releasePowerBall();
+			releaseProj_Tracker();
 			break;
 		case 2:
 			roll();

@@ -1192,12 +1192,12 @@ public class PlayerGestureDetector implements OnTouchListener {
 	        	{
 	        		double temp1 = player.rads;
 	            	player.rads = Math.atan2(visualY(y)-267, visualX(x)-(53+(buttonShiftX*0.95897)));
-	        		player.releasePowerBall();
+	        		player.releaseProj_Tracker();
 	        		control.shootStick.rotation=player.rads*180/Math.PI;
 	        		player.rads = temp1;
 	        	} else
 	        	{
-	        		player.releasePowerBall();
+	        		player.releaseProj_Tracker();
 	        		control.shootStick.rotation=player.rads*180/Math.PI;
 	        	}
         	}
@@ -1217,11 +1217,11 @@ public class PlayerGestureDetector implements OnTouchListener {
 	            	{
 	        			double temp1 = player.rads;
 	        			player.rads = Math.atan2(screenY(y)-player.y, screenX(x)-player.x);
-	            		player.releasePowerBall();
+	            		player.releaseProj_Tracker();
 	            		player.rads = temp1;
 	            	} else
 	            	{
-	            		player.releasePowerBall();
+	            		player.releaseProj_Tracker();
 	            	}
             	}
         	}

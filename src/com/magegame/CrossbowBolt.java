@@ -2,7 +2,7 @@
  * Defines behavior for enemy crossbowmans projectiles
  */
 package com.magegame;
-public final class CrossbowBolt extends PowerBall
+public final class CrossbowBolt extends Proj_Tracker
 {
 	/**
 	 * Sets position, speed, power, and direction of travel
@@ -51,29 +51,31 @@ public final class CrossbowBolt extends PowerBall
 	protected void frameCall()
 	{
 		super.frameCall();
-		if(control.checkHitBack(x, y) && !deleted)
+		double tempX = x;
+		double tempY = y;
+		for(int i = 0; i < 8; i++)
 		{
-			deleted = true;
-			control.activity.playEffect("arrowhit");
-		}
-		if(control.checkHitBack(x-(xForward/2), y-(yForward/2)) && !deleted)
-		{
-			deleted = true;
-			control.activity.playEffect("arrowhit");
-		}
-		if(control.player.currentFrame < 22 && !deleted) // currentframe under 22 because if player rolls it doesnt hit
-		{
-			xDif = x - control.player.x;
-			yDif = y - control.player.y;
-			if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100) // if player within 10 pixels
+			if(control.checkHitBack(tempX, tempY) && !deleted)
 			{
-				control.player.getHit(power*4);
 				deleted = true;
 				control.activity.playEffect("arrowhit");
-				if(control.getRandomDouble()*(0.5+control.getDifficultyLevelMultiplier()) > 1.7) // chance of stunning player
+				tempX -= (xForward/8);
+				tempY -= (yForward/8);
+			}
+			if(control.player.currentFrame < 22 && !deleted) // currentframe under 22 because if player rolls it doesnt hit
+			{
+				xDif = tempX - control.player.x;
+				yDif = tempY - control.player.y;
+				if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100) // if player within 10 pixels
 				{
-					control.player.rads = Math.atan2(yForward, xForward);
-					control.player.stun();
+					control.player.getHit(power*4);
+					deleted = true;
+					control.activity.playEffect("arrowhit");
+					if(control.getRandomDouble()*(0.5+control.getDifficultyLevelMultiplier()) > 1.7) // chance of stunning player
+					{
+						control.player.rads = Math.atan2(yForward, xForward);
+						control.player.stun();
+					}
 				}
 			}
 		}
