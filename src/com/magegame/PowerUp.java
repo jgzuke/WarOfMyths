@@ -19,14 +19,9 @@ public final class PowerUp extends DrawnSprite
 		control = creator;
 		x = X;
 		y = Y;
-		int playerType = control.playerType;
 		if(Type == 0)
 		{
 			ID = control.getRandomInt(6)+1;
-			while((ID==3&&playerType==1)||(ID==4&&playerType==3)||(ID==5&&playerType==2)||(ID==6&&playerType==0))
-			{
-				ID = control.getRandomInt(6)+1;
-			}
 		} else
 		{
 			ID=Type;

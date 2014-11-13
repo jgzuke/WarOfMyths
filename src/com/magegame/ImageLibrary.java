@@ -64,7 +64,7 @@ public final class ImageLibrary
 	 */
 	protected void loadPlayerImage()
 	{
-		player_Image = loadArray1D(31, "human_playerzack", 35, 40);
+		player_Image = loadArray1D(31, "human_playerzack", 46, 50);
 		isPlayerWidth = 26;
 		/*switch(control.activity.currentSkin)
 		{
@@ -111,20 +111,7 @@ public final class ImageLibrary
 		{
 			transattack = loadImage("attackhammer", 66, 66);
 		}
-		switch(control.playerType)
-		{
-			case 0: temp = "fire";
-				break;
-			case 1: temp = "water";
-				break;
-			case 2: temp = "electric";
-				break;
-			case 3: temp = "earth";
-				break;
-			default: temp = "fire";
-				break;
-		}
-		trans = loadArray1D(10, "human_trans"+temp, 119, 119);
+		trans = loadArray1D(10, "human_trans", 119, 119);
 	}
 	/**
 	 * loads all required images for all games

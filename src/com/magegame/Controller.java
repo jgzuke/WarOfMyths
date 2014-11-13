@@ -75,7 +75,6 @@ public final class Controller extends View
 	private Random randomGenerator = new Random();
 	protected int difficultyLevel = 10;
 	private double difficultyLevelMultiplier;
-	protected int playerType = 0;
 	protected int levelNum = 10;
 	private int warningTimer;
 	private String warningText = "";
@@ -207,13 +206,11 @@ public final class Controller extends View
 		detect = new PlayerGestureDetector(this); // creates gesture detector object
 		setOnTouchListener(detect);
 		detect.setPlayer(player);
-		changePlayerType(0);
 		changeDifficulty(10);
 		startFighting(10);
 		frameCaller.run();
 		check = imageLibrary.loadImage("menu_check", 20, 20);
 		changePlayOptions();
-		changePlayerType(activity.playerType);
 		shootStick.visualImage = imageLibrary.loadImage("icon_shoot", 70, 35);
 	}
 	/**
@@ -247,39 +244,6 @@ public final class Controller extends View
 		background = drawStart(); // redraws play screen
 		invalidate();
 		activity.saveGame(); // saves game state in case of interuption
-	}
-	/**
-	 * changes visuals and behavior when player changes type
-	 * @param playerTypeSet new player type
-	 */
-	protected void changePlayerType(int playerTypeSet)
-	{
-		playerType = playerTypeSet;
-		player.humanType = playerType;
-		changePlayerType(); // loads images etc.
-		background = drawStart(); // redaws player screen
-		activity.saveGame(); // saves game state in case of interuption
-	}
-	/**
-	 * changes player behavior when player changes type
-	 */
-	protected void changePlayerType()
-	{
-		switch(playerType)
-		{
-		case 0://fire
-			player.spChangeForType = (double) activity.wApollo / 10*0.8;
-			break;
-		case 1://water
-			player.spChangeForType = (double) activity.wPoseidon / 10*1.5;
-			break;
-		case 2://electric
-			player.spChangeForType = (double) activity.wZues / 10*1.1;
-			break;
-		case 3://earth
-			player.spChangeForType = (double) activity.wHades / 10*1.3;
-			break;
-		}
 	}
 	/**
 	 * creates a rectangle wall object
@@ -1785,37 +1749,6 @@ public final class Controller extends View
 		}
 	}
 	/**
-	 * draw choose deity screen
-	 * @param g canvas to draw to
-	 */
-	protected void drawChooseGod(Canvas g)
-	{
-		drawBehindPause(g);
-		drawBitmap(imageLibrary.loadImage("menu_choosegod", 480, 320), 0, 0, g);
-		paint.setStyle(Paint.Style.STROKE);
-		paint.setStrokeWidth(8);
-		paint.setColor(highlightChoiceColor);
-		paint.setAlpha(120);
-		if(playerType == 2)
-		{
-			drawRect(16, 192, 116, 292, g);
-		}
-		if(playerType == 1)
-		{
-			drawRect(132, 192, 232, 292, g);
-		}
-		if(playerType == 3)
-		{
-			drawRect(248, 192, 348, 292, g);
-		}
-		if(playerType == 0)
-		{
-			drawRect(364, 192, 464, 292, g);
-		}
-		paint.setAlpha(255);
-		paint.setStrokeWidth(0);
-	}
-	/**
 	 * draw pause screen
 	 * @param g canvas to draw to
 	 */
@@ -1843,22 +1776,6 @@ public final class Controller extends View
 		if(activity.pCool == 0)
 		{
 			drawCircle(160, 60, 37, g);
-		}
-		if(activity.pWater == 0 || playerType == 1)
-		{
-			drawCircle(60, 160, 37, g);
-		}
-		if(activity.pEarth == 0 || playerType == 3)
-		{
-			drawCircle(160, 160, 37, g);
-		}
-		if(activity.pAir == 0 || playerType == 2)
-		{
-			drawCircle(60, 260, 37, g);
-		}
-		if(activity.pFire == 0 || playerType == 0)
-		{
-			drawCircle(160, 260, 37, g);
 		}
 		if(activity.pGolem == 0)
 		{
@@ -2027,10 +1944,6 @@ public final class Controller extends View
 				{
 					drawLost(g);
 				}
-				else if(currentPause.equals("chooseGod"))
-				{
-					drawChooseGod(g);
-				}
 				else if(currentPause.equals("chooseLevel"))
 				{
 					drawChooseLevel(g);
@@ -2107,7 +2020,7 @@ public final class Controller extends View
 		drawRect(-1000, 320, 1480, 1320, g);
 		if(playerBursted<6)
 		{
-			paint.setColor(godColors[player.humanType]);
+			paint.setColor(Color.WHITE);
 			paint.setStyle(Paint.Style.FILL);
 			paint.setAlpha(255-(30*playerBursted));
 			drawRect(90, 10, 390, 310, g);

@@ -201,9 +201,6 @@ public class PlayerGestureDetector implements OnTouchListener {
 			} else if(control.currentPause.equals("lost"))
 			{
 				clickDownLost(x, y);
-			} else if(control.currentPause.equals("chooseGod"))
-			{
-				clickDownChooseGod(x, y);
 			} else if(control.currentPause.equals("worship"))
 			{
 				clickDownWorship(x, y);
@@ -883,35 +880,6 @@ public class PlayerGestureDetector implements OnTouchListener {
 		}
 	}
 	/**
-	 * checks clicks when in the choose god screen
-	 * @param x x value of click
-	 * @param y y value of click
-	 */
-	protected void clickDownChooseGod(float x, float y)
-	{
-		if(pressedBack(x, y))
-	    {
-			control.gamePaused = false;
-	    }
-			if(control.pointOnSquare(x, y, 16, 192, 116, 292))
-			{
-				control.changePlayerType(2);
-				control.invalidate();
-			} else if(control.pointOnSquare(x, y, 132, 192, 232, 292))
-			{
-				control.changePlayerType(1);
-				control.invalidate();
-			} else if(control.pointOnSquare(x, y, 248, 192, 348, 292))
-			{
-				control.changePlayerType(3);
-				control.invalidate();
-			} else if(control.pointOnSquare(x, y, 364, 192, 464, 292))
-			{
-				control.changePlayerType(0);
-				control.invalidate();
-			}
-	}
-	/**
 	 * checks clicks when in the options screen
 	 * @param x x value of click
 	 * @param y y value of click
@@ -1046,44 +1014,20 @@ public class PlayerGestureDetector implements OnTouchListener {
         	control.activity.pCool--;
         } else if(control.pointOnCircle(x, y, 60, 160, 35) && control.activity.pWater>0)
         {
-        	if(control.playerType!=1)
-        	{
         		player.getPowerUp(3);
         		control.activity.pWater--;
-        	} else
-        	{
-        		control.startWarningImediate("Already Worshipping");
-        	}
         } else if(control.pointOnCircle(x, y, 160, 160, 35) && control.activity.pEarth>0)
         {
-        	if(control.playerType!=3)
-        	{
 	        	player.getPowerUp(4);
 	        	control.activity.pEarth--;
-        	} else
-        	{
-        		control.startWarningImediate("Already Worshipping");
-        	}
         } else if(control.pointOnCircle(x, y, 60, 260, 35) && control.activity.pAir>0)
         {
-        	if(control.playerType!=2)
-        	{
 	        	player.getPowerUp(5);
 	        	control.activity.pAir--;
-        	} else
-        	{
-        		control.startWarningImediate("Already Worshipping");
-        	}
         } else if(control.pointOnCircle(x, y, 160, 260, 35) && control.activity.pFire>0)
         {
-        	if(control.playerType!=0)
-        	{
 	        	player.getPowerUp(6);
 	        	control.activity.pFire--;
-        	} else
-        	{
-        		control.startWarningImediate("Already Worshipping");
-        	}
         } else if(control.pointOnCircle(x, y, 250, 110, 35) && control.activity.pGolem>0)
         {
 	        player.getPowerUp(11);

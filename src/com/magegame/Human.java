@@ -13,7 +13,6 @@ abstract public class Human extends DrawnSprite
 	protected boolean playing = false;
 	protected boolean createSpecialGraphicGainCounter = false;
 	protected boolean thisPlayer = false;
-	protected int humanType;
 	protected double weight = 2;
 	/**
 	 * Regains health, ends walk animation, plays animation

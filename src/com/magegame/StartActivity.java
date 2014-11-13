@@ -85,7 +85,6 @@ public class StartActivity extends Activity
 	private SoundPool spool;
 	private int[] soundPoolMap = new int[15];
 	protected AudioManager audioManager;
-	protected byte playerType = 1;
 	protected double volumeMusic = 127;
 	protected double volumeEffect = 100;
 	private String TAG = "game";
@@ -348,25 +347,6 @@ public class StartActivity extends Activity
 		backMusic.setVolume(systemVolume, systemVolume);
 	}
 	/**
-	 * plays players current type effect
-	 */
-	protected void playPlayerEffect()
-	{
-		if(control.playerType==0)
-		{
-			control.activity.playEffect("burn");
-		} else if(control.playerType==1)
-		{
-			control.activity.playEffect("water");
-		} else if(control.playerType==2)
-		{
-			control.activity.playEffect("electric");
-		} else
-		{
-			control.activity.playEffect("earth");
-		}
-	}
-	/**
 	 * plays effect based on sent integer
 	 * @param toPlay id of effect to play
 	 */
@@ -472,7 +452,6 @@ public class StartActivity extends Activity
 			if(currency >= cost)
 			{
 				if(buying) wApollo++;
-				control.changePlayerType();
 				afforded = true;
 			}
 			break;
@@ -481,7 +460,6 @@ public class StartActivity extends Activity
 			if(currency >= cost)
 			{
 				if(buying) wPoseidon++;
-				control.changePlayerType();
 				afforded = true;
 			}
 			break;
@@ -490,7 +468,6 @@ public class StartActivity extends Activity
 			if(currency >= cost)
 			{
 				if(buying) wZues++;
-				control.changePlayerType();
 				afforded = true;
 			}
 			break;
@@ -499,7 +476,6 @@ public class StartActivity extends Activity
 			if(currency >= cost)
 			{
 				if(buying) wHades++;
-				control.changePlayerType();
 				afforded = true;
 			}
 			break;
@@ -1081,14 +1057,6 @@ public class StartActivity extends Activity
 		savedData[18] = pFire;
 		savedData[38] = pGolem;
 		savedData[39] = pHammer;
-		if(control != null)
-		{
-			savedData[23] = (byte) control.playerType;
-		}
-		else
-		{
-			savedData[23] = playerType;
-		}
 		savedData[24] = (byte)((int) volumeMusic);
 		savedData[25] = (byte)((int) volumeEffect);
 		String temp = correctDigits(Integer.toBinaryString(gameCurrency), 21);
@@ -1159,7 +1127,6 @@ public class StartActivity extends Activity
 		pFire = savedData[18];
 		pGolem = savedData[38];
 		pHammer = savedData[39];
-		playerType = savedData[23];
 		gameCurrency = savedData[20] + (128 * savedData[19]) + (16384*savedData[27]);
 		realCurrency = savedData[22] + (128 * savedData[21]) + (16384*savedData[28]);
 		volumeMusic = savedData[24];

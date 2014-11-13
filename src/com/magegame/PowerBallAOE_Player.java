@@ -35,10 +35,6 @@ public final class PowerBallAOE_Player extends PowerBallAOE
 					if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone+15)
 					{
 						double damage = 60*Math.pow((double)control.activity.wAres/10, 0.5);
-						if(control.player.humanType == 0)
-						{
-							damage*= Math.pow(control.player.spMod, 0.7);
-						}
 						control.enemies[i].getHit((int)damage);
 					}
 				}
@@ -52,10 +48,6 @@ public final class PowerBallAOE_Player extends PowerBallAOE
 					if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone+15)
 					{
 						double damage = 60*Math.pow((double)control.activity.wAres/10, 0.5);
-						if(control.player.humanType == 0)
-						{
-							damage*= Math.pow(control.player.spMod, 0.7);
-						}
 						control.structures[i].getHit((int)damage);
 					}
 				}
@@ -68,7 +60,6 @@ public final class PowerBallAOE_Player extends PowerBallAOE
 	@ Override
 	protected void explode(int power)
 	{
-		control.activity.playPlayerEffect();
 		for(int i = 0; i<9; i++)
 		{
 			control.createPowerBallPlayerAOE(x-15+control.getRandomInt(30), y-15+control.getRandomInt(30), power+22, true);

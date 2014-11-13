@@ -32,14 +32,12 @@ public final class PowerBall_Player extends PowerBall
 		if(control.checkHitBack(x, y))
 		{
 			explodeBack();
-			control.activity.playPlayerEffect();
 		}
 		x +=(xForward*2);
 		y +=(yForward*2);
 		if(control.checkHitBack(x, y) && !deleted)
 		{
 			explodeBack();
-			control.activity.playPlayerEffect();
 		}
 		realX = x;
 		realY = y;
@@ -63,7 +61,6 @@ public final class PowerBall_Player extends PowerBall
 		if(control.checkHitBack(x, y) || control.checkHitBack(x-(xForward/2), y-(yForward/2)) && !deleted)
 		{
 			explodeBack();
-			control.activity.playPlayerEffect();
 		}
 		if(target != null)
 		{
@@ -111,12 +108,7 @@ public final class PowerBall_Player extends PowerBall
 					double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 					if(distance < 600)
 					{
-						control.activity.playPlayerEffect();
 						power*=Math.pow((double)control.activity.wAres/10, 0.5);
-						if(control.player.humanType == 0)
-						{
-							power *= Math.pow(control.player.spMod, 0.7);
-						}
 						control.enemies[i].getHit((int)power);
 						explode();
 					} else if(distance < 14000)
@@ -143,12 +135,7 @@ public final class PowerBall_Player extends PowerBall
 					double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 					if(distance < 600)
 					{
-						control.activity.playPlayerEffect();
 						power*=Math.pow((double)control.activity.wAres/10, 0.5);
-						if(control.player.humanType == 0)
-						{
-							power *= Math.pow(control.player.spMod, 0.7);
-						}
 						control.structures[i].getHit((int)power);
 						explode();
 					} else if(distance < 14000)

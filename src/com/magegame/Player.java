@@ -14,7 +14,6 @@ public final class Player extends Human
 	private double yMoveRoll;
 	protected double sp = 1;
 	protected double spMod = 1;
-	protected double spChangeForType;
 	protected double abilityTimer_roll = 0;
 	protected double abilityTimer_burst = 0;
 	protected double abilityTimer_powerBall = 0;
@@ -130,13 +129,9 @@ public final class Player extends Human
 			super.getHit(100);
 		}
 		sp -= 0.0001;
-		spMod = 1+(sp*spChangeForType);
+		spMod = 1;
 		speedCur = 4.7*Math.pow((double)control.activity.wHermes/10, 0.4);
 		speedCur *= 1.2;
-		if(humanType==2)
-		{
-			speedCur *= Math.pow(spMod, 0.5);
-		}
 		if(powerUpTimer>0 && powerID == 3)
 		{
 			speedCur += 0.7*(double)control.activity.wZues/10;
@@ -195,7 +190,6 @@ public final class Player extends Human
 							{
 								control.enemies[i].getHit((int)(400*spMod)+400);
 								control.activity.playEffect("sword2");
-								control.activity.playPlayerEffect();
 							}
 						}
 					}
@@ -218,7 +212,6 @@ public final class Player extends Human
 					control.activity.playEffect("burst");
 					control.activity.playEffect("burst");
 					control.activity.playEffect("burst");
-					control.activity.playPlayerEffect();
 					control.activity.playEffect("swordmiss");
 				}
 				if(currentFrame == 37)
@@ -236,20 +229,12 @@ public final class Player extends Human
 		{
 			double cooldown;
 			cooldown = (double)control.activity.wAthena*(double)control.activity.wHermes/100;
-			if(humanType==1)
-			{
-				cooldown *= spMod;
-			}
 			abilityTimer_roll += cooldown*1.4;
 			if(abilityTimer_roll >= 120)
 			{
 				abilityTimer_roll = 120;
 			}
 			cooldown = (double)control.activity.wAthena/10;
-			if(humanType==1)
-			{
-				cooldown *= Math.pow(spMod, 0.7);
-			}
 			if(powerUpTimer>0 && powerID == 1)
 			{
 				cooldown *= 1.5*(double)control.activity.wPoseidon/10;
@@ -426,7 +411,6 @@ public final class Player extends Human
 			control.activity.playEffect("burst");
 			control.activity.playEffect("burst");
 			control.activity.playEffect("burst");
-			control.activity.playPlayerEffect();
 			control.playerBursted = 0;
 		} else
 		{
@@ -473,10 +457,6 @@ public final class Player extends Human
 			damage *= (0.7/control.activity.wHades*10);
 		}
 			damage *= damageMultiplier;
-			if(humanType == 3)
-			{
-				damage /= spMod;
-			}
 			super.getHit(damage);
 			sp -= sp*damage/1500;
 			if(deleted) control.activity.loseFight();
