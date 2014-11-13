@@ -160,12 +160,12 @@ abstract public class Enemy extends Human
 				{
 					if(keyHolder)
 					{
-						control.createKey(x, y);
+						control.createConsumable(x, y, 8);
 					} else
 					{
 						if(control.getRandomDouble()>0.7)
 						{
-							control.createPowerUp(x, y);
+							control.createConsumable(x, y, 0);
 						}
 					}
 					for(int i = 0; i < worth; i ++)
@@ -173,15 +173,15 @@ abstract public class Enemy extends Human
 						double rads = control.getRandomDouble()*6.28;
 						if(worth-i>20)
 						{
-							control.createCoin20(x+Math.cos(rads)*12, y+Math.sin(rads)*12);
+							control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 10);
 							i+=19;
 						} else if(worth-i>5)
 						{
-							control.createCoin5(x+Math.cos(rads)*12, y+Math.sin(rads)*12);
+							control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 9);
 							i+=4;
 						} else
 						{
-							control.createCoin1(x+Math.cos(rads)*12, y+Math.sin(rads)*12);
+							control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 7);
 						}
 					}
 				}

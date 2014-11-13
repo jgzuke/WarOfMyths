@@ -126,8 +126,8 @@ public final class ImageLibrary
 		coins = loadArray1D(2, "icon_menu_coin", 30, 30);
 		target_Image = loadImage("human_target", 48, 53);
 		// TODO change to black ball
-		archer_Image = loadArray1D(44, "human_archer", 80, 50);
-		shield_Image = loadArray1D(55, "human_swordsman", 110, 70);
+		archer_Image = loadArray1D(44, "human_archer", 60, 32);
+		shield_Image = loadArray1D(82, "human_swordsman", 110, 70);
 
 		shotAOEEnemy = loadImage("shotexplodeenemy", 80, 80);
 		shotEnemy = loadImage("shotenemy", 40, 3);

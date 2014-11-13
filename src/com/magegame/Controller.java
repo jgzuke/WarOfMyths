@@ -1815,49 +1815,14 @@ public final class Controller extends View
 		proj_Trackers.add(new CrossbowBolt(this, (int) (x+xVel), (int) (y+yVel), power, xVel, yVel, rotation));
 	}
 	/**
-	 * creates a powerup object the player can pick up
+	 * creates a consumable the player can pick up
 	 * @param X x position
 	 * @param Y y position
+	 * @param ID 0:random power, 1-6:power, 7:coin1, 8:key, 9:coin5, 10:coin20
 	 */
-	protected void createPowerUp(double X, double Y)
-	{
-		powerUps.add(new PowerUp(this, X, Y, 0));
-	}
-	/**
-	 * creates a small coin the player can pick up
-	 * @param X x position
-	 * @param Y y position
-	 */
-	protected void createCoin1(double X, double Y)
-	{
-		powerUps.add(new PowerUp(this, X, Y, 7));
-	}
-	/**
-	 * creates a medium coin the player can pick up
-	 * @param X x position
-	 * @param Y y position
-	 */
-	protected void createCoin5(double X, double Y)
-	{
-		powerUps.add(new PowerUp(this, X, Y, 9));
-	}
-	/**
-	 * creates a large coin the player can pick up
-	 * @param X x position
-	 * @param Y y position
-	 */
-	protected void createCoin20(double X, double Y)
-	{
-		powerUps.add(new PowerUp(this, X, Y, 10));
-	}
-	/**
-	 * creates a key the player can pick up
-	 * @param X x position
-	 * @param Y y position
-	 */
-	protected void createKey(double X, double Y)
-	{
-		powerUps.add(new PowerUp(this, X, Y, 8));
+	protected void createConsumable(double X, double Y, int ID) // 0: random powerup or
+	{															// 1-6:powerups 7:coin1
+		powerUps.add(new PowerUp(this, X, Y, 7));				// 9: coin5, 10:coin20, 8:key 
 	}
 	/**
 	 * creates a player power ball

@@ -19,12 +19,10 @@ public final class PowerUp extends DrawnSprite
 		control = creator;
 		x = X;
 		y = Y;
-		if(Type == 0)
+		ID=Type;
+		if(ID == 0)
 		{
 			ID = control.getRandomInt(6)+1;
-		} else
-		{
-			ID=Type;
 		}
 		visualImage = control.imageLibrary.powerUps[ID-1];
 	}
