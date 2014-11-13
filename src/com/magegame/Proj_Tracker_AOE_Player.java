@@ -26,29 +26,29 @@ public final class Proj_Tracker_AOE_Player extends Proj_Tracker_AOE
 		super.frameCall();
 		if(damaging)
 		{
-			for(int i = 0; i < control.enemies.length; i++)
+			for(int i = 0; i < control.enemies.size(); i++)
 			{
-				if(control.enemies[i] != null)
+				if(control.enemies.get(i) != null)
 				{
-					xDif = x - control.enemies[i].x;
-					yDif = y - control.enemies[i].y;
+					xDif = x - control.enemies.get(i).x;
+					yDif = y - control.enemies.get(i).y;
 					if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone+15)
 					{
 						double damage = 60*Math.pow((double)control.activity.wAres/10, 0.5);
-						control.enemies[i].getHit((int)damage);
+						control.enemies.get(i).getHit((int)damage);
 					}
 				}
 			}
-			for(int i = 0; i < control.structures.length; i++)
+			for(int i = 0; i < control.structures.size(); i++)
 			{
-				if(control.structures[i] != null)
+				if(control.structures.get(i) != null)
 				{
-					xDif = x - control.structures[i].x;
-					yDif = y - control.structures[i].y;
+					xDif = x - control.structures.get(i).x;
+					yDif = y - control.structures.get(i).y;
 					if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone+15)
 					{
 						double damage = 60*Math.pow((double)control.activity.wAres/10, 0.5);
-						control.structures[i].getHit((int)damage);
+						control.structures.get(i).getHit((int)damage);
 					}
 				}
 			}

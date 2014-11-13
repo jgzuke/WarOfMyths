@@ -51,19 +51,19 @@ public class Wall_Circle extends Wall
 					control.player.y = oCY - (Math.sin(rads) * oCR);
 				}
 			}
-		for(int i = 0; i < control.enemies.length; i++)
+		for(int i = 0; i < control.enemies.size(); i++)
 		{
-			if(control.enemies[i] != null)
+			if(control.enemies.get(i) != null)
 			{
-				xdif = oCX - control.enemies[i].x;
-				ydif = oCY - control.enemies[i].y;
+				xdif = oCX - control.enemies.get(i).x;
+				ydif = oCY - control.enemies.get(i).y;
 				rads = Math.atan2(ydif, xdif);
 				if(Math.pow(xdif, 2) + Math.pow(ydif/oCRatio, 2) < oCRS)
 				{
-					if(!control.checkHitBackPass(control.enemies[i].x, control.enemies[i].y, true))
+					if(!control.checkHitBackPass(control.enemies.get(i).x, control.enemies.get(i).y, true))
 					{
-						control.enemies[i].x = oCX - (Math.cos(rads) * oCR);
-						control.enemies[i].y = oCY - (Math.sin(rads) * oCR);
+						control.enemies.get(i).x = oCX - (Math.cos(rads) * oCR);
+						control.enemies.get(i).y = oCY - (Math.sin(rads) * oCR);
 					}
 				}
 			}

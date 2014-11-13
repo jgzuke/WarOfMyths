@@ -25,6 +25,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 public class StartActivity extends Activity
 {
 	protected Controller control;
@@ -221,14 +222,14 @@ public class StartActivity extends Activity
 	 */
 	protected void winFight()
 	{
-		control.startWarning("Won Round ("+Integer.toString((int)control.moneyMade)+"g)");
+		Toast.makeText(control.context, "Won Round ("+Integer.toString((int)control.moneyMade)+"g)", Toast.LENGTH_SHORT).show();
 		if(control.levelNum < 180)
 		{
 			if((int)(control.levelNum / 10) - 2 == levelBeaten)
 			{
 				levelBeaten++;
 				realCurrency += control.moneyMultiplier*3;
-				control.startWarning("Victory ("+Integer.toString((int)control.moneyMade)+"g/"+Integer.toString((int)control.moneyMultiplier*3)+"p)");
+				Toast.makeText(control.context, "Victory ("+Integer.toString((int)control.moneyMade)+"g/"+Integer.toString((int)control.moneyMultiplier*3)+"p)", Toast.LENGTH_SHORT).show();
 			}
 			control.startingLevel =(int)(control.levelNum/10)-1;
 			if(control.difficultyLevel == 10)

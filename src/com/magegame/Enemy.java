@@ -112,22 +112,22 @@ abstract public class Enemy extends Human
 				y -= movementY*(control.player.weight/added);
 			}
 		}
-		for(int i = 0; i < control.enemies.length; i++)
+		for(int i = 0; i < control.enemies.size(); i++)
 		{
-			if(control.enemies[i] != null&& control.enemies[i].x != x)
+			if(control.enemies.get(i) != null&& control.enemies.get(i).x != x)
 			{
-				xdif = x - control.enemies[i].x;
-				ydif = y - control.enemies[i].y;
+				xdif = x - control.enemies.get(i).x;
+				ydif = y - control.enemies.get(i).y;
 				if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < Math.pow(radius, 2))
 				{
 					moveRads = Math.atan2(ydif, xdif);
-					movementX = x - (Math.cos(moveRads) * radius) - control.enemies[i].x;
-					movementY = y - (Math.sin(moveRads) * radius) - control.enemies[i].y;
-					double added = weight+control.enemies[i].weight;
-					control.enemies[i].x += movementX*(weight/added);
-					control.enemies[i].y += movementY*(weight/added);
-					x -= movementX*(control.enemies[i].weight/added);
-					y -= movementY*(control.enemies[i].weight/added);
+					movementX = x - (Math.cos(moveRads) * radius) - control.enemies.get(i).x;
+					movementY = y - (Math.sin(moveRads) * radius) - control.enemies.get(i).y;
+					double added = weight+control.enemies.get(i).weight;
+					control.enemies.get(i).x += movementX*(weight/added);
+					control.enemies.get(i).y += movementY*(weight/added);
+					x -= movementX*(control.enemies.get(i).weight/added);
+					y -= movementY*(control.enemies.get(i).weight/added);
 				}
 			}
 		}

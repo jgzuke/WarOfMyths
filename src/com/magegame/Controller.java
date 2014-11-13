@@ -8,8 +8,8 @@
  * @param player Player object that has health etc and generates movement handler
  * @param enemy Enemy object with health etc and ai
  * @param enemies Array of all enemies currently on screen excluding main mage enemy
- * @param Proj_Trackers Array of all enemy or player Proj_Trackers
- * @param Proj_Tracker_AOEs Array of all enemy or player Proj_Tracker explosions
+ * @param proj_Trackers Array of all enemy or player proj_Trackers
+ * @param proj_Trackers Array of all enemy or player Proj_Tracker explosions
  * @param spGraphicEnemy Handles the changing of main enemy's sp
  * @param spGraphicPlayer Handles the changing of player's sp
  * @param oRectX1 Array of all walls left x value
@@ -61,14 +61,20 @@ public final class Controller extends View
 	protected Matrix rotateImages = new Matrix();
 	protected StartActivity activity;
 	protected int currentTutorial = 1;
-	protected Enemy[] enemies = new Enemy[30];
-	protected Structure[] structures = new Structure[10];
-	private PowerUp[] powerUps = new PowerUp[30];
-	private Proj_Tracker[] Proj_Trackers = new Proj_Tracker[30];
-	private Proj_Tracker_AOE[] Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
+	protected ArrayList<int[]> saveEnemyInformation = new ArrayList<int[]>();
+	protected ArrayList<Enemy> enemies = new ArrayList<Enemy>();
+	protected ArrayList<Structure> structures = new ArrayList<Structure>();
+	protected ArrayList<PowerUp> powerUps = new ArrayList<PowerUp>();
+	protected ArrayList<Proj_Tracker> proj_Trackers = new ArrayList<Proj_Tracker>();
+	protected ArrayList<Proj_Tracker_AOE> proj_Tracker_AOEs = new ArrayList<Proj_Tracker_AOE>();
+	
 	private ArrayList<Wall_Rectangle> wallRects = new ArrayList<Wall_Rectangle>();
 	private ArrayList<Wall_Ring> wallRings = new ArrayList<Wall_Ring>();
 	private ArrayList<Wall_Circle> wallCircles = new ArrayList<Wall_Circle>();
+	private ArrayList<int[]> wallPassageValues = new ArrayList<int[]>(); // int[] is x1, x2, y1, y2
+	private ArrayList<int[]> wallRingValues = new ArrayList<int[]>(); // int[] is x, y, radiusInner, radiusOuter, tall or not
+	private ArrayList<int[]> wallRectValues = new ArrayList<int[]>(); // int[] is x1, x2, y1, y2, tall or not
+	private ArrayList<int[]> wallCircleValues = new ArrayList<int[]>(); // int[] is x, y, radius, tall or not
 	private Rect aoeRect = new Rect();
 	private boolean gameEnded = false;
 	protected Player player;
@@ -78,13 +84,6 @@ public final class Controller extends View
 	protected int difficultyLevel = 10;
 	private double difficultyLevelMultiplier;
 	protected int levelNum = 10;
-	private int warningTimer;
-	private String warningText = "";
-	private ArrayList<int[]> wallPassageValues = new ArrayList<int[]>(); // int[] is x1, x2, y1, y2
-	private ArrayList<int[]> wallRingValues = new ArrayList<int[]>(); // int[] is x, y, radiusInner, radiusOuter, tall or not
-	private ArrayList<int[]> wallRectValues = new ArrayList<int[]>(); // int[] is x1, x2, y1, y2, tall or not
-	private ArrayList<int[]> wallCircleValues = new ArrayList<int[]>(); // int[] is x, y, radius, tall or not
-
 	private Bitmap background;
 	protected Bitmap tempPicture;
 	protected Bitmap tempPictureLock;
@@ -105,8 +104,6 @@ public final class Controller extends View
 	protected boolean enemyRegen = false;
 	protected double moneyMultiplier = 0;
 	protected double moneyMade = 0;
-	private int savedEnemies = 0;
-	private int[][] saveEnemyInformation = new int[30][5];
 	public boolean hasKey = false;
 	private int exitX = 0;
 	private int exitY = 0;
@@ -118,7 +115,6 @@ public final class Controller extends View
 	private int specialColor = Color.rgb(0, 0, 150);
 	private int cooldownColor = Color.rgb(190, 190, 0);
 	private int highlightChoiceColor = Color.BLUE;
-	private int[] godColors = {Color.rgb(150, 98, 50), Color.rgb(52, 84, 125), Color.rgb(202, 189, 105), Color.rgb(101, 42, 10)};
 	protected DrawnSprite shootStick = new Graphic_shootStick();
 	private long timeLast;
 	private byte times;
@@ -275,19 +271,24 @@ public final class Controller extends View
 		player.resetVariables(); // resets players variables
 		moneyMade = 0;
 		hasKey = false;
-		enemies = new Enemy[30];
-		structures = new Structure[30];
-		Proj_Trackers = new Proj_Tracker[30];
-		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
-		powerUps = new PowerUp[30];
+		clearObjectArrays();
+		
+		//TODO clean arrays
+		
 		clearWallArrays();
 		
-		powerUps = new PowerUp[30];
 		gameEnded = false;
 		imageLibrary.currentLevelTop = null;
-		savedEnemies = 0;
-		saveEnemyInformation = new int[30][5];
 		activity.saveGame(); // saves game in case phone shuts down etc.
+	}
+	private void clearObjectArrays()
+	{
+		saveEnemyInformation.clear();
+		enemies.clear();
+		structures.clear();
+		powerUps.clear();
+		proj_Trackers.clear();
+		proj_Tracker_AOEs.clear();
 	}
 	/**
 	 * loads a new level, creates walls enemies etc.
@@ -317,14 +318,14 @@ public final class Controller extends View
 			player.x = 100;
 			player.y = 150;
 			exitX = 16000;
-			enemies[0] = new Enemy_Target(this, 332, 18, 90, false); // CREATES ENEMIES
-			enemies[1] = new Enemy_Target(this, 332, 284, -90, false);
-			enemies[2] = new Enemy_Target(this, 444, 135, 180, false);
-			enemies[3] = new Enemy_Target(this, 444, 165, 180, false);
-			enemies[4] = new Enemy_Target(this, 531, 18, 90, true);
-			enemies[5] = new Enemy_Target(this, 568, 18, 90, true);
-			enemies[6] = new Enemy_Target(this, 512, 284, -90, true);
-			enemies[7] = new Enemy_Target(this, 549, 284, -90, true);
+			enemies.add(new Enemy_Target(this, 332, 18, 90, false)); // CREATES ENEMIES
+			enemies.add(new Enemy_Target(this, 332, 284, -90, false));
+			enemies.add(new Enemy_Target(this, 444, 135, 180, false));
+			enemies.add(new Enemy_Target(this, 444, 165, 180, false));
+			enemies.add(new Enemy_Target(this, 531, 18, 90, true));
+			enemies.add(new Enemy_Target(this, 568, 18, 90, true));
+			enemies.add(new Enemy_Target(this, 512, 284, -90, true));
+			enemies.add(new Enemy_Target(this, 549, 284, -90, true));
 			makeWall_Rectangle(210, -77, 15, 205, true, true);
 			makeWall_Rectangle(210, 172, 15, 205, true, true);
 			makeWall_Rectangle(455, -77, 15, 205, true, true);
@@ -340,10 +341,10 @@ public final class Controller extends View
 			player.y = 112;
 			exitX = 40; // exit x coordinate
 			exitY = 112; // exit y coordinate
-			enemies[0] = new Enemy_Shield(this, 245, 85);
-			enemies[1] = new Enemy_Archer(this, 60, 192);
-			enemies[2] = new Enemy_Shield(this, 80, 249);
-			enemies[1].keyHolder = true;			// THIS ENEMY HOLDS KEY TO NEXT LEVEL
+			enemies.add(new Enemy_Shield(this, 245, 85));
+			enemies.add(new Enemy_Archer(this, 60, 192));
+			enemies.add(new Enemy_Shield(this, 80, 249));
+			enemies.get(1).keyHolder = true;			// THIS ENEMY HOLDS KEY TO NEXT LEVEL
 			makeWall_Rectangle(-5, 8, 100, 70, true, true);
 			makeWall_Rectangle(83, -9, 141, 153, true, true);
 			makeWall_Rectangle(99, 125, 108, 59, true, true);
@@ -374,42 +375,34 @@ public final class Controller extends View
 		Log.e("worked", "worked");
 		clearWallArrays();
 		levelNum = level;
-		for(int i = 0; i < powerUps.length; i++)
+		for(int i = 0; i < powerUps.size(); i++)
 		{
-			if(powerUps[i] != null) player.getPowerUp(powerUps[i].ID);
+			if(powerUps.get(i) != null) player.getPowerUp(powerUps.get(i).ID);
 		}
 		if(levelNum > 29)
-		{
-			int tempEnemies = savedEnemies; // READS IN AND CREATES ENEMIES IN NEW SECTION, SAVES ENEMIES IN OLD SECTION
-			int[][] tempSave = new int[tempEnemies][5];
-			for(int i = 0; i < tempEnemies; i++)
+		{				 // READS IN AND CREATES ENEMIES IN NEW SECTION, SAVES ENEMIES IN OLD SECTION
+			ArrayList<int[]> tempSave = (ArrayList<int[]>)saveEnemyInformation.clone();
+			int j = 0;
+			for(int i = 0; i < saveEnemyInformation.size(); i++)
 			{
-				System.arraycopy(saveEnemyInformation[i], 0, tempSave[i], 0, 5);
-			}
-			savedEnemies = 0;
-			for(int i = 0; i < 30; i++)
-			{
-				if(enemies[i] != null)
+				if(!enemies.get(i).deleted)
 				{
-					if(!enemies[i].deleted)
+					saveEnemyInformation.get(j)[0] = enemies.get(i).getType();
+					saveEnemyInformation.get(j)[1] = (int) enemies.get(i).x;
+					saveEnemyInformation.get(j)[2] = (int) enemies.get(i).y;
+					saveEnemyInformation.get(j)[3] = enemies.get(i).hp;
+					if(enemies.get(i).keyHolder)
 					{
-						saveEnemyInformation[savedEnemies][0] = enemies[i].getType();
-						saveEnemyInformation[savedEnemies][1] = (int) enemies[i].x;
-						saveEnemyInformation[savedEnemies][2] = (int) enemies[i].y;
-						saveEnemyInformation[savedEnemies][3] = enemies[i].hp;
-						if(enemies[i].keyHolder)
-						{
-							saveEnemyInformation[savedEnemies][4] = 1;
-						}
-						else
-						{
-							saveEnemyInformation[savedEnemies][4] = 0;
-						}
-						savedEnemies++;
+						saveEnemyInformation.get(j)[4] = 1;
 					}
+					else
+					{
+						saveEnemyInformation.get(j)[4] = 0;
+					}
+					j++;
 				}
 			}
-			endFightSection(tempSave, tempEnemies);
+			endFightSection(tempSave);
 		} else
 		{
 			endFightSection();
@@ -418,11 +411,11 @@ public final class Controller extends View
 		{
 			levelWidth = 555;
 			player.x = 25; 						// same format as loading levels
-			enemies[0] = new Enemy_Target(this, 653 - 506, 125, 180, false);
-			enemies[1] = new Enemy_Target(this, 653 - 506, 176, 180, false);
-			enemies[2] = new Enemy_Target(this, 670 - 506, 150, 180, false);
-			enemies[3] = new Enemy_Target(this, 358, 150, 180, false);
-			enemies[4] = new Enemy_Target(this, 1014 - 506+40, 150, 180, false);
+			enemies.add(new Enemy_Target(this, 653 - 506, 125, 180, false));
+			enemies.add(new Enemy_Target(this, 653 - 506, 176, 180, false));
+			enemies.add(new Enemy_Target(this, 670 - 506, 150, 180, false));
+			enemies.add(new Enemy_Target(this, 358, 150, 180, false));
+			enemies.add(new Enemy_Target(this, 1014 - 506+40, 150, 180, false));
 			makeWall_Rectangle(503 - 506, -100, 15, 500, true, true);
 			makeWall_Rectangle(665 - 506, -77, 15, 205, true, true);
 			makeWall_Rectangle(665 - 506, 172, 15, 205, true, true);
@@ -437,10 +430,10 @@ public final class Controller extends View
 			player.x = 25;
 			exitX = 582;
 			exitY = 150;
-			enemies[0] = new Enemy_Target(this, 1204 - 1017, 150, 180, false);
-			enemies[1] = new Enemy_Target(this, 1400 - 1017, 150, 180, false);
-			enemies[2] = new Enemy_Target(this, 1522 - 1017, 150, 180, false);
-			enemies[2].keyHolder = true;
+			enemies.add(new Enemy_Target(this, 1204 - 1017, 150, 180, false));
+			enemies.add(new Enemy_Target(this, 1400 - 1017, 150, 180, false));
+			enemies.add(new Enemy_Target(this, 1522 - 1017, 150, 180, false));
+			enemies.get(2).keyHolder = true;
 			makeWall_Rectangle(1014 - 1017, -100, 15, 500, true, true);
 			makeWall_Rectangle(1198 - 1017, -77, 15, 205, true, true);
 			makeWall_Rectangle(1198 - 1017, 172, 15, 205, true, true);
@@ -454,30 +447,30 @@ public final class Controller extends View
 	 * @param info array of stored values
 	 * @param index which spot in enemy array to populate
 	 */
-	private void createEnemy(int[] info, int index)
+	private void createEnemy(int[] info)
 	{
 		switch(info[0])
 		{
 		case 1:
-			enemies[index] = new Enemy_Shield(this, info[1], info[2]); // creates shield in alternate level section
+			enemies.add(new Enemy_Shield(this, info[1], info[2])); // creates shield in alternate level section
 			break;
 		case 4:
-			enemies[index] = new Enemy_Rogue(this, info[1], info[2]);
+			enemies.add(new Enemy_Rogue(this, info[1], info[2]));
 			break;
 		case 5:
-			enemies[index] = new Enemy_Archer(this, info[1], info[2]);
+			enemies.add(new Enemy_Archer(this, info[1], info[2]));
 			break;
 		case 6:
-			enemies[index] = new Enemy_Mage(this, info[1], info[2]);
+			enemies.add(new Enemy_Mage(this, info[1], info[2]));
 			break;
 		}
 		if(info[3] != 0) // if enemy has set health change it, otherwise leave as starting health
 		{
-			enemies[index].hp = info[3];
+			enemies.get(enemies.size()-1).hp = info[3];
 		}
 		if(info[4] == 1)
 		{
-			enemies[index].keyHolder = true; // if saved enemy has key
+			enemies.get(enemies.size()-1).keyHolder = true; // if saved enemy has key
 		}
 	}
 	/**
@@ -485,18 +478,12 @@ public final class Controller extends View
 	 * @param enemyData enemies to create
 	 * @param tempEnemies number of enemies to create
 	 */
-	private void endFightSection(int[][] enemyData, int tempEnemies)
+	private void endFightSection(ArrayList<int[]> enemyData)
 	{
-		enemies = new Enemy[30];
-		structures = new Structure[30];
-		Proj_Trackers = new Proj_Tracker[30];
-		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
-		powerUps = new PowerUp[30];
-		clearWallArrays();
-		powerUps = new PowerUp[30];
-		for(int i = 0; i < tempEnemies; i++)
+		endFightSection();
+		for(int i = 0; i < enemyData.size(); i++)
 		{
-			createEnemy(enemyData[i], i); // CREATES SAVED ENEMIES
+			createEnemy(enemyData.get(i)); // CREATES SAVED ENEMIES
 		}
 	}
 	/**
@@ -504,13 +491,8 @@ public final class Controller extends View
 	 */
 	private void endFightSection()
 	{
-		enemies = new Enemy[30]; // SAME AS OTHER endFightSection BUT DOESNT SPAWN ENEMIES
-		structures = new Structure[30];
-		Proj_Trackers = new Proj_Tracker[30];
-		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
-		powerUps = new PowerUp[30];
+		clearObjectArrays();
 		clearWallArrays();
-		powerUps = new PowerUp[30];
 	}
 	/**
 	 * fixes hp bar so it is on screen
@@ -561,16 +543,16 @@ public final class Controller extends View
 		int minY;
 		int maxY;
 		//int offset;
-		for(int i = 0; i < enemies.length; i++)
+		for(int i = 0; i < enemies.size(); i++)
 		{
-			if(enemies[i] != null)
+			if(enemies.get(i) != null)
 			{
-				if(!enemies[i].rogue || enemies[i].currentFrame != 49)
+				if(!enemies.get(i).rogue || enemies.get(i).currentFrame != 49)
 				{
-					minX = (int) enemies[i].x - 20;
-					maxX = (int) enemies[i].x + 20;
-					minY = (int) enemies[i].y - 30;
-					maxY = (int) enemies[i].y - 20;
+					minX = (int) enemies.get(i).x - 20;
+					maxX = (int) enemies.get(i).x + 20;
+					minY = (int) enemies.get(i).y - 30;
+					maxY = (int) enemies.get(i).y - 20;
 					/*offset = fixXBoundsHpBar(minX, maxX);
 					minX += offset;
 					maxX += offset;
@@ -585,24 +567,24 @@ public final class Controller extends View
 					drawRect(minX, minY, maxX, maxY, g);*/
 					paint.setColor(Color.RED);
 					paint.setStyle(Paint.Style.FILL);
-					drawRect(minX, minY, minX + (40 * enemies[i].getHp() / enemies[i].getHpMax()), maxY, g);
+					drawRect(minX, minY, minX + (40 * enemies.get(i).getHp() / enemies.get(i).getHpMax()), maxY, g);
 					paint.setColor(Color.BLACK);
 					paint.setStyle(Paint.Style.STROKE);
 					drawRect(minX, minY, maxX, maxY, g);
 				}
 			}
 		}
-		for(int i = 0; i < structures.length; i++)
+		for(int i = 0; i < structures.size(); i++)
 		{
-			if(structures[i] != null)
+			if(structures.get(i) != null)
 			{
-				minX = (int) structures[i].x - 20;
-				maxX = (int) structures[i].x + 20;
-				minY = (int) structures[i].y - 30;
-				maxY = (int) structures[i].y - 20;
+				minX = (int) structures.get(i).x - 20;
+				maxX = (int) structures.get(i).x + 20;
+				minY = (int) structures.get(i).y - 30;
+				maxY = (int) structures.get(i).y - 20;
 				paint.setColor(Color.BLUE);
 				paint.setStyle(Paint.Style.FILL);
-				drawRect(minX, minY, minX + (40 * structures[i].hp / structures[i].hpMax), maxY, g);
+				drawRect(minX, minY, minX + (40 * structures.get(i).hp / structures.get(i).hpMax), maxY, g);
 				paint.setColor(Color.BLACK);
 				paint.setStyle(Paint.Style.STROKE);
 				drawRect(minX, minY, maxX, maxY, g);
@@ -703,87 +685,87 @@ public final class Controller extends View
 	{
 		playerHit++;
 		playerBursted++;
-		for(int i = 0; i < Proj_Trackers.length; i++)
+		for(int i = 0; i < proj_Trackers.size(); i++)
 		{
-			if(Proj_Trackers[i] != null)
+			if(proj_Trackers.get(i) != null)
 			{
-				if(Proj_Trackers[i].deleted)
+				if(proj_Trackers.get(i).deleted)
 				{
-					Proj_Trackers[i] = null;
+					proj_Trackers.remove(i);
 				}
 				else
 				{
-					Proj_Trackers[i].frameCall();
+					proj_Trackers.get(i).frameCall();
 				}
 			}
 		}
-		for(int i = 0; i < Proj_Tracker_AOEs.length; i++)
+		for(int i = 0; i < proj_Tracker_AOEs.size(); i++)
 		{
-			if(Proj_Tracker_AOEs[i] != null)
+			if(proj_Tracker_AOEs.get(i) != null)
 			{
-				if(Proj_Tracker_AOEs[i].deleted)
+				if(proj_Tracker_AOEs.get(i).deleted)
 				{
-					Proj_Tracker_AOEs[i] = null;
+					proj_Tracker_AOEs.remove(i);
 				}
 				else
 				{
-					Proj_Tracker_AOEs[i].frameCall();
+					proj_Tracker_AOEs.get(i).frameCall();
 				}
 			}
 		}
-		for(int i = 0; i < powerUps.length; i++)
+		for(int i = 0; i < powerUps.size(); i++)
 		{
-			if(powerUps[i] != null)
+			if(powerUps.get(i) != null)
 			{
-				if(powerUps[i].deleted)
+				if(powerUps.get(i).deleted)
 				{
-					powerUps[i] = null;
+					powerUps.remove(i);
 				}
 				else
 				{
-					powerUps[i].frameCall();
+					powerUps.get(i).frameCall();
 				}
 			}
 		}
-		for(int i = 0; i < enemies.length; i++)
+		for(int i = 0; i < enemies.size(); i++)
 		{
-			if(enemies[i] != null)
+			if(enemies.get(i) != null)
 			{
-				if(enemies[i].deleted)
+				if(enemies.get(i).deleted)
 				{
-					enemies[i] = null;
+					enemies.remove(i);
 				}
 				else
 				{
-					enemies[i].levelCurrentPosition = 0;
-					enemies[i].pathedToHitLength = 0;
-					if(enemyInView(enemies[i].x, enemies[i].y))
+					enemies.get(i).levelCurrentPosition = 0;
+					enemies.get(i).pathedToHitLength = 0;
+					if(enemyInView(enemies.get(i).x, enemies.get(i).y))
 					{
-						enemies[i].frameCall();
-						if(enemies[i] != null)
+						enemies.get(i).frameCall();
+						if(enemies.get(i) != null)
 						{
-							if(enemies[i].x < 10) enemies[i].x = 10;
-							if(enemies[i].x > levelWidth - 10) enemies[i].x = (levelWidth - 10);
-							if(enemies[i].y < 10) enemies[i].y = 10;
-							if(enemies[i].y > levelHeight - 10) enemies[i].y = (levelHeight - 10);
+							if(enemies.get(i).x < 10) enemies.get(i).x = 10;
+							if(enemies.get(i).x > levelWidth - 10) enemies.get(i).x = (levelWidth - 10);
+							if(enemies.get(i).y < 10) enemies.get(i).y = 10;
+							if(enemies.get(i).y > levelHeight - 10) enemies.get(i).y = (levelHeight - 10);
 						}
 					}
 				}
 			}
 		}
-		for(int i = 0; i < structures.length; i++)
+		for(int i = 0; i < structures.size(); i++)
 		{
-			if(structures[i] != null)
+			if(structures.get(i) != null)
 			{
-				if(structures[i].deleted)
+				if(structures.get(i).deleted)
 				{
-					structures[i] = null;
+					structures.remove(i);
 				}
 				else
 				{
-					if(enemyInView(structures[i].x, structures[i].y))
+					if(enemyInView(structures.get(i).x, structures.get(i).y))
 					{
-						structures[i].frameCall();
+						structures.get(i).frameCall();
 					}
 				}
 			}
@@ -947,11 +929,11 @@ public final class Controller extends View
 		{
 			drawBitmapLevel(imageLibrary.exitFightPortal, exitX - 30, exitY - 30, g);
 		}
-		for(int i = 0; i < structures.length; i++)
+		for(int i = 0; i < structures.size(); i++)
 		{
-			if(structures[i] != null)
+			if(structures.get(i) != null)
 			{
-				drawBitmapLevel(imageLibrary.structure_Spawn, (int)structures[i].x-structures[i].width, (int)structures[i].y-structures[i].height, g);
+				drawBitmapLevel(imageLibrary.structure_Spawn, (int)structures.get(i).x-structures.get(i).width, (int)structures.get(i).y-structures.get(i).height, g);
 			}
 		}
 		if(levelNum == 10)
@@ -973,42 +955,42 @@ public final class Controller extends View
 				drawBitmapLevel(imageLibrary.trans[frame], (int)player.x - 60, (int)player.y - 60, g);
 			}
 		}
-		for(int i = 0; i < enemies.length; i++)
+		for(int i = 0; i < enemies.size(); i++)
 		{
-			if(enemies[i] != null)
+			if(enemies.get(i) != null)
 			{
-				if(enemies[i].keyHolder)
+				if(enemies.get(i).keyHolder)
 				{
-					drawBitmapLevel(imageLibrary.haskey, (int) enemies[i].x - 20, (int) enemies[i].y - 20, g);
+					drawBitmapLevel(imageLibrary.haskey, (int) enemies.get(i).x - 20, (int) enemies.get(i).y - 20, g);
 				}
-				drawBitmapRotatedLevel(enemies[i], g);
+				drawBitmapRotatedLevel(enemies.get(i), g);
 			}
 		}
-		for(int i = 0; i < Proj_Trackers.length; i++)
+		for(int i = 0; i < proj_Trackers.size(); i++)
 		{
-			if(Proj_Trackers[i] != null)
+			if(proj_Trackers.get(i) != null)
 			{
-				drawBitmapRotatedLevel(Proj_Trackers[i], g);
+				drawBitmapRotatedLevel(proj_Trackers.get(i), g);
 			}
 		}
-		for(int i = 0; i < Proj_Tracker_AOEs.length; i++)
+		for(int i = 0; i < proj_Tracker_AOEs.size(); i++)
 		{
-			if(Proj_Tracker_AOEs[i] != null)
+			if(proj_Tracker_AOEs.get(i) != null)
 			{
-				aoeRect.top = (int)(Proj_Tracker_AOEs[i].y - (Proj_Tracker_AOEs[i].getHeight() / 2.5));
-				aoeRect.bottom = (int)(Proj_Tracker_AOEs[i].y + (Proj_Tracker_AOEs[i].getHeight() / 2.5));
-				aoeRect.left = (int)(Proj_Tracker_AOEs[i].x - (Proj_Tracker_AOEs[i].getWidth() / 2.5));
-				aoeRect.right = (int)(Proj_Tracker_AOEs[i].x + (Proj_Tracker_AOEs[i].getWidth() / 2.5));
-				paint.setAlpha(Proj_Tracker_AOEs[i].getAlpha());
-				drawBitmapRectLevel(Proj_Tracker_AOEs[i].getVisualImage(), aoeRect, g);
+				aoeRect.top = (int)(proj_Tracker_AOEs.get(i).y - (proj_Tracker_AOEs.get(i).getHeight() / 2.5));
+				aoeRect.bottom = (int)(proj_Tracker_AOEs.get(i).y + (proj_Tracker_AOEs.get(i).getHeight() / 2.5));
+				aoeRect.left = (int)(proj_Tracker_AOEs.get(i).x - (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
+				aoeRect.right = (int)(proj_Tracker_AOEs.get(i).x + (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
+				paint.setAlpha(proj_Tracker_AOEs.get(i).getAlpha());
+				drawBitmapRectLevel(proj_Tracker_AOEs.get(i).getVisualImage(), aoeRect, g);
 			}
 		}
 		paint.setAlpha(255);
-		for(int i = 0; i < powerUps.length; i++)
+		for(int i = 0; i < powerUps.size(); i++)
 		{
-			if(powerUps[i] != null)
+			if(powerUps.get(i) != null)
 			{
-				drawBitmapLevel(powerUps[i].getVisualImage(), (int) powerUps[i].x - 15, (int) powerUps[i].y - 15, g);
+				drawBitmapLevel(powerUps.get(i).getVisualImage(), (int) powerUps.get(i).x - 15, (int) powerUps.get(i).y - 15, g);
 			}
 		}
 		if(imageLibrary.currentLevelTop != null)
@@ -1773,21 +1755,6 @@ public final class Controller extends View
 		}
 		paint.setAlpha(255);
 		paint.setColor(Color.GREEN);
-		if(warningTimer > 0)
-		{
-			warningTimer--;
-			paint.setColor(Color.BLACK);
-			if(warningTimer<25)
-			{
-				paint.setAlpha((byte)(warningTimer * 7));
-			} else
-			{
-				paint.setAlpha(255);
-			}
-			paint.setTextAlign(Align.CENTER);
-			paint.setTextSize(64-(warningText.length()*2));
-			drawText(warningText, 240, 160, g);
-		}
 		paint.setAlpha(255);
 		drawBitmap(background, 0, 0, g);
 		if(player.transformedTimer>1&&player.transformedTimer<500)
@@ -1832,8 +1799,7 @@ public final class Controller extends View
 	 */
 	protected void createProj_TrackerEnemy(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
-		Proj_Tracker_Enemy ballEnemy = new Proj_Tracker_Enemy(this, (int) (x+xVel*2), (int) (y+yVel*2), power, xVel, yVel, rotation);
-		Proj_Trackers[lowestPositionEmpty(Proj_Trackers)] = ballEnemy;
+		proj_Trackers.add(new Proj_Tracker_Enemy(this, (int) (x+xVel*2), (int) (y+yVel*2), power, xVel, yVel, rotation));
 	}
 	/**
 	 * creates an enemy crossbow bolt
@@ -1846,8 +1812,7 @@ public final class Controller extends View
 	 */
 	protected void createCrossbowBolt(double rotation, double xVel, double yVel, int power, double x, double y)
 	{
-		CrossbowBolt boltEnemy = new CrossbowBolt(this, (int) (x+xVel), (int) (y+yVel), power, xVel, yVel, rotation);
-		Proj_Trackers[lowestPositionEmpty(Proj_Trackers)] = boltEnemy;
+		proj_Trackers.add(new CrossbowBolt(this, (int) (x+xVel), (int) (y+yVel), power, xVel, yVel, rotation));
 	}
 	/**
 	 * creates a powerup object the player can pick up
@@ -1856,8 +1821,7 @@ public final class Controller extends View
 	 */
 	protected void createPowerUp(double X, double Y)
 	{
-		PowerUp powerUp = new PowerUp(this, X, Y, 0);
-		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
+		powerUps.add(new PowerUp(this, X, Y, 0));
 	}
 	/**
 	 * creates a small coin the player can pick up
@@ -1866,8 +1830,7 @@ public final class Controller extends View
 	 */
 	protected void createCoin1(double X, double Y)
 	{
-		PowerUp powerUp = new PowerUp(this, X, Y, 7);
-		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
+		powerUps.add(new PowerUp(this, X, Y, 7));
 	}
 	/**
 	 * creates a medium coin the player can pick up
@@ -1876,8 +1839,7 @@ public final class Controller extends View
 	 */
 	protected void createCoin5(double X, double Y)
 	{
-		PowerUp powerUp = new PowerUp(this, X, Y, 9);
-		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
+		powerUps.add(new PowerUp(this, X, Y, 9));
 	}
 	/**
 	 * creates a large coin the player can pick up
@@ -1886,8 +1848,7 @@ public final class Controller extends View
 	 */
 	protected void createCoin20(double X, double Y)
 	{
-		PowerUp powerUp = new PowerUp(this, X, Y, 10);
-		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
+		powerUps.add(new PowerUp(this, X, Y, 10));
 	}
 	/**
 	 * creates a key the player can pick up
@@ -1896,8 +1857,7 @@ public final class Controller extends View
 	 */
 	protected void createKey(double X, double Y)
 	{
-		PowerUp powerUp = new PowerUp(this, X, Y, 8);
-		powerUps[lowestPositionEmpty(powerUps)] = powerUp;
+		powerUps.add(new PowerUp(this, X, Y, 8));
 	}
 	/**
 	 * creates a player power ball
@@ -1910,8 +1870,7 @@ public final class Controller extends View
 	 */
 	protected void createProj_TrackerPlayer(double rotation, double Vel, int power, double x, double y)
 	{
-		Proj_Tracker_Player ballPlayer = new Proj_Tracker_Player(this, (int)x, (int)y, power, Vel, rotation);
-		Proj_Trackers[lowestPositionEmpty(Proj_Trackers)] = ballPlayer;
+		proj_Trackers.add(new Proj_Tracker_Player(this, (int)x, (int)y, power, Vel, rotation));
 	}
 	/**
 	 * creates an emeny AOE explosion
@@ -1922,9 +1881,8 @@ public final class Controller extends View
 	 */
 	protected void createProj_TrackerEnemyAOE(double x, double y, double power, boolean damaging)
 	{
-		Proj_Tracker_AOE_Enemy ballAOEEnemy = new Proj_Tracker_AOE_Enemy(this, (int) x, (int) y, power, true);
-		if(!damaging) ballAOEEnemy.damaging = false;
-		Proj_Tracker_AOEs[lowestPositionEmpty(Proj_Tracker_AOEs)] = ballAOEEnemy;
+		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Enemy(this, (int) x, (int) y, power, true));
+		if(!damaging) proj_Tracker_AOEs.get(proj_Tracker_AOEs.size()-1).damaging = false;
 	}
 	/**
 	 * creates a player AOE explosion
@@ -1934,9 +1892,8 @@ public final class Controller extends View
 	 */
 	protected void createProj_TrackerPlayerAOE(double x, double y, double power, boolean damaging)
 	{
-		Proj_Tracker_AOE_Player ballAOEPlayer = new Proj_Tracker_AOE_Player(this, (int) x, (int) y, power, true);
-		if(!damaging) ballAOEPlayer.damaging = false;
-		Proj_Tracker_AOEs[lowestPositionEmpty(Proj_Tracker_AOEs)] = ballAOEPlayer;
+		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Player(this, (int) x, (int) y, power, true));
+		if(!damaging) proj_Tracker_AOEs.get(proj_Tracker_AOEs.size()-1).damaging = false;
 	}
 	/**
 	 * creates an enemy burst
@@ -1946,8 +1903,7 @@ public final class Controller extends View
 	 */
 	protected void createProj_TrackerEnemyBurst(double x, double y, double power)
 	{
-		Proj_Tracker_AOE_Enemy ballAOEEnemy = new Proj_Tracker_AOE_Enemy(this, (int) x, (int) y, power, false);
-		Proj_Tracker_AOEs[lowestPositionEmpty(Proj_Tracker_AOEs)] = ballAOEEnemy;
+		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Enemy(this, (int) x, (int) y, power, false));
 	}
 	/**
 	 * creates a player burst
@@ -1957,36 +1913,7 @@ public final class Controller extends View
 	 */
 	protected void createProj_TrackerPlayerBurst(double x, double y, double power)
 	{
-		Proj_Tracker_AOE_Player ballAOEPlayer = new Proj_Tracker_AOE_Player(this, (int) x, (int) y, power, false);
-		Proj_Tracker_AOEs[lowestPositionEmpty(Proj_Tracker_AOEs)] = ballAOEPlayer;
-	}
-	/**
-	 * Tests an array to find lowest null index
-	 * @ param array Array to check in for null indexes
-	 * @ return Returns lowest index that equals null
-	 */
-	protected int lowestPositionEmpty(Sprite[] array)
-	{
-		int lowest = 0;
-		for(int i = 0; i < 25; i++)
-		{
-			if(array[i] == null)
-			{
-				lowest = i;
-				i = 30;
-			}
-		}
-		return lowest;
-	}
-	/**
-	 * Starts warning label
-	 * @param warning
-	 */
-	protected void startWarning(String warning)
-	{
-		warningTimer = 50;
-		warningText = warning;
-		//TODO
+		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Player(this, (int) x, (int) y, power, false));
 	}
 	/**
 	 * Starts warning label

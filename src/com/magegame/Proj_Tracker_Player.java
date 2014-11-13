@@ -97,57 +97,57 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 		}
 		if(control.enemyInView(x, y))
 		{
-			for(int i = 0; i < control.enemies.length; i++)
+			for(int i = 0; i < control.enemies.size(); i++)
 			{
-				if(control.enemies[i] != null && !deleted && control.enemies[i].getRollTimer() < 1)
+				if(control.enemies.get(i) != null && !deleted && control.enemies.get(i).getRollTimer() < 1)
 				{
-					control.enemies[i].setLevels(control.enemies[i].getLevelCurrentPosition(), x, y, xForward, yForward);
-					control.enemies[i].incrementLevelCurrentPosition();
-					xDif = x - control.enemies[i].x;
-					yDif = y - control.enemies[i].y;
+					control.enemies.get(i).setLevels(control.enemies.get(i).getLevelCurrentPosition(), x, y, xForward, yForward);
+					control.enemies.get(i).incrementLevelCurrentPosition();
+					xDif = x - control.enemies.get(i).x;
+					yDif = y - control.enemies.get(i).y;
 					double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 					if(distance < 600)
 					{
 						power*=Math.pow((double)control.activity.wAres/10, 0.5);
-						control.enemies[i].getHit((int)power);
+						control.enemies.get(i).getHit((int)power);
 						explode();
 					} else if(distance < 14000)
 					{
 						if(target == null)
 						{
-							target = control.enemies[i];
-						} else if(control.enemies[i]!=target)
+							target = control.enemies.get(i);
+						} else if(control.enemies.get(i)!=target)
 						{
 							if(Math.abs(compareRot(Math.atan2(yDif, xDif)))<Math.abs(compareRot(Math.atan2(y - target.y, x - target.x))))
 							{
-								target = control.enemies[i];
+								target = control.enemies.get(i);
 							}
 						}
 					}
 				}
 			}
-			for(int i = 0; i < control.structures.length; i++)
+			for(int i = 0; i < control.structures.size(); i++)
 			{
-				if(control.structures[i] != null && !deleted)
+				if(control.structures.get(i) != null && !deleted)
 				{
-					xDif = x - control.structures[i].x;
-					yDif = y - control.structures[i].y;
+					xDif = x - control.structures.get(i).x;
+					yDif = y - control.structures.get(i).y;
 					double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 					if(distance < 600)
 					{
 						power*=Math.pow((double)control.activity.wAres/10, 0.5);
-						control.structures[i].getHit((int)power);
+						control.structures.get(i).getHit((int)power);
 						explode();
 					} else if(distance < 14000)
 					{
 						if(target == null)
 						{
-							target = control.structures[i];
-						} else if(control.structures[i]!=target)
+							target = control.structures.get(i);
+						} else if(control.structures.get(i)!=target)
 						{
 							if(Math.abs(compareRot(Math.atan2(yDif, xDif)))<Math.abs(compareRot(Math.atan2(y - target.y, x - target.x))))
 							{
-								target = control.structures[i];
+								target = control.structures.get(i);
 							}
 						}
 					}

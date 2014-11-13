@@ -102,66 +102,66 @@ public class Wall_Rectangle extends Wall
 						}
 				}
         	}
-		for(int i = 0; i < control.enemies.length; i++)
+		for(int i = 0; i < control.enemies.size(); i++)
 		{
-			if(control.enemies[i] != null)
+			if(control.enemies.get(i) != null)
 			{
-				if(control.enemies[i].x > oRX1 && control.enemies[i].x < oRX2 && control.enemies[i].y > oRY1 && control.enemies[i].y < oRY2)
+				if(control.enemies.get(i).x > oRX1 && control.enemies.get(i).x < oRX2 && control.enemies.get(i).y > oRY1 && control.enemies.get(i).y < oRY2)
 				{
-					if(!control.checkHitBackPass(control.enemies[i].x, control.enemies[i].y, true))
+					if(!control.checkHitBackPass(control.enemies.get(i).x, control.enemies.get(i).y, true))
 					{
 						double holdX;
 						double holdY;
-						if(control.enemies[i].x > x)
+						if(control.enemies.get(i).x > x)
 						{
-							holdX = Math.abs(control.enemies[i].x - oRX2);
+							holdX = Math.abs(control.enemies.get(i).x - oRX2);
 						} else
 						{
-							holdX = Math.abs(control.enemies[i].x - oRX1);
+							holdX = Math.abs(control.enemies.get(i).x - oRX1);
 						}
-						if(control.enemies[i].y > y)
+						if(control.enemies.get(i).y > y)
 						{
-							holdY = Math.abs(control.enemies[i].y - oRY2);
+							holdY = Math.abs(control.enemies.get(i).y - oRY2);
 						} else
 						{
-							holdY = Math.abs(control.enemies[i].y - oRY1);
+							holdY = Math.abs(control.enemies.get(i).y - oRY1);
 						}
 						if((holdX) < (holdY))
 						{
-							if(control.enemies[i].x > x)
+							if(control.enemies.get(i).x > x)
 							{
-								control.enemies[i].x = oRX2;
+								control.enemies.get(i).x = oRX2;
 							}
 							else
 							{
-								control.enemies[i].x = oRX1;
+								control.enemies.get(i).x = oRX1;
 							}
-							if(control.enemies[i].y > y)
+							if(control.enemies.get(i).y > y)
 							{
-								control.enemies[i].y+=2;
+								control.enemies.get(i).y+=2;
 							}
 							else
 							{
-								control.enemies[i].y-=2;
+								control.enemies.get(i).y-=2;
 							}
 						}
 						else
 						{
-							if(control.enemies[i].y > y)
+							if(control.enemies.get(i).y > y)
 							{
-								control.enemies[i].y = oRY2;
+								control.enemies.get(i).y = oRY2;
 							}
 							else
 							{
-								control.enemies[i].y = oRY1;
+								control.enemies.get(i).y = oRY1;
 							}
-							if(control.enemies[i].x > x)
+							if(control.enemies.get(i).x > x)
 							{
-								control.enemies[i].x+=2;
+								control.enemies.get(i).x+=2;
 							}
 							else
 							{
-								control.enemies[i].x-=2;
+								control.enemies.get(i).x-=2;
 							}
 						}
 					}

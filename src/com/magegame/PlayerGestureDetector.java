@@ -1081,62 +1081,6 @@ public class PlayerGestureDetector implements OnTouchListener {
 		return hitButton;
 	}
 	/**
-	 * checks clicks when in the tutorial level
-	 * @param setX x value of click
-	 * @param setY y value of click
-	 * @return whether anything was clicked
-	 */
-	protected boolean clickDownNotPausedTutorial(float setX, float setY)
-	{
-		boolean hitButton = false;
-		if(control.pointOnScreen(setX, setY))
-		{
-			double x = visualX(setX);
-			double y = visualY(setY);
-			if(control.pointOnSquare(setX, setY, 200, 280, 280, 320))
-	        {
-				hitButton = true;
-				control.activity.playEffect("pageflip");
-				control.currentTutorial ++;
-				if(control.currentTutorial == 2)
-				{
-					control.enemies[0] = new Enemy_Target(control, 145, 150, 0, false);
-					control.enemies[1] = new Enemy_Target(control, 355, 150, 180, false);
-					control.enemies[2] = new Enemy_Target(control, 250, 25, 90, false);
-					control.enemies[3] = new Enemy_Target(control, 250, 275, -90, false);
-				}
-				if(control.currentTutorial == 3)
-				{
-					control.enemies[0] = new Enemy_Target(control, 52, 150, 0, false);
-					control.enemies[1] = new Enemy_Target(control, 415, 25, 90, true);
-					control.enemies[2] = new Enemy_Target(control, 435, 275, -90, true);
-					control.enemies[3] = null;
-				}
-				if(control.currentTutorial == 4)
-				{
-					control.enemies[0] = null;
-					control.enemies[1] = null;
-					control.enemies[2] = null;
-					control.enemies[3] = null;
-				}
-				if(control.currentTutorial >9)
-				{
-					if(control.activity.levelBeaten == 0)
-		        	{
-						control.activity.levelBeaten++;
-						control.activity.realCurrency += 25;
-		        	}
-					control.activity.startFight(3);
-				} else
-				{
-					control.imageLibrary.directionsTutorial = control.imageLibrary.loadImage("menu_tutorial000"+Integer.toString(control.currentTutorial), 217, 235);
-				}
-				control.invalidate();
-	        }
-		}
-		return hitButton;
-	}
-	/**
 	 * checks clicks when not paused
 	 * @param x x value of click
 	 * @param y y value of click

@@ -3,6 +3,8 @@
  */
 package com.magegame;
 
+import android.widget.Toast;
+
 public final class Player extends Human
 {
 	protected int transformedTimer = 30000;
@@ -181,14 +183,14 @@ public final class Player extends Human
 				double distanceFound;
 				if(currentFrame == 28)
 				{
-					for(int i = 0; i < control.enemies.length; i++)
+					for(int i = 0; i < control.enemies.size(); i++)
 					{
-						if(control.enemies[i] != null)
+						if(control.enemies.get(i) != null)
 						{
-							distanceFound = checkDistance(x + Math.cos(rotation/r2d) * 35, y + Math.sin(rotation/r2d) * 35, control.enemies[i].x, control.enemies[i].y);
+							distanceFound = checkDistance(x + Math.cos(rotation/r2d) * 35, y + Math.sin(rotation/r2d) * 35, control.enemies.get(i).x, control.enemies.get(i).y);
 							if(distanceFound < 50)
 							{
-								control.enemies[i].getHit((int)(400*spMod)+400);
+								control.enemies.get(i).getHit((int)(400*spMod)+400);
 								control.activity.playEffect("sword2");
 							}
 						}
@@ -356,7 +358,7 @@ public final class Player extends Human
 			abilityTimer_roll -= 40;
 		} else
 		{
-			control.startWarning("Cool Down");
+			Toast.makeText(control.context, "Cool Down", Toast.LENGTH_SHORT).show();
 		}
 	}
 	/**
@@ -374,7 +376,7 @@ public final class Player extends Human
 			}
 		} else
 		{
-			control.startWarning("Cool Down");
+			Toast.makeText(control.context, "Cool Down", Toast.LENGTH_SHORT).show();
 		}
 	}
 	/**
@@ -392,7 +394,7 @@ public final class Player extends Human
 			}
 		} else
 		{
-			control.startWarning("Cool Down");
+			Toast.makeText(control.context, "Cool Down", Toast.LENGTH_SHORT).show();
 		}
 	}
 	/**
@@ -414,7 +416,7 @@ public final class Player extends Human
 			control.playerBursted = 0;
 		} else
 		{
-			control.startWarning("Cool Down");
+			Toast.makeText(control.context, "Cool Down", Toast.LENGTH_SHORT).show();
 		}
 	}
 	/**
@@ -432,7 +434,7 @@ public final class Player extends Human
 		        xMoveRoll /= 3;
 		        yMoveRoll /= 3;
 		        abilityTimer_roll += 20;
-		        control.startWarning("Stunned!");
+		        Toast.makeText(control.context, "Stunned!", Toast.LENGTH_SHORT).show();
 			}
 		}
 	}

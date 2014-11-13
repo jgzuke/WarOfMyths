@@ -110,17 +110,17 @@ public final class Enemy_Cleric extends Enemy_Muggle
 	}
 	private int pickEnemy()
 	{
-		int numEnemies = control.enemies.length;
+		int numEnemies = control.enemies.size();
 		//Sort to find closest enemy in sight needing hp and heal
 				// if can see player shoot
 				//if no enemies run randomly
 		double[] distances = new double[numEnemies];
 		for(int i = 0; i < numEnemies; i++)
 		{
-			if(control.enemies[i] != null)
+			if(control.enemies.get(i) != null)
 			{
-				double xDif = x - control.enemies[i].x;
-				double yDif = y - control.enemies[i].y;
+				double xDif = x - control.enemies.get(i).x;
+				double yDif = y - control.enemies.get(i).y;
 				distances[i] = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 			}
 		}
@@ -132,7 +132,7 @@ public final class Enemy_Cleric extends Enemy_Muggle
 			{
 				if(distances[j]<distances[lowest])  lowest = j;
 			}
-			if(!control.checkObstructionsPoint((float)x, (float)y, (float)control.enemies[lowest].y, (float)control.enemies[lowest].y, true))
+			if(!control.checkObstructionsPoint((float)x, (float)y, (float)control.enemies.get(lowest).y, (float)control.enemies.get(lowest).y, true))
 			{
 				finished = true;
 			} else

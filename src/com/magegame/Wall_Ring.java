@@ -69,12 +69,12 @@ public class Wall_Ring extends Wall
 					}
 				}
 			}
-		for(int i = 0; i < control.enemies.length; i++)
+		for(int i = 0; i < control.enemies.size(); i++)
 		{
-			if(control.enemies[i] != null)
+			if(control.enemies.get(i) != null)
 			{
-				curX = control.enemies[i].x;
-				curY = control.enemies[i].y;
+				curX = control.enemies.get(i).x;
+				curY = control.enemies.get(i).y;
 				xdif = oCX - curX;
 				ydif = oCY - curY;
 				rads = Math.atan2(ydif, xdif);
@@ -85,12 +85,12 @@ public class Wall_Ring extends Wall
 					{
 						if(dist<oCRSAve)
 						{
-							control.enemies[i].x = oCX - (Math.cos(rads) * oCRIn);
-							control.enemies[i].y = oCY - (Math.sin(rads) * oCRIn);
+							control.enemies.get(i).x = oCX - (Math.cos(rads) * oCRIn);
+							control.enemies.get(i).y = oCY - (Math.sin(rads) * oCRIn);
 						} else
 						{
-							control.enemies[i].x = oCX - (Math.cos(rads) * oCROut);
-							control.enemies[i].y = oCY - (Math.sin(rads) * oCROut);
+							control.enemies.get(i).x = oCX - (Math.cos(rads) * oCROut);
+							control.enemies.get(i).y = oCY - (Math.sin(rads) * oCROut);
 						}
 					}
 				}
