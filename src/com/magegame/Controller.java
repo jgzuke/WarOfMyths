@@ -49,6 +49,8 @@ import android.media.AudioManager;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+
+import java.util.ArrayList;
 import java.util.Random;
 public final class Controller extends View
 {
@@ -64,9 +66,9 @@ public final class Controller extends View
 	private PowerUp[] powerUps = new PowerUp[30];
 	private Proj_Tracker[] Proj_Trackers = new Proj_Tracker[30];
 	private Proj_Tracker_AOE[] Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
-	private Wall_Rectangle[] walls = new Wall_Rectangle[30];
-	private Wall_Circle[] wallCircles = new Wall_Circle[30];
-	private Wall_Ring[] wallRings = new Wall_Ring[30];
+	private ArrayList<Wall_Rectangle> wallRects = new ArrayList<Wall_Rectangle>();
+	private ArrayList<Wall_Ring> wallRings = new ArrayList<Wall_Ring>();
+	private ArrayList<Wall_Circle> wallCircles = new ArrayList<Wall_Circle>();
 	private Rect aoeRect = new Rect();
 	private boolean gameEnded = false;
 	protected Player player;
@@ -78,41 +80,11 @@ public final class Controller extends View
 	protected int levelNum = 10;
 	private int warningTimer;
 	private String warningText = "";
-	private int[] oPassageX1;
-	private int[] oPassageX2;
-	private int[] oPassageY1;
-	private int[] oPassageY2;
-	private int[] oRingX;
-	private int[] oRingY;
-	private int[] oRingInner;
-	private int[] oRingOuter;
-	private int[] oRingXAll;
-	private int[] oRingYAll;
-	private int[] oRingInnerAll;
-	private int[] oRingOuterAll;
-	private int[] oRectX1;
-	private int[] oRectX2;
-	private int[] oRectY1;
-	private int[] oRectY2;
-	private int[] oCircX;
-	private int[] oCircY;
-	private int[] oCircRadius;
-	private double[] oCircRatio;
-	private int[] oRectX1All;
-	private int[] oRectX2All;
-	private int[] oRectY1All;
-	private int[] oRectY2All;
-	private int[] oCircXAll;
-	private int[] oCircYAll;
-	private int[] oCircRadiusAll;
-	private double[] oCircRatioAll;
-	private int currentCircle = 0;
-	private int currentRectangle = 0;
-	private int currentCircleAll = 0;
-	private int currentRectangleAll = 0;
-	private int currentRing = 0;
-	private int currentRingAll = 0;
-	private int currentPassage = 0;
+	private ArrayList<int[]> wallPassageValues = new ArrayList<int[]>(); // int[] is x1, x2, y1, y2
+	private ArrayList<int[]> wallRingValues = new ArrayList<int[]>(); // int[] is x, y, radiusInner, radiusOuter, tall or not
+	private ArrayList<int[]> wallRectValues = new ArrayList<int[]>(); // int[] is x1, x2, y1, y2, tall or not
+	private ArrayList<int[]> wallCircleValues = new ArrayList<int[]>(); // int[] is x, y, radius, tall or not
+
 	private Bitmap background;
 	protected Bitmap tempPicture;
 	protected Bitmap tempPictureLock;
@@ -255,10 +227,9 @@ public final class Controller extends View
 	 * @param tall whether wall is tall enough to block projectiles
 	 * @return wall object
 	 */
-	protected Wall_Rectangle makeWall_Rectangle(int x, int y, int width, int height, boolean HitPlayer, boolean tall)
+	protected void makeWall_Rectangle(int x, int y, int width, int height, boolean HitPlayer, boolean tall)
 	{
-		Wall_Rectangle wall1 = new Wall_Rectangle(this, x - 2, y - 2, width + 4, height + 4, HitPlayer, tall);
-		return wall1;
+		wallRects.add(new Wall_Rectangle(this, x - 2, y - 2, width + 4, height + 4, HitPlayer, tall));
 	}
 	/**
 	 * creates a ring wall object
@@ -268,10 +239,9 @@ public final class Controller extends View
 	 * @param radOut outer radius
 	 * @return wall object
 	 */
-	protected Wall_Ring makeWall_Ring(int x, int y, int radIn, int radOut, boolean tall)
+	protected void makeWall_Ring(int x, int y, int radIn, int radOut, boolean tall)
 	{
-		Wall_Ring wall1 = new Wall_Ring(this, x, y, radIn - 2, radOut + 2, tall);
-		return wall1;
+		wallRings.add(new Wall_Ring(this, x, y, radIn - 2, radOut + 2, tall));
 	}
 	/**
 	 * creates a passage through a ring
@@ -280,9 +250,9 @@ public final class Controller extends View
 	 * @param width passage width
 	 * @param height passage height
 	 */
-	protected void makeWall_Pass(int x, int y, int width, int height)
+	protected void makeWall_Pass(int x, int y, int width, int height, boolean fullPass)
 	{
-		new Wall_Pass(this, x - 2, y - 2, width + 4, height + 4);
+		new Wall_Pass(this, x - 2, y - 2, width + 4, height + 4, fullPass);
 	}
 	/**
 	 * creates circular wall object
@@ -293,87 +263,9 @@ public final class Controller extends View
 	 * @param tall whether object is tall enough to block projectiles
 	 * @return wall object
 	 */
-	protected Wall_Circle makeWall_Circle(int x, int y, int rad, double ratio, boolean tall)
+	protected void makeWall_Circle(int x, int y, int rad, double ratio, boolean tall)
 	{
-		Wall_Circle wall1 = new Wall_Circle(this, x, y, rad + 2, ratio, tall);
-		return wall1;
-	}
-	/**
-	 * creates an empty array of rectangular wall variables
-	 * @param length desired length of arrays
-	 */
-	protected void createWallRectangleValueArrays(int length)
-	{
-		oRectX1 = new int[length];
-		oRectX2 = new int[length];
-		oRectY1 = new int[length];
-		oRectY2 = new int[length];
-	}
-	/**
-	 * creates an empty array of circular wall variables
-	 * @param length desired length of arrays
-	 */
-	protected void createWallCircleValueArrays(int length)
-	{
-		oCircX = new int[length];
-		oCircY = new int[length];
-		oCircRadius = new int[length];
-		oCircRatio = new double[length];
-	}
-	/**
-	 * creates an empty array of tall rectangular wall variables
-	 * @param length desired length of arrays
-	 */
-	protected void createWallRectangleValueArraysAll(int length)
-	{
-		oRectX1All = new int[length];
-		oRectX2All = new int[length];
-		oRectY1All = new int[length];
-		oRectY2All = new int[length];
-	}
-	/**
-	 * creates an empty array of tall circular wall variables
-	 * @param length desired length of arrays
-	 */
-	protected void createWallCircleValueArraysAll(int length)
-	{
-		oCircXAll = new int[length];
-		oCircYAll = new int[length];
-		oCircRadiusAll = new int[length];
-		oCircRatioAll = new double[length];
-	}
-	/**
-	 * creates an empty array of ringular wall variables
-	 * @param length desired length of arrays
-	 */
-	protected void createWallRingValueArrays(int length)
-	{
-		oRingX = new int[length];
-		oRingY = new int[length];
-		oRingInner = new int[length];
-		oRingOuter = new int[length];
-	}
-	/**
-	 * creates an empty array of ringular wall variables
-	 * @param length desired length of arrays
-	 */
-	protected void createWallRingValueArraysAll(int length)
-	{
-		oRingXAll = new int[length];
-		oRingYAll = new int[length];
-		oRingInnerAll = new int[length];
-		oRingOuterAll = new int[length];
-	}
-	/**
-	 * creates an empty array of passage variables
-	 * @param length desired length of arrays
-	 */
-	protected void createWallPassageValueArrays(int length)
-	{
-		oPassageX1 = new int[length];
-		oPassageX2 = new int[length];
-		oPassageY1 = new int[length];
-		oPassageY2 = new int[length];
+		wallCircles.add(new Wall_Circle(this, x, y, rad + 2, ratio, tall));
 	}
 	/**
 	 * ends a round of fighting and resets variables
@@ -388,18 +280,10 @@ public final class Controller extends View
 		Proj_Trackers = new Proj_Tracker[30];
 		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
 		powerUps = new PowerUp[30];
-		walls = new Wall_Rectangle[30];
-		wallCircles = new Wall_Circle[30];
-		wallRings = new Wall_Ring[30];
+		clearWallArrays();
+		
 		powerUps = new PowerUp[30];
 		gameEnded = false;
-		currentCircle = 0;
-		currentRectangle = 0;
-		currentCircleAll = 0;
-		currentRectangleAll = 0;
-		currentRing = 0;
-		currentRingAll = 0;
-		currentPassage = 0;
 		imageLibrary.currentLevelTop = null;
 		savedEnemies = 0;
 		saveEnemyInformation = new int[30][5];
@@ -410,27 +294,24 @@ public final class Controller extends View
 	 */
 	protected void loadLevel()
 	{
+		clearWallArrays();
 		if(levelNum == 10)
 		{			// *******EXAMPLE FOR COMMENTS FOR LOADLEVEL SECTION
-			createWallRectangleValueArraysAll(6); //creates array to hold tall rectangular walls
-			createWallCircleValueArraysAll(2); //creates array to hold tall circular walls
 			levelWidth = 300; // height of level
 			levelHeight = 300; // width of level
 			player.x = 150; // player start x
 			player.y = 150; // player start y
-			wallCircles[0] = makeWall_Circle(106, 271, 19, 1, false);
-			wallCircles[1] = makeWall_Circle(59, 244, 19, 1, false);
-			walls[0] = makeWall_Rectangle(0, 0, 10, 300, true, false);
-			walls[1] = makeWall_Rectangle(0, 0, 110, 10, true, false);
-			walls[2] = makeWall_Rectangle(290, 0, 10, 300, true, false);
-			walls[3] = makeWall_Rectangle(0, 290, 300, 10, true, false);
-			walls[4] = makeWall_Rectangle(190, 0, 110, 10, true, false);
-			walls[5] = makeWall_Rectangle(-185, 199, 227, 210, true, false);
+			makeWall_Circle(106, 271, 19, 1, false);
+			makeWall_Circle(59, 244, 19, 1, false);
+			makeWall_Rectangle(0, 0, 10, 300, true, false);
+			makeWall_Rectangle(0, 0, 110, 10, true, false);
+			makeWall_Rectangle(290, 0, 10, 300, true, false);
+			makeWall_Rectangle(0, 290, 300, 10, true, false);
+			makeWall_Rectangle(190, 0, 110, 10, true, false);
+			makeWall_Rectangle(-185, 199, 227, 210, true, false);
 		}
 		if(levelNum == 20)
 		{
-			createWallRectangleValueArrays(6);
-			createWallRectangleValueArraysAll(6);
 			levelWidth = 630;
 			levelHeight = 300;
 			player.x = 100;
@@ -444,17 +325,15 @@ public final class Controller extends View
 			enemies[5] = new Enemy_Target(this, 568, 18, 90, true);
 			enemies[6] = new Enemy_Target(this, 512, 284, -90, true);
 			enemies[7] = new Enemy_Target(this, 549, 284, -90, true);
-			walls[0] = makeWall_Rectangle(210, -77, 15, 205, true, true);
-			walls[1] = makeWall_Rectangle(210, 172, 15, 205, true, true);
-			walls[2] = makeWall_Rectangle(455, -77, 15, 205, true, true);
-			walls[3] = makeWall_Rectangle(455, 172, 15, 205, true, true);
-			walls[4] = makeWall_Rectangle(618, -77, 15, 205, true, true);
-			walls[5] = makeWall_Rectangle(618, 172, 15, 205, true, true);
+			makeWall_Rectangle(210, -77, 15, 205, true, true);
+			makeWall_Rectangle(210, 172, 15, 205, true, true);
+			makeWall_Rectangle(455, -77, 15, 205, true, true);
+			makeWall_Rectangle(455, 172, 15, 205, true, true);
+			makeWall_Rectangle(618, -77, 15, 205, true, true);
+			makeWall_Rectangle(618, 172, 15, 205, true, true);
 		}
 		if(levelNum == 30)
 		{
-			createWallRectangleValueArrays(5);
-			createWallRectangleValueArraysAll(7);
 			levelWidth = 480;
 			levelHeight = 310;
 			player.x = 436;
@@ -465,15 +344,26 @@ public final class Controller extends View
 			enemies[1] = new Enemy_Archer(this, 60, 192);
 			enemies[2] = new Enemy_Shield(this, 80, 249);
 			enemies[1].keyHolder = true;			// THIS ENEMY HOLDS KEY TO NEXT LEVEL
-			walls[0] = makeWall_Rectangle(-5, 8, 100, 70, true, true);
-			walls[1] = makeWall_Rectangle(83, -9, 141, 153, true, true);
-			walls[2] = makeWall_Rectangle(99, 125, 108, 59, true, true);
-			walls[3] = makeWall_Rectangle(311, 67, 96, 1210, true, true);
-			walls[4] = makeWall_Rectangle(300, 175, 1220, 1350, true, true);
-			walls[5] = makeWall_Rectangle(116, 177, 13, 80, true, false);
-			walls[6] = makeWall_Rectangle(116, 245, 56, 13, true, false);
+			makeWall_Rectangle(-5, 8, 100, 70, true, true);
+			makeWall_Rectangle(83, -9, 141, 153, true, true);
+			makeWall_Rectangle(99, 125, 108, 59, true, true);
+			makeWall_Rectangle(311, 67, 96, 1210, true, true);
+			makeWall_Rectangle(300, 175, 1220, 1350, true, true);
+			makeWall_Rectangle(116, 177, 13, 80, true, false);
+			makeWall_Rectangle(116, 245, 56, 13, true, false);
 		}
 		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
+	}
+	private void clearWallArrays()
+	{
+		wallPassageValues.clear();
+		wallRingValues.clear();
+		wallRectValues.clear();
+		wallCircleValues.clear();
+		wallRects.clear();
+		wallRings.clear();
+		wallCircles.clear();
+		//TODO
 	}
 	/**
 	 * loads a new section of the current level
@@ -481,6 +371,8 @@ public final class Controller extends View
 	 */
 	protected void loadLevelSection(int level)
 	{
+		Log.e("worked", "worked");
+		clearWallArrays();
 		levelNum = level;
 		for(int i = 0; i < powerUps.length; i++)
 		{
@@ -522,153 +414,25 @@ public final class Controller extends View
 		{
 			endFightSection();
 		}
-		if(levelNum == 90)
-		{
-			createWallRectangleValueArrays(6); // SAME FORMAT AS LOADING LEVELS
-			createWallRectangleValueArraysAll(6);
-			exitX = -1000;
-			exitY = -1000;
-			walls[0] = makeWall_Rectangle(43, -48, 10, 240, true, true);
-			walls[1] = makeWall_Rectangle(43, 223, 10, 240, true, true);
-			walls[2] = makeWall_Rectangle(346, -48, 10, 240, true, true);
-			walls[3] = makeWall_Rectangle(346, 223, 10, 240, true, true);
-			walls[4] = makeWall_Rectangle(88, 43, 10, 322, true, true);
-			walls[5] = makeWall_Rectangle(302, 43, 10, 322, true, true);
-		}
-		if(levelNum == 91)
-		{
-			createWallRectangleValueArrays(4);
-			createWallRectangleValueArraysAll(4);
-			exitX = 200;
-			exitY = 230;
-			walls[0] = makeWall_Rectangle(43, 45, 10, 320, true, true);
-			walls[1] = makeWall_Rectangle(346, 45, 10, 320, true, true);
-			walls[2] = makeWall_Rectangle(0, 145, 45, 120, true, true);
-			walls[3] = makeWall_Rectangle(355, 145, 45, 120, true, true);
-		}
-		if(levelNum == 100)
-		{
-			createWallRectangleValueArrays(17); // SAME FORMAT AS LOADING LEVELS
-			createWallRectangleValueArraysAll(17);
-			exitX = -1000;
-			exitY = -1000;
-			walls[0] = makeWall_Rectangle(49-3, 231, 16, 226, true, true);
-			walls[1] = makeWall_Rectangle(-150, 175-3, 260, 16, true, true);
-			walls[2] = makeWall_Rectangle(104-3, 179, 16, 51, true, true);
-			walls[3] = makeWall_Rectangle(107, 224-3, 95, 16, true, true);
-			walls[4] = makeWall_Rectangle(197-3, 229, 16, 56, true, true);
-			walls[5] = makeWall_Rectangle(105, 280-3, 232, 16, true, true);
-			walls[6] = makeWall_Rectangle(330-3, 229, 16, 56, true, true);
-			walls[7] = makeWall_Rectangle(334, 224-3, 123, 16, true, true);
-			walls[8] = makeWall_Rectangle(108, 121-3, 228, 16, true, true);
-			walls[9] = makeWall_Rectangle(330-3, 124, 16, 59, true, true);
-			walls[10] = makeWall_Rectangle(156-3, 126, 16, 54, true, true);
-			walls[11] = makeWall_Rectangle(197-3, 126, 16, 54, true, true);
-			walls[12] = makeWall_Rectangle(160, 174-3, 43, 16, true, true);
-			walls[13] = makeWall_Rectangle(49-3, 49, 16, 131, true, true);
-			walls[14] = makeWall_Rectangle(105-3, -79, 16, 206, true, true);
-			walls[15] = makeWall_Rectangle(258-3, -140, 16, 206, true, true);
-			walls[16] = makeWall_Rectangle(163, 60-3, 101, 16, true, true);
-		}
-		if(levelNum == 101)
-		{
-			createWallRectangleValueArrays(9); // SAME FORMAT AS LOADING LEVELS
-			createWallRectangleValueArraysAll(9);
-			exitX = 40;
-			exitY = 300;
-			walls[0] = makeWall_Rectangle(-73, 224-3, 187, 16, true, true);
-			walls[1] = makeWall_Rectangle(161, 280-3, 126, 16, true, true);
-			walls[2] = makeWall_Rectangle(330-3, 169, 16, 272, true, true);
-			walls[3] = makeWall_Rectangle(330-3, 64, 16, 63, true, true);
-			walls[4] = makeWall_Rectangle(49-3, -46, 16, 226, true, true);
-			walls[5] = makeWall_Rectangle(157-3, -106, 16, 391, true, true);
-			walls[6] = makeWall_Rectangle(165, 60-3, 172, 16, true, true);
-			walls[7] = makeWall_Rectangle(162, 224-3, 172, 16, true, true);
-			walls[8] = makeWall_Rectangle(103-3, 284, 16, 135, true, true);
-
-		}
-		if(levelNum == 150)
-		{
-			createWallRectangleValueArraysAll(19);
-			createWallRectangleValueArrays(8);
-			levelWidth = 360;
-			levelHeight = 360;
-			player.x +=199;
-			player.y +=50;
-			exitX = 15000;
-			exitY = 90000;
-			walls[0] = makeWall_Rectangle(49, -31, 61, 130, true, true);
-			walls[1] = makeWall_Rectangle(-41, 137, 134, 61, true, true);
-			walls[2] = makeWall_Rectangle(320, 19, 167, 206, true, true);
-			walls[3] = makeWall_Rectangle(280, 95, 198, 85, true, true);
-			walls[4] = makeWall_Rectangle(309, 212, 173, 180, true, true);
-			walls[5] = makeWall_Rectangle(260, 247, 173, 180, true, true);
-			walls[6] = makeWall_Rectangle(243, 106, 225, 12, true, true);
-			walls[7] = makeWall_Rectangle(243, 158, 225, 12, true, true);
-			
-			walls[8] = makeWall_Rectangle(-21, 284, 69, 16, true, false);
-			walls[9] = makeWall_Rectangle(-21, 248, 69, 16, true, false);
-			walls[10] = makeWall_Rectangle(35, 253, 16, 42, true, false);
-			walls[11] = makeWall_Rectangle(185, 37, 42, 16, true, false);
-			walls[12] = makeWall_Rectangle(215, -20, 16, 69, true, false);
-			walls[13] = makeWall_Rectangle(180, -20, 16, 69, true, false);
-			walls[14] = makeWall_Rectangle(148, 310, 42, 16, true, false);
-			walls[15] = makeWall_Rectangle(179, 315, 16, 69, true, false);
-			walls[16] = makeWall_Rectangle(144, 315, 16, 69, true, false);
-			
-			walls[17] = makeWall_Rectangle(224, 321, 180, 61, true, false);
-			walls[18] = makeWall_Rectangle(302, -38, 36, 91, true, false);
-		}
-		if(levelNum == 151)
-		{
-			createWallRectangleValueArrays(13);
-			createWallRectangleValueArraysAll(13);
-			createWallCircleValueArrays(2);
-			levelWidth = 300;
-			levelHeight = 305;
-			player.x -=199;
-			player.y -=50;
-			exitX = 150;
-			exitY = 275;
-			walls[0] = makeWall_Rectangle(10, -12, 109, 58, true, true);
-			walls[1] = makeWall_Rectangle(-29, 5, 109, 58, true, true);
-			walls[2] = makeWall_Rectangle(-29, 117, 109, 58, true, true);
-			walls[3] = makeWall_Rectangle(0, 264, 109, 58, true, true);
-			walls[4] = makeWall_Rectangle(196, 266, 109, 58, true, true);
-			walls[5] = makeWall_Rectangle(185, -12, 109, 58, true, true);
-			walls[6] = makeWall_Rectangle(220, 37, 109, 121, true, true);
-			walls[7] = makeWall_Rectangle(183, 131, 109, 29, true, true);
-			walls[8] = makeWall_Rectangle(198, 146, 109, 53, true, true);
-			walls[9] = makeWall_Rectangle(241, 175, 109, 121, true, true);
-			walls[10] = makeWall_Rectangle(-39, 171, 109, 121, true, true);
-			walls[11] = makeWall_Rectangle(-8, 132, 129, 27, true, true);
-			walls[12] = makeWall_Rectangle(3, 146, 109, 53, true, true);
-			wallCircles[0] = makeWall_Circle(237, 203, 32, 1, false);
-			wallCircles[1] = makeWall_Circle(83, 257, 26, 1, false);
-		}
 		if(levelNum == 21)
 		{
-			createWallRectangleValueArrays(7);
-			createWallRectangleValueArraysAll(7);
 			levelWidth = 555;
-			player.x = 25;
+			player.x = 25; 						// same format as loading levels
 			enemies[0] = new Enemy_Target(this, 653 - 506, 125, 180, false);
 			enemies[1] = new Enemy_Target(this, 653 - 506, 176, 180, false);
 			enemies[2] = new Enemy_Target(this, 670 - 506, 150, 180, false);
 			enemies[3] = new Enemy_Target(this, 358, 150, 180, false);
 			enemies[4] = new Enemy_Target(this, 1014 - 506+40, 150, 180, false);
-			walls[0] = makeWall_Rectangle(503 - 506, -100, 15, 500, true, true);
-			walls[1] = makeWall_Rectangle(665 - 506, -77, 15, 205, true, true);
-			walls[2] = makeWall_Rectangle(665 - 506, 172, 15, 205, true, true);
-			walls[3] = makeWall_Rectangle(825 - 506+40, -77, 15, 205, true, true);
-			walls[4] = makeWall_Rectangle(825 - 506+40, 172, 15, 205, true, true);
-			walls[5] = makeWall_Rectangle(1014 - 506+40, -77, 15, 205, true, true);
-			walls[6] = makeWall_Rectangle(1014 - 506+40, 172, 15, 205, true, true);
+			makeWall_Rectangle(503 - 506, -100, 15, 500, true, true);
+			makeWall_Rectangle(665 - 506, -77, 15, 205, true, true);
+			makeWall_Rectangle(665 - 506, 172, 15, 205, true, true);
+			makeWall_Rectangle(825 - 506+40, -77, 15, 205, true, true);
+			makeWall_Rectangle(825 - 506+40, 172, 15, 205, true, true);
+			makeWall_Rectangle(1014 - 506+40, -77, 15, 205, true, true);
+			makeWall_Rectangle(1014 - 506+40, 172, 15, 205, true, true);
 		}
 		if(levelNum == 22)
 		{
-			createWallRectangleValueArrays(5);
-			createWallRectangleValueArraysAll(5);
 			levelWidth = 632;
 			player.x = 25;
 			exitX = 582;
@@ -677,11 +441,11 @@ public final class Controller extends View
 			enemies[1] = new Enemy_Target(this, 1400 - 1017, 150, 180, false);
 			enemies[2] = new Enemy_Target(this, 1522 - 1017, 150, 180, false);
 			enemies[2].keyHolder = true;
-			walls[0] = makeWall_Rectangle(1014 - 1017, -100, 15, 500, true, true);
-			walls[1] = makeWall_Rectangle(1198 - 1017, -77, 15, 205, true, true);
-			walls[2] = makeWall_Rectangle(1198 - 1017, 172, 15, 205, true, true);
-			walls[3] = makeWall_Rectangle(1393 - 1017, -77, 15, 205, true, true);
-			walls[4] = makeWall_Rectangle(1393 - 1017, 172, 15, 205, true, true);
+			makeWall_Rectangle(1014 - 1017, -100, 15, 500, true, true);
+			makeWall_Rectangle(1198 - 1017, -77, 15, 205, true, true);
+			makeWall_Rectangle(1198 - 1017, 172, 15, 205, true, true);
+			makeWall_Rectangle(1393 - 1017, -77, 15, 205, true, true);
+			makeWall_Rectangle(1393 - 1017, 172, 15, 205, true, true);
 		}
 		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
 	}
@@ -728,16 +492,8 @@ public final class Controller extends View
 		Proj_Trackers = new Proj_Tracker[30];
 		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
 		powerUps = new PowerUp[30];
-		walls = new Wall_Rectangle[30];
-		wallCircles = new Wall_Circle[30];
-		wallRings = new Wall_Ring[30];
+		clearWallArrays();
 		powerUps = new PowerUp[30];
-		currentCircle = 0;
-		currentRectangle = 0; // RESETS CURRENT WALL INDEXES OF ARRAYS
-		currentCircleAll = 0;
-		currentRectangleAll = 0;
-		currentRing = 0;
-		currentPassage = 0;
 		for(int i = 0; i < tempEnemies; i++)
 		{
 			createEnemy(enemyData[i], i); // CREATES SAVED ENEMIES
@@ -753,16 +509,8 @@ public final class Controller extends View
 		Proj_Trackers = new Proj_Tracker[30];
 		Proj_Tracker_AOEs = new Proj_Tracker_AOE[30];
 		powerUps = new PowerUp[30];
-		walls = new Wall_Rectangle[30];
-		wallCircles = new Wall_Circle[30];
-		wallRings = new Wall_Ring[30];
+		clearWallArrays();
 		powerUps = new PowerUp[30];
-		currentCircle = 0;
-		currentRectangle = 0;
-		currentCircleAll = 0;
-		currentRectangleAll = 0;
-		currentRing = 0;
-		currentPassage = 0;
 	}
 	/**
 	 * fixes hp bar so it is on screen
@@ -1128,26 +876,17 @@ public final class Controller extends View
 			{
 				if(playerOnSquare(40, 72, 17, 36)) loadLevelSection(150);
 			}
-			for(int i = 0; i < walls.length; i++)
+			for(int i = 0; i < wallRects.size(); i++)
 			{
-				if(walls[i] != null)
-				{
-					walls[i].frameCall();
-				}
+					wallRects.get(i).frameCall();
 			}
-			for(int i = 0; i < wallCircles.length; i++)
+			for(int i = 0; i < wallCircles.size(); i++)
 			{
-				if(wallCircles[i] != null)
-				{
-					wallCircles[i].frameCall();
-				}
+					wallCircles.get(i).frameCall();
 			}
-			for(int i = 0; i < wallRings.length; i++)
+			for(int i = 0; i < wallRings.size(); i++)
 			{
-				if(wallRings[i] != null)
-				{
-					wallRings[i].frameCall();
-				}
+					wallRings.get(i).frameCall();
 			}
 			invalidate();
 		}
@@ -2268,7 +2007,7 @@ public final class Controller extends View
 	 * @param y2 second y
 	 * @return whether it could travel between points
 	 */
-	protected boolean checkObstructionsPointTall(float x1, float y1, float x2, float y2)
+	protected boolean checkObstructionsPoint(float x1, float y1, float x2, float y2, boolean objectOnGround)
 	{
 		boolean hitBack = false;
 		float m1 = (y2 - y1) / (x2 - x1);
@@ -2285,147 +2024,20 @@ public final class Controller extends View
 		{
 			hitBack = true;
 		}
-		for(int i = 0; i < currentCircle; i++)
+		for(int i = 0; i < wallCircleValues.size(); i++)
 		{
-			if(!hitBack)
+			int [] values = wallCircleValues.get(i);
+			if(values[3]==1||objectOnGround) // OBJECT IS TALL OR OBJECT ON GROUND
 			{
-				circM = -(1 / m1);
-				circB = oCircY[i] - (circM * oCircX[i]);
-				tempX = (circB - b1) / (m1 - circM);
-				if(x1 < tempX && tempX < x2)
+				if(!hitBack)
 				{
-					tempY = (circM * tempX) + circB;
-					if(Math.sqrt(Math.pow(tempX - oCircX[i], 2) + Math.pow((tempY - oCircY[i]) / oCircRatio[i], 2)) < oCircRadius[i])
+					circM = -(1 / m1);
+					circB = values[1] - (circM * values[0]);
+					tempX = (circB - b1) / (m1 - circM);
+					if(x1 < tempX && tempX < x2)
 					{
-						hitBack = true;
-					}
-				}
-			}
-		}
-		if(x1 > x2)
-		{
-			tempX = x1;
-			x1 = x2;
-			x2 = tempX;
-		}
-		if(y1 > y2)
-		{
-			tempY = y1;
-			y1 = y2;
-			y2 = tempY;
-		}
-		for(int i = 0; i < currentRectangle; i++)
-		{
-			if(!hitBack)
-			{
-				//Right and left Checks
-				if(x1 < oRectX1[i] && oRectX1[i] < x2)
-				{
-					tempY = (m1 * oRectX1[i]) + b1;
-					if(oRectY1[i] < tempY && tempY < oRectY2[i])
-					{
-						hitBack = true;
-					}
-				}
-				if(x1 < oRectX2[i] && oRectX2[i] < x2)
-				{
-					tempY = (m1 * oRectX2[i]) + b1;
-					if(oRectY1[i] < tempY && tempY < oRectY2[i])
-					{
-						hitBack = true;
-					}
-				}
-				//Top and Bottom checks
-				if(y1 < oRectY1[i] && oRectY1[i] < y2)
-				{
-					tempX = (oRectY1[i] - b1) / m1;
-					if(oRectX1[i] < tempX && tempX < oRectX2[i])
-					{
-						hitBack = true;
-					}
-				}
-				if(y1 < oRectY2[i] && oRectY2[i] < y2)
-				{
-					tempX = (oRectY1[i] - b1) / m1;
-					if(oRectX1[i] < tempX && tempX < oRectX2[i])
-					{
-						hitBack = true;
-					}
-				}
-			}
-		}
-		for(int i = 0; i < currentRing; i++)
-		{
-			if(!hitBack)
-			{
-				double a = Math.pow(m1, 2) + 1;
-				double b = 2 * ((m1 * b1) - (m1 * oRingY[i]) - (oRingX[i]));
-				double c = Math.pow(b1, 2) + (Math.pow(oRingY[i], 2)) - (2 * b1 * oRingY[i]) + Math.pow(oRingX[i], 2) - Math.pow(140, 2);
-				double temp = (-4 * a * c) + Math.pow(b, 2);
-				if(temp >= 0)
-				{
-					double change = Math.sqrt(temp);
-					double pointX1 = (-b + change) / (2 * a);
-					double pointX2 = (-b - change) / (2 * a);
-					if(x1 < pointX1 && pointX1 < x2)
-					{
-						double pointY = (m1 * pointX1) + b1;
-						if(!checkHitBackPass(pointX1, pointY))
-						{
-							hitBack = true;
-						}
-					}
-					if(x1 < pointX2 && pointX2 < x2)
-					{
-						double pointY = (m1 * pointX2) + b1;
-						if(!checkHitBackPass(pointX2, pointY))
-						{
-							hitBack = true;
-						}
-					}
-				}
-			}
-		}
-		return hitBack;
-	}
-	/**
-	 * checks whether a human could travel between two points
-	 * @param x1 first x
-	 * @param y1 first y
-	 * @param x2 second x
-	 * @param y2 second y
-	 * @return whether the human could travel between points
-	 */
-	protected boolean checkObstructionsPointAll(float x1, float y1, float x2, float y2)
-	{
-		boolean hitBack = false;
-		float m1 = (y2 - y1) / (x2 - x1);
-		float b1 = y1 - (m1 * x1);
-		float circM;
-		float circB;
-		float tempX;
-		float tempY;
-		if(x1 < 0 || x1 > levelWidth || y1 < 0 || y1 > levelHeight)
-		{
-			hitBack = true;
-		}
-		if(x2 < 0 || x2 > levelWidth || y2 < 0 || y2 > levelHeight)
-		{
-			hitBack = true;
-		}
-		for(int i = 0; i < currentCircleAll; i++)
-		{
-			if(!hitBack)
-			{
-				circM = -(1 / m1);
-				circB = oCircYAll[i] - (circM * oCircXAll[i]);
-				tempX = (circB - b1) / (m1 - circM);
-				if(x1 < tempX && tempX < x2)
-				{
-					tempY = (circM * tempX) + circB;
-					if(Math.sqrt(Math.pow(tempX - oCircXAll[i], 2) + Math.pow((tempY - oCircYAll[i]) / oCircRatioAll[i], 2)) < oCircRadiusAll[i])
-					{
-						if(!checkHitBackPass(tempX, tempY))
+						tempY = (circM * tempX) + circB;
+						if(Math.sqrt(Math.pow(tempX - values[0], 2) + Math.pow((tempY - values[1]), 2)) < values[2])
 						{
 							hitBack = true;
 						}
@@ -2445,94 +2057,81 @@ public final class Controller extends View
 			y1 = y2;
 			y2 = tempY;
 		}
-		for(int i = 0; i < currentRectangleAll; i++)
+		for(int i = 0; i < wallRectValues.size(); i++)
 		{
-			if(!hitBack)
+			int [] values = wallRectValues.get(i);
+			if(values[4]==1||objectOnGround) // OBJECT IS TALL
 			{
-				//Right and left Checks
-				if(x1 < oRectX1All[i] && oRectX1All[i] < x2)
+				if(!hitBack)
 				{
-					tempY = (m1 * oRectX1All[i]) + b1;
-					if(oRectY1All[i] < tempY && tempY < oRectY2All[i])
+					//Right and left Checks
+					if(x1 < values[0] && values[0] < x2)
 					{
-						if(!checkHitBackPass(oRectX1All[i], tempY))
+						tempY = (m1 * values[0]) + b1;
+						if(values[2] < tempY && tempY < values[3])
 						{
 							hitBack = true;
 						}
 					}
-				}
-				if(!hitBack)
-				{
-					if(x1 < oRectX2All[i] && oRectX2All[i] < x2)
+					if(x1 < values[1] && values[1] < x2)
 					{
-						tempY = (m1 * oRectX2All[i]) + b1;
-						if(oRectY1All[i] < tempY && tempY < oRectY2All[i])
+						tempY = (m1 * values[1]) + b1;
+						if(values[2] < tempY && tempY < values[3])
 						{
-							if(!checkHitBackPass(oRectX2All[i], tempY))
-							{
-								hitBack = true;
-							}
+							hitBack = true;
 						}
 					}
-				}
-				//Top and Bottom checks
-				if(!hitBack)
-				{
-					if(y1 < oRectY1All[i] && oRectY1All[i] < y2)
+					//Top and Bottom checks
+					if(y1 < values[2] && values[2] < y2)
 					{
-						tempX = (oRectY1All[i] - b1) / m1;
-						if(oRectX1All[i] < tempX && tempX < oRectX2All[i])
+						tempX = (values[2] - b1) / m1;
+						if(values[0] < tempX && tempX < values[1])
 						{
-							if(!checkHitBackPass(tempX, oRectY1All[i]))
-							{
-								hitBack = true;
-							}
+							hitBack = true;
 						}
 					}
-				}
-				if(!hitBack)
-				{
-					if(y1 < oRectY2All[i] && oRectY2All[i] < y2)
+					if(y1 < values[3] && values[3] < y2)
 					{
-						tempX = (oRectY2All[i] - b1) / m1;
-						if(oRectX1All[i] < tempX && tempX < oRectX2All[i])
+						tempX = (values[2] - b1) / m1;
+						if(values[0] < tempX && tempX < values[1])
 						{
-							if(!checkHitBackPass(tempX, oRectY2All[i]))
-							{
-								hitBack = true;
-							}
+							hitBack = true;
 						}
 					}
 				}
 			}
 		}
-		for(int i = 0; i < currentRingAll; i++)
+		for(int i = 0; i < wallRingValues.size(); i++)
 		{
-			if(!hitBack)
+			int [] values = wallRingValues.get(i);
+			if(values[4]==1||objectOnGround) // OBJECT IS TALL
 			{
-				double a = Math.pow(m1, 2) + 1;
-				double b = 2 * ((m1 * b1) - (m1 * oRingYAll[i]) - (oRingXAll[i]));
-				double c = Math.pow(b1, 2) + (Math.pow(oRingYAll[i], 2)) - (2 * b1 * oRingYAll[i]) + Math.pow(oRingXAll[i], 2) - Math.pow(140, 2);
-				double temp = (-4 * a * c) + Math.pow(b, 2);
-				if(temp >= 0)
+				if(!hitBack)
 				{
-					double change = Math.sqrt(temp);
-					double pointX1 = (-b + change) / (2 * a);
-					double pointX2 = (-b - change) / (2 * a);
-					if(x1 < pointX1 && pointX1 < x2)
+					double a = Math.pow(m1, 2) + 1;
+					double b = 2 * ((m1 * b1) - (m1 * values[1]) - (values[0]));
+					double c = Math.pow(b1, 2) + (Math.pow(values[1], 2)) - (2 * b1 * values[1]) + Math.pow(values[0], 2) - Math.pow(140, 2);
+					double temp = (-4 * a * c) + Math.pow(b, 2);
+					if(temp >= 0)
 					{
-						double pointY = (m1 * pointX1) + b1;
-						if(!checkHitBackPass(pointX1, pointY))
+						double change = Math.sqrt(temp);
+						double pointX1 = (-b + change) / (2 * a);
+						double pointX2 = (-b - change) / (2 * a);
+						if(x1 < pointX1 && pointX1 < x2)
 						{
-							hitBack = true;
+							double pointY = (m1 * pointX1) + b1;
+							if(!checkHitBackPass(pointX1, pointY, objectOnGround))
+							{
+								hitBack = true;
+							}
 						}
-					}
-					if(x1 < pointX2 && pointX2 < x2)
-					{
-						double pointY = (m1 * pointX2) + b1;
-						if(!checkHitBackPass(pointX2, pointY))
+						if(x1 < pointX2 && pointX2 < x2)
 						{
-							hitBack = true;
+							double pointY = (m1 * pointX2) + b1;
+							if(!checkHitBackPass(pointX2, pointY, objectOnGround))
+							{
+								hitBack = true;
+							}
 						}
 					}
 				}
@@ -2560,25 +2159,11 @@ public final class Controller extends View
 	 * @param distance distance to travel
 	 * @return whether it could travel along the given line
 	 */
-	protected boolean checkObstructionsTall(double x1, double y1, double rads, int distance)
+	protected boolean checkObstructions(double x1, double y1, double rads, int distance, boolean objectOnGround)
 	{
 		double x2 = x1 + (Math.cos(rads) * distance);
 		double y2 = y1 + (Math.sin(rads) * distance);
-		return checkObstructionsPointTall((float) x1, (float) y1, (float) x2, (float) y2);
-	}
-	/**
-	 * checks whether a human could travel along a given line
-	 * @param x1 start x
-	 * @param y1 start y
-	 * @param rads direction to travel
-	 * @param distance distance to travel
-	 * @return whether the human could travel along the given line
-	 */
-	protected boolean checkObstructionsAll(double x1, double y1, double rads, int distance)
-	{
-		double x2 = x1 + (Math.cos(rads) * distance);
-		double y2 = y1 + (Math.sin(rads) * distance);
-		return checkObstructionsPointAll((float) x1, (float) y1, (float) x2, (float) y2);
+		return checkObstructionsPoint((float) x1, (float) y1, (float) x2, (float) y2, objectOnGround);
 	}
 	/**
 	 * checks whether a given point hits any obstacles
@@ -2586,7 +2171,7 @@ public final class Controller extends View
 	 * @param Y y point
 	 * @return whether it hits
 	 */
-	protected boolean checkHitBack(double X, double Y)
+	protected boolean checkHitBack(double X, double Y, boolean objectOnGround)
 	{
 		boolean hitBack = false;
 		if(X < 0 || X > levelWidth || Y < 0 || Y > levelHeight)
@@ -2595,13 +2180,34 @@ public final class Controller extends View
 		}
 		if(hitBack == false)
 		{
-			for(int i = 0; i < currentRectangle; i++)
+			for(int i = 0; i < wallRectValues.size(); i++)
 			{
-				if(hitBack == false)
+				int [] values = wallRectValues.get(i);
+				if(values[4]==1||objectOnGround) // OBJECT IS TALL
 				{
-					if(X > oRectX1[i] && X < oRectX2[i])
+					if(hitBack == false)
 					{
-						if(Y > oRectY1[i] && Y < oRectY2[i])
+						if(X > values[0] && X < values[1])
+						{
+							if(Y > values[2] && Y < values[3])
+							{
+								hitBack = true;
+							}
+						}
+					}
+				}
+			}
+		}
+		if(hitBack == false)
+		{
+			for(int i = 0; i < wallCircleValues.size(); i++)
+			{
+				int [] values = wallCircleValues.get(i);
+				if(values[3]==1||objectOnGround) // OBJECT IS TALL
+				{
+					if(hitBack == false)
+					{
+						if(Math.pow(X - values[1], 2) + Math.pow((Y - values[2]), 2) < Math.pow(values[3], 2))
 						{
 							hitBack = true;
 						}
@@ -2611,34 +2217,25 @@ public final class Controller extends View
 		}
 		if(hitBack == false)
 		{
-			for(int i = 0; i < currentCircle; i++)
+			for(int i = 0; i < wallRingValues.size(); i++)
 			{
-				if(hitBack == false)
+				int [] values = wallRingValues.get(i);
+				if(values[4]==1||objectOnGround) // OBJECT IS TALL
 				{
-					if(Math.pow(X - oCircX[i], 2) + Math.pow((Y - oCircY[i]) / oCircRatio[i], 2) < Math.pow(oCircRadius[i], 2))
+					if(hitBack == false)
 					{
-						hitBack = true;
-					}
-				}
-			}
-		}
-		if(hitBack == false)
-		{
-			for(int i = 0; i < currentRing; i++)
-			{
-				if(hitBack == false)
-				{
-					double dist = Math.pow(X - oRingX[i], 2) + Math.pow((Y - oRingY[i]), 2);
-					if(dist < Math.pow(oRingOuter[i], 2) && dist > Math.pow(oRingInner[i], 2))
-					{
-						hitBack = true;
+						double dist = Math.pow(X - values[0], 2) + Math.pow((Y - values[1]), 2);
+						if(dist < Math.pow(values[3], 2) && dist > Math.pow(values[2], 2))
+						{
+							hitBack = true;
+						}
 					}
 				}
 			}
 		}
 		if(hitBack)
 		{
-			hitBack = !checkHitBackPass(X, Y);
+			hitBack = !checkHitBackPass(X, Y, objectOnGround);
 		}
 		return hitBack;
 	}
@@ -2648,18 +2245,22 @@ public final class Controller extends View
 	 * @param Y y point
 	 * @return whether it hits
 	 */
-	protected boolean checkHitBackPass(double X, double Y)
+	protected boolean checkHitBackPass(double X, double Y, boolean objectOnGround)
 	{
 		boolean hitBack = false;
-		for(int i = 0; i < currentPassage; i++)
+		for(int i = 0; i < wallPassageValues.size(); i++)
 		{
 			if(hitBack == false)
 			{
-				if(X > oPassageX1[i] && X < oPassageX2[i])
+				int [] values = wallRingValues.get(i); // valeus[4] is true when passage is for lower and upper area
+				if(values[4]==1||!objectOnGround) // OBJECT IS TALL
 				{
-					if(Y > oPassageY1[i] && Y < oPassageY2[i])
+					if(X > values[0] && X < values[1])
 					{
-						hitBack = true;
+						if(Y > values[2] && Y < values[3])
+						{
+							hitBack = true;
+						}
 					}
 				}
 			}
@@ -2801,13 +2402,10 @@ public final class Controller extends View
 	 * @param oRectY1 top y
 	 * @param oRectY2 bottom y
 	 */
-	protected void setORectAll(int oRectX1, int oRectX2, int oRectY1, int oRectY2)
+	protected void setORect(int left, int right, int top, int bottom, int tall)
 	{
-		oRectX1All[currentRectangleAll] = oRectX1;
-		oRectX2All[currentRectangleAll] = oRectX2;
-		oRectY1All[currentRectangleAll] = oRectY1;
-		oRectY2All[currentRectangleAll] = oRectY2;
-		currentRectangleAll++;
+		int [] vals = {left, right, top, bottom, tall};
+		wallRectValues.add(vals);
 	}
 	/**
 	 * sets values for an index of all passage wall value arrays
@@ -2817,13 +2415,10 @@ public final class Controller extends View
 	 * @param oRectY1 top y
 	 * @param oRectY2 bottom y
 	 */
-	protected void setOPassage(int oRectX1, int oRectX2, int oRectY1, int oRectY2)
+	protected void setOPassage(int left, int right, int top, int bottom, int fullyOpen)
 	{
-		oPassageX1[currentPassage] = oRectX1;
-		oPassageX2[currentPassage] = oRectX2;
-		oPassageY1[currentPassage] = oRectY1;
-		oPassageY2[currentPassage] = oRectY2;
-		currentPassage++;
+		int [] vals = {left, right, top, bottom, fullyOpen};
+		wallPassageValues.add(vals);
 	}
 	/**
 	 * sets values for an index of all tall circle wall value arrays
@@ -2833,13 +2428,10 @@ public final class Controller extends View
 	 * @param oCircRadius radius
 	 * @param oCircRatio ratio between width and height
 	 */
-	protected void setOCircAll(int oCircX, int oCircY, int oCircRadius, double oCircRatio)
+	protected void setOCirc(int xVal, int yVal, int radiusVal, int tall)
 	{
-		oCircXAll[currentCircleAll] = oCircX;
-		oCircYAll[currentCircleAll] = oCircY;
-		oCircRadiusAll[currentCircleAll] = oCircRadius;
-		oCircRatioAll[currentCircleAll] = oCircRatio;
-		currentCircleAll++;
+		int [] vals = {xVal, yVal, radiusVal, tall};
+		wallCircleValues.add(vals);
 	}
 	/**
 	 * sets values for an index of all ring wall value arrays
@@ -2849,61 +2441,10 @@ public final class Controller extends View
 	 * @param oRingIn inner ring radius
 	 * @param oRingOut outer ring radius
 	 */
-	protected void setORing(int oCircX, int oCircY, int oRingIn, int oRingOut)
+	protected void setORing(int xVal, int yVal, int radiusInVal, int radiusOutVal, int tall)
 	{
-		oRingX[currentRing] = oCircX;
-		oRingY[currentRing] = oCircY;
-		oRingInner[currentRing] = oRingIn;
-		oRingOuter[currentRing] = oRingOut;
-		currentRing++;
-	}
-	/**
-	 * sets values for an index of all ring wall value arrays
-	 * @param i index to set values to
-	 * @param oCircX x position
-	 * @param oCircY y position
-	 * @param oRingIn inner ring radius
-	 * @param oRingOut outer ring radius
-	 */
-	protected void setORingAll(int oCircX, int oCircY, int oRingIn, int oRingOut)
-	{
-		oRingXAll[currentRingAll] = oCircX;
-		oRingYAll[currentRingAll] = oCircY;
-		oRingInnerAll[currentRingAll] = oRingIn;
-		oRingOuterAll[currentRingAll] = oRingOut;
-		currentRingAll++;
-	}
-	/**
-	 * sets values for an index of all rectangle wall value arrays
-	 * @param i index to set values to
-	 * @param oRectX1 left x
-	 * @param oRectX2 right x
-	 * @param oRectY1 top y
-	 * @param oRectY2 bottom y
-	 */
-	protected void setORect(int oRectX1, int oRectX2, int oRectY1, int oRectY2)
-	{
-		this.oRectX1[currentRectangle] = oRectX1;
-		this.oRectX2[currentRectangle] = oRectX2;
-		this.oRectY1[currentRectangle] = oRectY1;
-		this.oRectY2[currentRectangle] = oRectY2;
-		currentRectangle++;
-	}
-	/**
-	 * sets values for an index of all circle wall value arrays
-	 * @param i index to set values to
-	 * @param oCircX x position
-	 * @param oCircY y position
-	 * @param oCircRadius radius
-	 * @param oCircRatio ratio between width and height
-	 */
-	protected void setOCirc(int oCircX, int oCircY, int oCircRadius, double oCircRatio)
-	{
-		this.oCircX[currentCircle] = oCircX;
-		this.oCircY[currentCircle] = oCircY;
-		this.oCircRadius[currentCircle] = oCircRadius;
-		this.oCircRatio[currentCircle] = oCircRatio;
-		currentCircle++;
+		int [] vals = {xVal, yVal, radiusInVal, radiusOutVal, tall};
+		wallRingValues.add(vals);
 	}
 	/**
 	 * Replaces canvas.drawRect(int, int, int, int, Paint) and auto scales

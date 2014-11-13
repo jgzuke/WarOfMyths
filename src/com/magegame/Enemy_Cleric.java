@@ -132,7 +132,7 @@ public final class Enemy_Cleric extends Enemy_Muggle
 			{
 				if(distances[j]<distances[lowest])  lowest = j;
 			}
-			if(!control.checkObstructionsPointAll((float)x, (float)y, (float)control.enemies[lowest].y, (float)control.enemies[lowest].y))
+			if(!control.checkObstructionsPoint((float)x, (float)y, (float)control.enemies[lowest].y, (float)control.enemies[lowest].y, true))
 			{
 				finished = true;
 			} else

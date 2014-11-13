@@ -29,10 +29,12 @@ public class Wall_Ring extends Wall
 		oCRIn = OCRIn;
 		oCROut = OCROut;
 		control = creator;
-		control.setORingAll(OCX, OCY, oCRIn, oCROut);
 		if(tall)
 		{
-			control.setORing(OCX, OCY, oCRIn, oCROut);
+			control.setORing(OCX, OCY, oCRIn, oCROut, 1);
+		} else
+		{
+			control.setORing(OCX, OCY, oCRIn, oCROut, 0);
 		}
 		oCRIn -= humanWidth;
 		oCROut += humanWidth;
@@ -54,7 +56,7 @@ public class Wall_Ring extends Wall
 			double dist = Math.pow(xdif, 2) + Math.pow(ydif, 2);
 			if(dist < oCRSOut&&dist>oCRSIn)
 			{
-				if(!control.checkHitBackPass(curX, curY))
+				if(!control.checkHitBackPass(curX, curY, true))
 				{
 					if(dist<oCRSAve)
 					{
@@ -79,7 +81,7 @@ public class Wall_Ring extends Wall
 				dist = Math.pow(xdif, 2) + Math.pow(ydif, 2);
 				if(dist < oCRSOut&&dist>oCRSIn)
 				{
-					if(!control.checkHitBackPass(curX, curY))
+					if(!control.checkHitBackPass(curX, curY, true))
 					{
 						if(dist<oCRSAve)
 						{

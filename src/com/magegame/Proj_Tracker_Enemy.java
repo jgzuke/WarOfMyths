@@ -52,7 +52,7 @@ public final class Proj_Tracker_Enemy extends Proj_Tracker
 	protected void frameCall()
 	{
 		super.frameCall();
-		if(control.checkHitBack(x, y) && !deleted)
+		if(control.checkHitBack(x, y, false) && !deleted)
 		{
 			x -= xForward;
 			y -= yForward;

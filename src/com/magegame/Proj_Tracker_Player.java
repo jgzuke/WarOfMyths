@@ -29,13 +29,13 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 		yForward = Math.sin(Rotation/r2d) * Speed;
 		x = X;
 		y = Y;
-		if(control.checkHitBack(x, y))
+		if(control.checkHitBack(x, y, false))
 		{
 			explodeBack();
 		}
 		x +=(xForward);
 		y +=(yForward);
-		if(control.checkHitBack(x, y) && !deleted)
+		if(control.checkHitBack(x, y, false) && !deleted)
 		{
 			explodeBack();
 		}
@@ -58,7 +58,7 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 	protected void frameCall()
 	{
 		super.frameCall();
-		if(control.checkHitBack(x, y) || control.checkHitBack(x-(xForward/2), y-(yForward/2)) && !deleted)
+		if(control.checkHitBack(x, y, false) || control.checkHitBack(x-(xForward/2), y-(yForward/2), false) && !deleted)
 		{
 			explodeBack();
 		}

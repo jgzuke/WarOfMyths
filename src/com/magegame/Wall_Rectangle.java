@@ -37,10 +37,12 @@ public class Wall_Rectangle extends Wall
 		x = (oRX1 + oRX2) / 2;
 		y = (oRY1 + oRY2) / 2;
 		control = creator;
-		control.setORectAll(oRX1, oRX2, oRY1, oRY2);
 		if(tall)
 		{
-			control.setORect(oRX1, oRX2, oRY1, oRY2);
+			control.setORect(oRX1, oRX2, oRY1, oRY2, 1);
+		} else
+		{
+			control.setORect(oRX1, oRX2, oRY1, oRY2, 0);
 		}
 		oRX1Player = oRX1-humanWidth;
 		oRX2Player = oRX2+humanWidth;
@@ -106,7 +108,7 @@ public class Wall_Rectangle extends Wall
 			{
 				if(control.enemies[i].x > oRX1 && control.enemies[i].x < oRX2 && control.enemies[i].y > oRY1 && control.enemies[i].y < oRY2)
 				{
-					if(!control.checkHitBackPass(control.enemies[i].x, control.enemies[i].y))
+					if(!control.checkHitBackPass(control.enemies[i].x, control.enemies[i].y, true))
 					{
 						double holdX;
 						double holdY;

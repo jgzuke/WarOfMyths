@@ -197,7 +197,7 @@ abstract public class Enemy extends Human
 		rads = Math.atan2(-(control.player.y - y), -(control.player.x - x));
 		rotation = rads * r2d;
 		int distance = (int)checkDistance(x, y, control.player.x,  control.player.y);
-		if(control.checkObstructionsAll(x, y, rads, distance))
+		if(control.checkObstructions(x, y, rads, distance, true))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -206,7 +206,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(x, y, rads, 40))
+				if(!control.checkObstructions(x, y, rads, 40, true))
 				{
 					runPathChooseCounter = 180;
 				}
@@ -214,7 +214,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!control.checkObstructionsAll(x, y,  rads, 40))
+					if(!control.checkObstructions(x, y,  rads, 40, true))
 					{
 						runPathChooseCounter = 180;
 					}
@@ -237,7 +237,7 @@ abstract public class Enemy extends Human
 	protected void checkLOS()
 	{
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
-		if(!control.checkObstructionsPointTall((float)x, (float)y, (float)control.player.x, (float)control.player.y))
+		if(!control.checkObstructionsPoint((float)x, (float)y, (float)control.player.x, (float)control.player.y, false))
 		{
 			LOS = true;
 		}
@@ -258,7 +258,7 @@ abstract public class Enemy extends Human
 			distanceFound = checkDistance((int) Math.abs(danger[0][dangerCheckCounter] + (danger[2][dangerCheckCounter] / 10 * distanceFound)), (int) Math.abs(danger[1][dangerCheckCounter] + (danger[3][dangerCheckCounter] / 10 * distanceFound)), x, y);
 			if(distanceFound < 20)
 			{
-				if(!control.checkObstructionsPointTall((float)danger[0][dangerCheckCounter], (float)danger[1][dangerCheckCounter], (float)x, (float)y))
+				if(!control.checkObstructionsPoint((float)danger[0][dangerCheckCounter], (float)danger[1][dangerCheckCounter], (float)x, (float)y, false))
 				{
 					pathedToHit[pathedToHitLength] = dangerCheckCounter;
 					pathedToHitLength++;         
@@ -371,7 +371,7 @@ abstract public class Enemy extends Human
 		}
 		rads = Math.atan2(dY - y, dX - x);
 		rotation = rads * r2d;
-		if(control.checkObstructionsAll(x, y, rads, 32))
+		if(control.checkObstructions(x, y, rads, 32, true))
 		{
 			if(!runTowardDistanceGood(dX, dY, 20))
 			{
@@ -409,9 +409,9 @@ abstract public class Enemy extends Human
 			runPathChooseCounter += 10;
 			rotation = runPathChooseRotationStore + runPathChooseCounter;
 			rads = rotation / r2d;
-			if(!control.checkObstructionsAll(x, y,rads, distance))
+			if(!control.checkObstructions(x, y,rads, distance, true))
 			{
-				if(!control.checkObstructionsPointAll((float)towardsX, (float)towardsY, (float)(x+Math.cos(rads)*distance), (float)(y+Math.sin(rads)*distance)))
+				if(!control.checkObstructionsPoint((float)towardsX, (float)towardsY, (float)(x+Math.cos(rads)*distance), (float)(y+Math.sin(rads)*distance), true))
 				{
 					runPathChooseCounter = 180;
 					goodMove = true;
@@ -421,9 +421,9 @@ abstract public class Enemy extends Human
 			{
 				rotation = runPathChooseRotationStore - runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(x, y,rads, distance))
+				if(!control.checkObstructions(x, y,rads, distance, true))
 				{
-					if(!control.checkObstructionsPointAll((float)towardsX, (float)towardsY, (float)(x+Math.cos(rads)*distance), (float)(y+Math.sin(rads)*distance)))
+					if(!control.checkObstructionsPoint((float)towardsX, (float)towardsY, (float)(x+Math.cos(rads)*distance), (float)(y+Math.sin(rads)*distance), true))
 					{
 						runPathChooseCounter = 180;
 						goodMove = true;
@@ -450,7 +450,7 @@ abstract public class Enemy extends Human
 			runPathChooseCounter += 10;
 			rotation = runPathChooseRotationStore + runPathChooseCounter;
 			rads = rotation / r2d;
-			if(!control.checkObstructionsAll(x, y,rads, 80))
+			if(!control.checkObstructions(x, y,rads, 80, true))
 			{
 				double newX = (x+Math.cos(rads)*80);
 				double newY = (y+Math.sin(rads)*80);
@@ -463,7 +463,7 @@ abstract public class Enemy extends Human
 			{
 				rotation = runPathChooseRotationStore - runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(x, y,rads, 80))
+				if(!control.checkObstructions(x, y,rads, 80, true))
 				{
 					float newX = (float)(x+Math.cos(rads)*80);
 					float newY = (float)(y+Math.sin(rads)*80);
@@ -498,11 +498,11 @@ abstract public class Enemy extends Human
 			runPathChooseCounter += 10;
 			testRotation = runPathChooseRotationStore + runPathChooseCounter;
 			testRads = testRotation / r2d;
-			if(!control.checkObstructionsAll(newX, newY,testRads, 80))
+			if(!control.checkObstructions(newX, newY,testRads, 80, true))
 			{
 				float endX = (float)(newX+Math.cos(testRads)*80);
 				float endY = (float)(newY+Math.sin(testRads)*80);
-				if(!control.checkObstructionsPointAll((float)towardsX, (float)towardsY, endX, endY))
+				if(!control.checkObstructionsPoint((float)towardsX, (float)towardsY, endX, endY, true))
 				{
 					runPathChooseCounter = 180;
 					goodMove = true;
@@ -512,11 +512,11 @@ abstract public class Enemy extends Human
 			{
 				testRotation = runPathChooseRotationStore - runPathChooseCounter;
 				testRads = testRotation / r2d;
-				if(!control.checkObstructionsAll(newX, newY,testRads, 80))
+				if(!control.checkObstructions(newX, newY,testRads, 80, true))
 				{
 					float endX = (float)(newX+Math.cos(testRads)*80);
 					float endY = (float)(newY+Math.sin(testRads)*80);
-					if(!control.checkObstructionsPointAll((float)towardsX, (float)towardsY, endX, endY))
+					if(!control.checkObstructionsPoint((float)towardsX, (float)towardsY, endX, endY, true))
 					{
 						runPathChooseCounter = 180;
 						goodMove = true;
@@ -534,7 +534,7 @@ abstract public class Enemy extends Human
 		boolean canMove = false;
 		rotation = control.getRandomInt(360);
 		rads = rotation / r2d;
-		if(control.checkObstructionsAll(x, y,rads, (int)(speedCur*20)))
+		if(control.checkObstructions(x, y,rads, (int)(speedCur*20), true))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -543,7 +543,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(x, y,rads, (int)(speedCur*20)))
+				if(!control.checkObstructions(x, y,rads, (int)(speedCur*20), true))
 				{
 					runPathChooseCounter = 180;
 					canMove = true;
@@ -552,7 +552,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!control.checkObstructionsAll(x, y,rads, (int)(speedCur*20)))
+					if(!control.checkObstructions(x, y,rads, (int)(speedCur*20), true))
 					{
 						runPathChooseCounter = 180;
 						canMove = true;
@@ -560,7 +560,7 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		if(control.checkObstructionsAll(x, y,rads, (int)(speedCur*10)))
+		if(control.checkObstructions(x, y,rads, (int)(speedCur*10), true))
 		{
 			int runPathChooseCounter = 0;
 			double runPathChooseRotationStore = rotation;
@@ -569,7 +569,7 @@ abstract public class Enemy extends Human
 				runPathChooseCounter += 10;
 				rotation = runPathChooseRotationStore + runPathChooseCounter;
 				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(x, y,rads, (int)(speedCur*10)))
+				if(!control.checkObstructions(x, y,rads, (int)(speedCur*10), true))
 				{
 					runPathChooseCounter = 180;
 				}
@@ -577,7 +577,7 @@ abstract public class Enemy extends Human
 				{
 					rotation = runPathChooseRotationStore - runPathChooseCounter;
 					rads = rotation / r2d;
-					if(!control.checkObstructionsAll(x, y,rads, (int)(speedCur*10)))
+					if(!control.checkObstructions(x, y,rads, (int)(speedCur*10), true))
 					{
 						runPathChooseCounter = 180;
 					}

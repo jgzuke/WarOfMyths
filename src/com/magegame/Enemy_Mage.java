@@ -298,7 +298,7 @@ public final class Enemy_Mage extends Enemy
 		while(areaProtectedRotation < 360)
 		{
 			areaProtectedRads = areaProtectedRotation / r2d;
-			if(control.checkObstructionsAll(X, Y, areaProtectedRads, 50))
+			if(control.checkObstructions(X, Y, areaProtectedRads, 50, false))
 			{
 				areaProtectedCount++;
 			}
@@ -318,7 +318,7 @@ public final class Enemy_Mage extends Enemy
 	{
 		rads = Math.atan2(-(control.player.y - y), -(control.player.x - x));
 		rotation = rads * r2d;
-		if(!control.checkObstructionsAll(x, y, areaProtectedRads, 42))
+		if(!control.checkObstructions(x, y, areaProtectedRads, 42, true))
 		{
 			roll();
 		}
@@ -331,7 +331,7 @@ public final class Enemy_Mage extends Enemy
 				rollPathChooseCounter += 10;
 				rotation = rollPathChooseRotationStore + rollPathChooseCounter;
 				rads = rotation / r2d;
-				if(!control.checkObstructionsAll(x, y, areaProtectedRads, 42))
+				if(!control.checkObstructions(x, y, areaProtectedRads, 42, true))
 				{
 					roll();
 					rollPathChooseCounter = 180;
@@ -340,7 +340,7 @@ public final class Enemy_Mage extends Enemy
 				{
 					rotation = rollPathChooseRotationStore - rollPathChooseCounter;
 					rads = rotation / r2d;
-					if(!control.checkObstructionsAll(x, y, areaProtectedRads, 42))
+					if(!control.checkObstructions(x, y, areaProtectedRads, 42, true))
 					{
 						roll();
 						rollPathChooseCounter = 180;
@@ -367,10 +367,10 @@ public final class Enemy_Mage extends Enemy
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
 		rotation = rads * r2d;
 		rads = (rotation + 90) / r2d;
-		if(control.checkObstructionsAll(x, y, areaProtectedRads, 42))
+		if(control.checkObstructions(x, y, areaProtectedRads, 42, true))
 		{
 			rads = (rotation - 90) / r2d;
-			if(control.checkObstructionsAll(x, y, areaProtectedRads, 42))
+			if(control.checkObstructions(x, y, areaProtectedRads, 42, true))
 			{
 				rolledSideways = false;
 			}
@@ -383,7 +383,7 @@ public final class Enemy_Mage extends Enemy
 		} else
 		{
 			rads = (rotation - 90) / r2d;
-			if(control.checkObstructionsAll(x, y, areaProtectedRads, 42))
+			if(control.checkObstructions(x, y, areaProtectedRads, 42, true))
 			{
 				rotation += 90;
 				rads = rotation / r2d;

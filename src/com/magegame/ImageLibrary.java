@@ -27,7 +27,7 @@ public final class ImageLibrary
 	protected Bitmap shotAOEPlayer;
 	protected Bitmap shotEnemy;
 	protected Bitmap shotAOEEnemy;
-	protected Bitmap[] powerUps = new Bitmap[9];
+	protected Bitmap[] powerUps = new Bitmap[11];
 	protected Bitmap[] powerUpBigs = new Bitmap[4];
 	protected Bitmap[] coins = new Bitmap[2];
 	protected Bitmap[] trans = new Bitmap[10];

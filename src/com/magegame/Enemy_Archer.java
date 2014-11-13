@@ -62,7 +62,7 @@ public final class Enemy_Archer extends Enemy_Muggle
 			currentFrame = 21;
 		} else
 		{
-			if(!control.checkObstructionsPointAll((float)x, (float)y, (float)lastPlayerX, (float)lastPlayerY))
+			if(!control.checkObstructionsPoint((float)x, (float)y, (float)lastPlayerX, (float)lastPlayerY, true))
 			{
 				runTowardPlayer();
 			} else

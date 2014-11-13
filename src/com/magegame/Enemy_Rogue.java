@@ -81,10 +81,10 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
 		rotation = rads * r2d;
 		rads = (rotation + 90) / r2d;
-		if(control.checkObstructionsAll(x, y, rads, 42))
+		if(control.checkObstructions(x, y, rads, 42, true))
 		{
 			rads = (rotation - 90) / r2d;
-			if(control.checkObstructionsAll(x, y, rads, 42))
+			if(control.checkObstructions(x, y, rads, 42, true))
 			{
 				rolledSideways = false;
 			}
@@ -97,7 +97,7 @@ public final class Enemy_Rogue extends Enemy_Muggle
 		} else
 		{
 			rads = (rotation - 90) / r2d;
-			if(control.checkObstructionsAll(x, y, rads, 42))
+			if(control.checkObstructions(x, y, rads, 42, true))
 			{
 				rotation += 90;
 				rads = rotation / r2d;

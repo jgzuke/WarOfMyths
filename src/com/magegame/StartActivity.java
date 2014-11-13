@@ -1174,7 +1174,7 @@ public class StartActivity extends Activity
 		setSaveData();
 		write();
 		stopMusic();
-		control.imageLibrary.recycleImages();
+		//control.imageLibrary.recycleImages();
 		gameRunning = false;
 	}
 	@ Override

@@ -29,11 +29,8 @@ public class Wall_Circle extends Wall
 		oCR = OCR;
 		oCRatio = OCRatio;
 		control = creator;
-		control.setOCircAll(OCX, OCY, OCR, OCRatio);
-		if(tall)
-		{
-			control.setOCirc(OCX, OCY, OCR, OCRatio);
-		}
+		if(Tall) control.setOCirc(OCX, OCY, OCR, 1);
+		else control.setOCirc(OCX, OCY, OCR, 0);
 		oCR += humanWidth;
 		oCRS = Math.pow(oCR, 2);
 	}
@@ -48,7 +45,7 @@ public class Wall_Circle extends Wall
 			rads = Math.atan2(ydif, xdif);
 			if(Math.pow(xdif, 2) + Math.pow(ydif/oCRatio, 2) < oCRS)
 			{
-				if(!control.checkHitBackPass(control.player.x, control.player.y))
+				if(!control.checkHitBackPass(control.player.x, control.player.y, true))
 				{
 					control.player.x = oCX - (Math.cos(rads) * oCR);
 					control.player.y = oCY - (Math.sin(rads) * oCR);
@@ -63,7 +60,7 @@ public class Wall_Circle extends Wall
 				rads = Math.atan2(ydif, xdif);
 				if(Math.pow(xdif, 2) + Math.pow(ydif/oCRatio, 2) < oCRS)
 				{
-					if(!control.checkHitBackPass(control.enemies[i].x, control.enemies[i].y))
+					if(!control.checkHitBackPass(control.enemies[i].x, control.enemies[i].y, true))
 					{
 						control.enemies[i].x = oCX - (Math.cos(rads) * oCR);
 						control.enemies[i].y = oCY - (Math.sin(rads) * oCR);

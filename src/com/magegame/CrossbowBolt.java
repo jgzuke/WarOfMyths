@@ -55,7 +55,7 @@ public final class CrossbowBolt extends Proj_Tracker
 		double tempY = y;
 		for(int i = 0; i < 8; i++)
 		{
-			if(control.checkHitBack(tempX, tempY) && !deleted)
+			if(control.checkHitBack(tempX, tempY, false) && !deleted)
 			{
 				deleted = true;
 				control.activity.playEffect("arrowhit");
