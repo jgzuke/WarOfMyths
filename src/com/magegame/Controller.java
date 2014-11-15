@@ -149,26 +149,14 @@ public final class Controller extends View
 		super(startSet);
 		activity = activitySet;
 		context = startSet;
-		magicMedieval = Typeface.createFromAsset(context.getAssets(),"fonts/MagicMedieval.ttf"); 
 		imageLibrary = new ImageLibrary(startSet, this); // creates image library
 		screenMinX = activitySet.screenMinX;
 		screenMinY = activitySet.screenMinY;
 		screenDimensionMultiplier = activitySet.screenDimensionMultiplier;
-		paint.setAntiAlias(false);
-		paint.setDither(false);
-		paint.setTypeface(magicMedieval);
-		if(activity.highGraphics)
-		{
-			//paint.setAntiAlias(true);
-			paint.setFilterBitmap(true);
-			//paint.setDither(true);
-		} else
-		{
-			//paint.setAntiAlias(false);
-			paint.setFilterBitmap(false);
-			//paint.setDither(false);
-		}
-		setBackgroundColor(Color.WHITE);
+		paint.setAntiAlias(true);
+		paint.setDither(true);
+		paint.setFilterBitmap(true);
+		setBackgroundColor(Color.BLACK);
 		setKeepScreenOn(true); // so screen doesnt shut off when game is left inactive
 		player = new Player(this); // creates player object
 		detect = new PlayerGestureDetector(this); // creates gesture detector object
@@ -1513,8 +1501,8 @@ public final class Controller extends View
 	 */
 	protected void drawBehindPause(Canvas g)
 	{
-		drawNotPaused(g);
-		drawBitmap(imageLibrary.loadImage("menu_pauseback", 480, 320), 0, 0, g);
+		paint.setColor(Color.BLACK);
+		drawRect(0, 0, 480, 320, g);
 	}
 	/**
 	 * draw options screen
@@ -1699,7 +1687,6 @@ public final class Controller extends View
 				drawNotPaused(g);
 			}
 			paint.setAlpha(255);
-			drawBitmap(imageLibrary.backButton, 0, 0, g);
 		}
 	}
 	/**

@@ -22,7 +22,6 @@ public final class ImageLibrary
 	protected int isPlayerWidth;
 	protected Bitmap haskey;
 	protected Bitmap exitFightPortal;
-	protected Bitmap backButton;
 	protected Bitmap shotPlayer;
 	protected Bitmap shotAOEPlayer;
 	protected Bitmap shotEnemy;
@@ -119,7 +118,6 @@ public final class ImageLibrary
 	protected void loadAllImages()
 	{
 		exitFightPortal = loadImage("icon_exitfightportal", 60, 60);
-		backButton = loadImage("icon_exitfight", 40, 40);
 		loadPlayerImage();
 		powerUps = loadArray1D(11, "icon_powerup", 30, 30);
 		powerUpBigs = loadArray1D(5, "icon_powerupbig", 70, 70);
