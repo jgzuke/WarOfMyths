@@ -21,10 +21,19 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TableRow;
 import android.widget.Toast;
 public class StartActivity extends Activity
 {
@@ -97,35 +106,34 @@ public class StartActivity extends Activity
 	IabHelper mHelper;@
 	Override
 	/**
-	 * sets screena and window variables and reads in data
+	 * sets screen and window variables and reads in data
 	 * creates control object and sets up IAB
 	 */
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setWindowAndAudio();
-		setScreenDimensions();
+		boolean firstTime = readSavedData();
+		startMusic();
+		control = new Controller(this, this);
+		setContentView(R.layout.activity_main);
+		setUpPlayStoreBuyingThings();
+	}
+	private boolean readSavedData()
+	{
 		read();
-		boolean firstTime = false;
 		if(savedData[0] == 0)
 		{
 			savedData[0] = 1;
 			setSaveData();
 			write();
-			firstTime = true;
+			return true;
 		}
-		else
-		{
-			readSaveData();
-		}
-		startMusic();
-		control = new Controller(this, this);
-		setContentView(control);
-		if(firstTime)
-		{
-			startFight(2);
-		}
-		control.changePlayOptions();
+		readSaveData();
+		return false;
+	}
+	private void setUpPlayStoreBuyingThings()
+	{
 		String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiGLP+ZTiqZSbr1GJ7dWrRTBeju8IFdqWFNfejT8fAFcnxptJUsrtqpNdkaJJpEIZbT8XkcGcI3kwOhEfepJDjARZ+k6JFsHc3xPqaT2ACyfctAeUfBIHJA1PWxwnsbfxQIg0fv9lbfJaO9E7KphhtqE51jqSKnnO013sGbqi4QoZL1Ov/6f0pOv2TRnpN7XNbr/EGlUa9AKkyxlWmlxhlJowb03Kwh8e0uUs+kJjRzy+aNdGsNZRDwforn2XLZd9du9CTJ9K65K9/sUVgn5Zkj4bVYK8Y1CkMdiPBJAgz/v9Zh6FVJTTCa1LQmwMI6rZfvCWs6LrcmItis+4U0M9cwIDAQAB";
 		mHelper = new IabHelper(this, base64EncodedPublicKey);
 		// enable debug logging (for a production application, you should set this to false).
@@ -152,11 +160,101 @@ public class StartActivity extends Activity
 			}
 		});
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	View playLevelList;
+	private LayoutInflater layoutInflater;
+	private int levelSelectedToPlay = 10;
+	public void playClickHandler(View v)
+	{
+		setContentView(R.layout.play);
+		ListView playLevelList = (ListView) findViewById(R.id.scroll);
+		String[] values = new String[] {"Tutorial", "Level 1", "Level 2"};
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, values);
+		playLevelList.setAdapter(adapter); 
+		playLevelList.setOnItemClickListener(new OnItemClickListener()
+		{
+	         @Override
+             public void onItemClick(AdapterView<?> parent, View view,int position, long id)
+	         {
+	        	 levelSelectedToPlay=(position+1)*10;
+             }
+	    }); 
+	}
+	public void optionsClickHandler(View v)
+	{
+		//setContentView(R.layout.options);
+	}
+	public void storeClickHandler(View v)
+	{
+		setContentView(R.layout.store);
+	}
+	public void toMenuClickHandler(View v)
+	{
+		setContentView(R.layout.activity_main);
+	}
+	public void playRoundClickHandler(View v)
+	{
+		setContentView(control);
+		control.frameCaller.run();
+		control.startFighting(levelSelectedToPlay);
+	}
+	public void difEasyClickHandler(View v)
+	{
+		setContentView(R.layout.play);
+	}
+	public void difMedClickHandler(View v)
+	{
+		setContentView(R.layout.play);
+	}
+	public void difHardClickHandler(View v)
+	{
+		setContentView(R.layout.play);
+	}
+	public void difExtClickHandler(View v)
+	{
+		setContentView(R.layout.play);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * sets screen variables as well as audio settings
 	 */
 	protected void setWindowAndAudio()
 	{
+		layoutInflater = (LayoutInflater) getBaseContext().getSystemService(LAYOUT_INFLATER_SERVICE);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -177,6 +275,7 @@ public class StartActivity extends Activity
 		soundPoolMap[12] = spool.load(this, R.raw.effect_pageflip, 1);
 		soundPoolMap[13] = spool.load(this, R.raw.money_1, 1);
 		soundPoolMap[14] = spool.load(this, R.raw.money_2, 1);
+		setScreenDimensions();
 	}
 	/**
 	 * plays a random money effect
@@ -200,22 +299,18 @@ public class StartActivity extends Activity
 	 */
 	protected void startMenu()
 	{
-		control.drainHp = false;
-		control.lowerHp = false;
-		control.limitSpells = false;
-		control.enemyRegen = false;
-		control.changeDifficulty(10);
-		control.startFighting(10);
-		control.gamePaused = false;
+		pauseGame();
+	}
+	protected void pauseGame()
+	{
+		//TODO
 	}
 	/**
 	 * player loses a fight, start screen
 	 */
 	protected void loseFight()
 	{
-		control.gamePaused = true;
-		control.currentPause = "lost";
-		control.invalidate();
+		pauseGame();
 	}
 	/**
 	 * player wins a fight, increases level, starts next level
@@ -278,7 +373,6 @@ public class StartActivity extends Activity
 	protected void startFight(int levelSet)
 	{
 		control.startFighting(levelSet * 10);
-		control.gamePaused = false;
 		if(levelSet == 2)
 		{
 			control.player.getPowerUp(2);
@@ -1029,6 +1123,37 @@ public class StartActivity extends Activity
 	{
 		super.onStart();
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * set data to write it to save file
 	 */
@@ -1162,7 +1287,6 @@ public class StartActivity extends Activity
 			readSaveData();
 		}
 		startMusic();
-		control.imageLibrary.loadAllImages();
 		gameRunning = true;
 	}
 	/**

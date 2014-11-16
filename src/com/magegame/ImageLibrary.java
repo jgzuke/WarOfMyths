@@ -123,7 +123,6 @@ public final class ImageLibrary
 		powerUpBigs = loadArray1D(5, "icon_powerupbig", 70, 70);
 		coins = loadArray1D(2, "icon_menu_coin", 30, 30);
 		target_Image = loadImage("human_target", 48, 53);
-		// TODO change to black ball
 		archer_Image = loadArray1D(44, "human_archer", 60, 32);
 		shield_Image = loadArray1D(82, "human_swordsman", 110, 70);
 
@@ -135,7 +134,7 @@ public final class ImageLibrary
 		haskey = loadImage("icon_haskey", 40, 40);
 		isPlayer = loadImage("icon_isplayer", 40, 40);
 		loadLevel(control.levelNum, control.levelWidth, control.levelHeight);
-		backDrop = loadImage("level_back", 90, 90);
+		backDrop = loadImage("level_back", 300, 300);
 	}
 	/**
 	 * loads level image layers and background image
@@ -157,7 +156,7 @@ public final class ImageLibrary
 		{
 			backDrop.recycle();
 		}
-		backDrop = loadImage("level_back", 90, 90);
+		backDrop = loadImage("level_back", 300, 300);
 		currentLevel = loadImage("level"+correctDigits(levelNum, 4), width, height);
 		currentLevelTop = loadImage("leveltop"+correctDigits(levelNum, 4), width, height);
 	}

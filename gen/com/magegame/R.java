@@ -17,8 +17,8 @@ public final class R {
          screen margins) for sw720dp devices (e.g. 10" tablets) in landscape here.
     
          */
-        public static final int activity_horizontal_margin=0x7f040000;
-        public static final int activity_vertical_margin=0x7f040001;
+        public static final int activity_horizontal_margin=0x7f050000;
+        public static final int activity_vertical_margin=0x7f050001;
     }
     public static final class drawable {
         public static final int effect0001=0x7f020000;
@@ -275,78 +275,68 @@ public final class R {
         public static final int icon_powerupbig0005=0x7f0200fb;
         public static final int icon_shoot=0x7f0200fc;
         public static final int level0010=0x7f0200fd;
-        public static final int level0020=0x7f0200fe;
-        public static final int level0021=0x7f0200ff;
-        public static final int level0022=0x7f020100;
-        public static final int level0030=0x7f020101;
-        public static final int level0040=0x7f020102;
-        public static final int level_back=0x7f020103;
-        public static final int leveltop0010=0x7f020104;
-        public static final int leveltop0020=0x7f020105;
-        public static final int leveltop0021=0x7f020106;
-        public static final int leveltop0022=0x7f020107;
-        public static final int leveltop0030=0x7f020108;
-        public static final int leveltop0040=0x7f020109;
-        public static final int menu_blessing=0x7f02010a;
-        public static final int menu_buy=0x7f02010b;
-        public static final int menu_buyall=0x7f02010c;
-        public static final int menu_buycash=0x7f02010d;
-        public static final int menu_buyitemcash=0x7f02010e;
-        public static final int menu_buyskins=0x7f02010f;
-        public static final int menu_check=0x7f020110;
-        public static final int menu_choosegod=0x7f020111;
-        public static final int menu_chooselevel0001=0x7f020112;
-        public static final int menu_chooselevel0002=0x7f020113;
-        public static final int menu_chooselevel0003=0x7f020114;
-        public static final int menu_chooselevel0004=0x7f020115;
-        public static final int menu_chooselevel0005=0x7f020116;
-        public static final int menu_chooselevel0006=0x7f020117;
-        public static final int menu_chooselevel0007=0x7f020118;
-        public static final int menu_chooselevel0008=0x7f020119;
-        public static final int menu_chooselevelback=0x7f02011a;
-        public static final int menu_lost=0x7f02011b;
-        public static final int menu_options=0x7f02011c;
-        public static final int menu_paused=0x7f02011d;
-        public static final int menu_premium=0x7f02011e;
-        public static final int menu_screen=0x7f02011f;
-        public static final int menu_startfight=0x7f020120;
-        public static final int menu_won=0x7f020121;
-        public static final int menu_worship=0x7f020122;
-        public static final int shotenemy=0x7f020123;
-        public static final int shotexplodeenemy=0x7f020124;
-        public static final int shotexplodefire=0x7f020125;
-        public static final int shotexplodeplayer=0x7f020126;
-        public static final int shotplayer=0x7f020127;
-        public static final int structure_spawn=0x7f020128;
+        public static final int level_back=0x7f0200fe;
+        public static final int leveltop0010=0x7f0200ff;
+        public static final int menu_screen=0x7f020100;
+        public static final int menu_text150x40=0x7f020101;
+        public static final int menu_text170x100=0x7f020102;
+        public static final int menu_text200x200=0x7f020103;
+        public static final int menu_text200x270=0x7f020104;
+        public static final int menu_text200x50=0x7f020105;
+        public static final int menu_text20x20=0x7f020106;
+        public static final int menu_text280x70=0x7f020107;
+        public static final int menu_text300x340=0x7f020108;
+        public static final int shotenemy=0x7f020109;
+        public static final int shotexplodeenemy=0x7f02010a;
+        public static final int shotexplodefire=0x7f02010b;
+        public static final int shotexplodeplayer=0x7f02010c;
+        public static final int shotplayer=0x7f02010d;
+        public static final int structure_spawn=0x7f02010e;
     }
     public static final class id {
-        public static final int action_settings=0x7f080000;
+        public static final int action_settings=0x7f09000b;
+        public static final int back=0x7f090003;
+        public static final int boosts=0x7f090006;
+        public static final int buttons=0x7f090002;
+        public static final int mainLayout=0x7f090000;
+        public static final int play=0x7f090004;
+        public static final int scroll=0x7f090005;
+        public static final int scroll1=0x7f090007;
+        public static final int scroll2=0x7f090009;
+        public static final int scroll3=0x7f09000a;
+        public static final int store=0x7f090008;
+        public static final int text=0x7f090001;
+    }
+    public static final class layout {
+        public static final int activity_main=0x7f030000;
+        public static final int play=0x7f030001;
+        public static final int store=0x7f030002;
     }
     public static final class menu {
-        public static final int start=0x7f070000;
+        public static final int start=0x7f080000;
     }
     public static final class raw {
-        public static final int busqueda=0x7f030000;
-        public static final int effect_pageflip=0x7f030001;
-        public static final int enemy_arrowhit=0x7f030002;
-        public static final int enemy_arrowrelease=0x7f030003;
-        public static final int enemy_sword1=0x7f030004;
-        public static final int enemy_sword2=0x7f030005;
-        public static final int enemy_swordmiss=0x7f030006;
-        public static final int money_1=0x7f030007;
-        public static final int money_2=0x7f030008;
-        public static final int shoot_burn=0x7f030009;
-        public static final int shoot_burst=0x7f03000a;
-        public static final int shoot_earth=0x7f03000b;
-        public static final int shoot_electric=0x7f03000c;
-        public static final int shoot_shoot=0x7f03000d;
-        public static final int shoot_teleport=0x7f03000e;
-        public static final int shoot_water=0x7f03000f;
+        public static final int busqueda=0x7f040000;
+        public static final int effect_pageflip=0x7f040001;
+        public static final int enemy_arrowhit=0x7f040002;
+        public static final int enemy_arrowrelease=0x7f040003;
+        public static final int enemy_sword1=0x7f040004;
+        public static final int enemy_sword2=0x7f040005;
+        public static final int enemy_swordmiss=0x7f040006;
+        public static final int money_1=0x7f040007;
+        public static final int money_2=0x7f040008;
+        public static final int shoot_burn=0x7f040009;
+        public static final int shoot_burst=0x7f04000a;
+        public static final int shoot_earth=0x7f04000b;
+        public static final int shoot_electric=0x7f04000c;
+        public static final int shoot_shoot=0x7f04000d;
+        public static final int shoot_teleport=0x7f04000e;
+        public static final int shoot_water=0x7f04000f;
     }
     public static final class string {
-        public static final int action_settings=0x7f050001;
-        public static final int app_name=0x7f050000;
-        public static final int hello_world=0x7f050002;
+        public static final int action_settings=0x7f060001;
+        public static final int app_name=0x7f060000;
+        public static final int hello_world=0x7f060002;
     }
     public static final class style {
         /** 
@@ -370,10 +360,10 @@ public final class R {
     
  API 14 theme customizations can go here. 
          */
-        public static final int AppBaseTheme=0x7f060000;
+        public static final int AppBaseTheme=0x7f070000;
         /**  Application theme. 
  All customizations that are NOT specific to a particular API-level can go here. 
          */
-        public static final int AppTheme=0x7f060001;
+        public static final int AppTheme=0x7f070001;
     }
 }
