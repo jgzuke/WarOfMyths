@@ -330,7 +330,7 @@ public final class Player extends Human
 	{
 		if(abilityTimer_Proj_Tracker > 30)
 		{
-			if(rollTimer < 0&&control.levelNum!=10)
+			if(rollTimer < 0)
 			{
 					control.createProj_TrackerPlayer(rads*r2d, projectileSpeed, 130, x, y);
 					abilityTimer_Proj_Tracker -= 30;

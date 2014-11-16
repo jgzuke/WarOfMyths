@@ -34,6 +34,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TableRow;
+import android.widget.TextView;
 import android.widget.Toast;
 public class StartActivity extends Activity
 {
@@ -179,15 +180,43 @@ public class StartActivity extends Activity
 	
 	
 	
-	View playLevelList;
+	Button easyClick;
+	Button medClick;
+	Button hardClick;
+	Button extClick;
+	Button sickClick;
+	Button hurtClick;
+	Button limitedClick;
+	Button regenerateClick;
+	
 	private LayoutInflater layoutInflater;
 	private int levelSelectedToPlay = 10;
+	private String[] levelNames = new String[] {"Tutorial", "Level 1", "Level 2"};
+	ListView playLevelList;
 	public void playClickHandler(View v)
 	{
 		setContentView(R.layout.play);
-		ListView playLevelList = (ListView) findViewById(R.id.scroll);
-		String[] values = new String[] {"Tutorial", "Level 1", "Level 2"};
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, values);
+		easyClick = (Button) findViewById(R.id.easy);
+		medClick = (Button) findViewById(R.id.med);
+		hardClick = (Button) findViewById(R.id.hard);
+		extClick = (Button) findViewById(R.id.ext);
+		switch(control.difficultyLevel)
+		{
+			case 10: easyClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+				break;
+			case 6: medClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+				break;
+			case 3: hardClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+				break;
+			case 0: extClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+				break;
+		}
+		sickClick = (Button) findViewById(R.id.sick);
+		hurtClick = (Button) findViewById(R.id.hurt);
+		limitedClick = (Button) findViewById(R.id.limit);
+		regenerateClick = (Button) findViewById(R.id.regen);
+		playLevelList = (ListView) findViewById(R.id.scroll);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, levelNames);
 		playLevelList.setAdapter(adapter); 
 		playLevelList.setOnItemClickListener(new OnItemClickListener()
 		{
@@ -195,9 +224,19 @@ public class StartActivity extends Activity
              public void onItemClick(AdapterView<?> parent, View view,int position, long id)
 	         {
 	        	 levelSelectedToPlay=(position+1)*10;
+	        	 highlightSelectedLevel();
              }
 	    }); 
+		highlightSelectedLevel();
 	}
+	public void highlightSelectedLevel()
+	{
+		/*for(int i = 0; i < levelNames.length; i++)
+		{
+			playLevelList.getChildAt(i).setBackgroundResource(R.drawable.menu_text150x40);
+		}
+		playLevelList.getChildAt((levelSelectedToPlay/10)-1).setBackgroundResource(R.drawable.menu_text_selected150x40);
+	*/}
 	public void optionsClickHandler(View v)
 	{
 		//setContentView(R.layout.options);
@@ -218,19 +257,79 @@ public class StartActivity extends Activity
 	}
 	public void difEasyClickHandler(View v)
 	{
-		setContentView(R.layout.play);
+		control.changeDifficulty(10);
+		easyClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		medClick.setBackgroundResource(R.drawable.menu_text150x40);
+		hardClick.setBackgroundResource(R.drawable.menu_text150x40);
+		extClick.setBackgroundResource(R.drawable.menu_text150x40);
 	}
 	public void difMedClickHandler(View v)
 	{
-		setContentView(R.layout.play);
+		control.changeDifficulty(6);
+		easyClick.setBackgroundResource(R.drawable.menu_text150x40);
+		medClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		hardClick.setBackgroundResource(R.drawable.menu_text150x40);
+		extClick.setBackgroundResource(R.drawable.menu_text150x40);
 	}
 	public void difHardClickHandler(View v)
 	{
-		setContentView(R.layout.play);
+		control.changeDifficulty(3);
+		easyClick.setBackgroundResource(R.drawable.menu_text150x40);
+		medClick.setBackgroundResource(R.drawable.menu_text150x40);
+		hardClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		extClick.setBackgroundResource(R.drawable.menu_text150x40);
 	}
 	public void difExtClickHandler(View v)
 	{
-		setContentView(R.layout.play);
+		control.changeDifficulty(0);
+		easyClick.setBackgroundResource(R.drawable.menu_text150x40);
+		medClick.setBackgroundResource(R.drawable.menu_text150x40);
+		hardClick.setBackgroundResource(R.drawable.menu_text150x40);
+		extClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+	}
+	public void sickClickHandler(View v)
+	{
+		control.drainHp = !control.drainHp;
+		if(control.drainHp)
+		{
+			sickClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		} else
+		{
+			sickClick.setBackgroundResource(R.drawable.menu_text150x40);
+		}
+	}
+	public void hurtClickHandler(View v)
+	{
+		control.lowerHp = !control.lowerHp;
+		if(control.lowerHp)
+		{
+			hurtClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		} else
+		{
+			hurtClick.setBackgroundResource(R.drawable.menu_text150x40);
+		}
+	}
+	public void limitedClickHandler(View v)
+	{
+		control.limitSpells = !control.limitSpells;
+		if(control.limitSpells)
+		{
+			limitedClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		} else
+		{
+			limitedClick.setBackgroundResource(R.drawable.menu_text150x40);
+		}
+	}
+	public void regenerateClickHandler(View v)
+	{
+		control.enemyRegen = !control.enemyRegen;
+		if(control.enemyRegen)
+		{
+			regenerateClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		} else
+		{
+			regenerateClick.setBackgroundResource(R.drawable.menu_text150x40);
+		}
 	}
 	
 	
@@ -299,18 +398,21 @@ public class StartActivity extends Activity
 	 */
 	protected void startMenu()
 	{
-		pauseGame();
+		gameRunning = false;
+		setContentView(R.layout.activity_main);
 	}
 	protected void pauseGame()
 	{
-		//TODO
+		gameRunning = false;
+		setContentView(R.layout.activity_main);
 	}
 	/**
 	 * player loses a fight, start screen
 	 */
 	protected void loseFight()
 	{
-		pauseGame();
+		gameRunning = false;
+		setContentView(R.layout.activity_main);
 	}
 	/**
 	 * player wins a fight, increases level, starts next level

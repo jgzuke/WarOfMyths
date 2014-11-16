@@ -114,8 +114,6 @@ public final class Controller extends View
 	private int cooldownColor = Color.rgb(190, 190, 0);
 	private int highlightChoiceColor = Color.BLUE;
 	protected DrawnSprite shootStick = new Graphic_shootStick();
-	private long timeLast;
-	private byte times;
 	protected int playerHit=0;
 	protected int playerBursted = 0;
 	Typeface magicMedieval; 
@@ -129,14 +127,8 @@ public final class Controller extends View
 			if(activity.gameRunning) // if game is running call framecalls
 			{
 				frameCall();
+				mHandler.postDelayed(this, 50);
 			}
-			times++;
-			if(times == 10)
-			{
-				timeLast = System.nanoTime();
-				times = 0;
-			}
-			mHandler.postDelayed(this, 50);
 		}
 	};	
 	/** 
@@ -281,40 +273,49 @@ public final class Controller extends View
 		clearWallArrays();
 		if(levelNum == 10)
 		{			// *******EXAMPLE FOR COMMENTS FOR LOADLEVEL SECTION
-			levelWidth = 300; // height of level
+			levelWidth = 450; // height of level
 			levelHeight = 300; // width of level
 			player.x = 150; // player start x
 			player.y = 150; // player start y
-			makeWall_Circle(106, 271, 19, 1, false);
-			makeWall_Circle(59, 244, 19, 1, false);
-			makeWall_Rectangle(0, 0, 10, 300, true, false);
-			makeWall_Rectangle(0, 0, 110, 10, true, false);
-			makeWall_Rectangle(290, 0, 10, 300, true, false);
-			makeWall_Rectangle(0, 290, 300, 10, true, false);
-			makeWall_Rectangle(190, 0, 110, 10, true, false);
-			makeWall_Rectangle(-185, 199, 227, 210, true, false);
+			enemies.add(new Enemy_Archer(this, 269, 86));
+			enemies.add(new Enemy_Archer(this, 358, 140));
+			enemies.add(new Enemy_Archer(this, 365, 204));
+			enemies.add(new Enemy_Shield(this, 146, 61));
+			enemies.add(new Enemy_Shield(this, 327, 231));
+			makeWall_Rectangle(78, 122, 41, 24, true, false);
+			makeWall_Rectangle(63, -20, 31, 142, true, true);
+			makeWall_Rectangle(73, 238, 47, 62, true, true);
+			makeWall_Rectangle(94, -19, 25, 152, true, false);
+			makeWall_Rectangle(252, 269, 234, 62, true, true);
+			makeWall_Rectangle(412, 82, 74, 250, true, true);
+			makeWall_Rectangle(382, 133, 30, 83, true, false);
+			makeWall_Circle(330, 297, 47, 1, false);
+			makeWall_Rectangle(217, -15, 109, 81, true, false);
+			makeWall_Rectangle(179, -32, 38, 63, true, true);
+			makeWall_Rectangle(318, -41, 66, 63, true, true);
 		}
 		if(levelNum == 20)
 		{
-			levelWidth = 630;
-			levelHeight = 300;
-			player.x = 100;
-			player.y = 150;
-			exitX = 16000;
-			enemies.add(new Enemy_Target(this, 332, 18, 90, false)); // CREATES ENEMIES
-			enemies.add(new Enemy_Target(this, 332, 284, -90, false));
-			enemies.add(new Enemy_Target(this, 444, 135, 180, false));
-			enemies.add(new Enemy_Target(this, 444, 165, 180, false));
-			enemies.add(new Enemy_Target(this, 531, 18, 90, true));
-			enemies.add(new Enemy_Target(this, 568, 18, 90, true));
-			enemies.add(new Enemy_Target(this, 512, 284, -90, true));
-			enemies.add(new Enemy_Target(this, 549, 284, -90, true));
-			makeWall_Rectangle(210, -77, 15, 205, true, true);
-			makeWall_Rectangle(210, 172, 15, 205, true, true);
-			makeWall_Rectangle(455, -77, 15, 205, true, true);
-			makeWall_Rectangle(455, 172, 15, 205, true, true);
-			makeWall_Rectangle(618, -77, 15, 205, true, true);
-			makeWall_Rectangle(618, 172, 15, 205, true, true);
+			levelWidth = 450; // height of level
+			levelHeight = 300; // width of level
+			player.x = 150; // player start x
+			player.y = 150; // player start y
+			enemies.add(new Enemy_Archer(this, 269, 86));
+			enemies.add(new Enemy_Archer(this, 358, 140));
+			enemies.add(new Enemy_Archer(this, 365, 204));
+			enemies.add(new Enemy_Shield(this, 146, 61));
+			enemies.add(new Enemy_Shield(this, 327, 231));
+			makeWall_Rectangle(78, 122, 41, 24, true, false);
+			makeWall_Rectangle(63, -20, 31, 142, true, true);
+			makeWall_Rectangle(73, 238, 47, 62, true, true);
+			makeWall_Rectangle(94, -19, 25, 152, true, false);
+			makeWall_Rectangle(252, 269, 234, 62, true, true);
+			makeWall_Rectangle(412, 82, 74, 250, true, true);
+			makeWall_Rectangle(382, 133, 30, 83, true, false);
+			makeWall_Circle(330, 297, 47, 1, false);
+			makeWall_Rectangle(217, -15, 109, 81, true, false);
+			makeWall_Rectangle(179, -32, 38, 63, true, true);
+			makeWall_Rectangle(318, -41, 66, 63, true, true);
 		}
 		if(levelNum == 30)
 		{
@@ -361,9 +362,7 @@ public final class Controller extends View
 		for(int i = 0; i < powerUps.size(); i++)
 		{
 			if(powerUps.get(i) != null) player.getPowerUp(powerUps.get(i).ID);
-		}
-		if(levelNum > 29)
-		{				 // READS IN AND CREATES ENEMIES IN NEW SECTION, SAVES ENEMIES IN OLD SECTION
+		}			 // READS IN AND CREATES ENEMIES IN NEW SECTION, SAVES ENEMIES IN OLD SECTION
 			ArrayList<int[]> tempSave = (ArrayList<int[]>)saveEnemyInformation.clone();
 			int j = 0;
 			for(int i = 0; i < saveEnemyInformation.size(); i++)
@@ -386,10 +385,6 @@ public final class Controller extends View
 				}
 			}
 			endFightSection(tempSave);
-		} else
-		{
-			endFightSection();
-		}
 		if(levelNum == 21)
 		{
 			levelWidth = 555;
@@ -659,7 +654,7 @@ public final class Controller extends View
 				}
 			}
 		paint.setAlpha(255);
-		if(player.transformed==0&&levelNum!=10) drawBitmapRotated(shootStick, g);
+		if(player.transformed==0) drawBitmapRotated(shootStick, g);
 	}
 	/**
 	 * Sets deleted objects to null to be gc'd and tests player and enemy hitting arena bounds
@@ -753,7 +748,7 @@ public final class Controller extends View
 				}
 			}
 		}
-		if(hasKey && getDistance(player.x, player.y, exitX, exitY) < 30 && levelNum > 19)
+		if(hasKey && getDistance(player.x, player.y, exitX, exitY) < 30)
 		{
 			activity.winFight();
 		}
@@ -851,21 +846,13 @@ public final class Controller extends View
 			h = 0;
 		}
 		drawBitmap(imageLibrary.currentLevel, 0, 0, g);
-		if(levelNum > 19)
-		{
-			drawBitmapLevel(imageLibrary.exitFightPortal, exitX - 30, exitY - 30, g);
-		}
+		drawBitmapLevel(imageLibrary.exitFightPortal, exitX - 30, exitY - 30, g);
 		for(int i = 0; i < structures.size(); i++)
 		{
 			if(structures.get(i) != null)
 			{
 				drawBitmapLevel(imageLibrary.structure_Spawn, (int)structures.get(i).x-structures.get(i).width, (int)structures.get(i).y-structures.get(i).height, g);
 			}
-		}
-		if(levelNum == 10)
-		{
-			//if(imageLibrary.directionsTutorial != null) drawBitmapLevel(imageLibrary.directionsTutorial, 45, 65, g);
-			paint.setAlpha(255);
 		}
 		if(player != null)
 		{
@@ -1082,22 +1069,6 @@ public final class Controller extends View
 		if(hasKey)
 		{
 			drawBitmap(imageLibrary.powerUpBigs[4], 10, 25, g);
-		}
-		if(levelNum == 10)
-		{
-			paint.setStyle(Paint.Style.FILL);
-			paint.setColor(Color.BLACK);
-			paint.setTextAlign(Align.CENTER);
-			paint.setAlpha(180);
-			drawRect(395, 5, 475, 315, g);
-			paint.setAlpha(255);
-			drawBitmap(imageLibrary.coins[0], 420, 30, g);
-			drawBitmap(imageLibrary.coins[1], 420, 130, g);
-			paint.setTextSize(20);
-			paint.setColor(platinumColor);
-			drawText(Integer.toString(activity.realCurrency), 435, 85, g);
-			paint.setColor(goldColor);
-			drawText(Integer.toString(activity.gameCurrency), 435, 185, g);
 		}
 	}
 	/**

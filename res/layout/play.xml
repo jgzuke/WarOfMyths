@@ -43,73 +43,86 @@
         android:columnCount="2"
         android:rowCount="4">
         <Button
+       		android:id="@+id/easy"
             android:layout_width="150dp"
         	android:layout_height="40dp"
 		    android:layout_row="0"
 		    android:layout_column="0"
 		    android:textSize="15sp"
 	        android:text="EASY"
+	        android:onClick="difEasyClickHandler"
 	        android:gravity="center"
 	        android:textColor="#ffffff"
 	        android:background="@drawable/menu_text150x40"
 	        android:layout_marginBottom="10dp"/>
         <Button
+       		android:id="@+id/med"
             android:layout_width="150dp"
         	android:layout_height="40dp"
 		    android:layout_row="1"
 		    android:layout_column="0"
 		    android:textSize="17sp"
 	        android:text="MEDIUM"
+	        android:onClick="difMedClickHandler"
 	        android:gravity="center"
 	        android:textColor="#ffffff"
 	        android:background="@drawable/menu_text150x40"
 	        android:layout_marginBottom="10dp"/>
         <Button
+       		android:id="@+id/hard"
             android:layout_width="150dp"
         	android:layout_height="40dp"
 		    android:layout_row="2"
 		    android:layout_column="0"
 		    android:textSize="17sp"
 	        android:text="HARD"
+	        android:onClick="difHardClickHandler"
 	        android:gravity="center"
 	        android:textColor="#ffffff"
 	        android:background="@drawable/menu_text150x40"
 	        android:layout_marginBottom="10dp"/>
         <Button
+       		android:id="@+id/ext"
             android:layout_width="150dp"
         	android:layout_height="40dp"
 		    android:layout_row="3"
 		    android:layout_column="0"
 		    android:textSize="17sp"
 	        android:text="EXTREME"
+	        android:onClick="difExtClickHandler"
 	        android:gravity="center"
 	        android:textColor="#ffffff"
 	        android:background="@drawable/menu_text150x40"/>
         <Button
+       		android:id="@+id/sick"
             android:layout_width="150dp"
         	android:layout_height="40dp"
 		    android:layout_row="0"
 		    android:layout_column="1"
 		    android:textSize="17sp"
 	        android:text="SICK"
+	        android:onClick="sickClickHandler"
 	        android:gravity="center"
 	        android:textColor="#ffffff"
 	        android:background="@drawable/menu_text150x40"
 	        android:layout_marginLeft="10dp"
 	        android:layout_marginBottom="10dp"/>
         <Button
+       		android:id="@+id/hurt"
             android:layout_width="150dp"
         	android:layout_height="40dp"
 		    android:layout_row="1"
 		    android:layout_column="1"
 		    android:textSize="17sp"
 	        android:text="HURT"
+	        android:onClick="hurtClickHandler"
 	        android:gravity="center"
 	        android:textColor="#ffffff"
 	        android:background="@drawable/menu_text150x40"
 	        android:layout_marginLeft="10dp"
 	        android:layout_marginBottom="10dp"/>
         <Button
+       		android:id="@+id/limit"
             android:layout_width="150dp"
             android:layout_height="40dp"
             android:layout_column="1"
@@ -119,11 +132,12 @@
             android:gravity="center"
             android:singleLine="false"
             android:text="LIMITED"
+            android:onClick="limitedClickHandler"
             android:textColor="#ffffff"
             android:layout_marginLeft="10dp"
             android:textSize="17sp" />
-
         <Button
+       		android:id="@+id/regen"
             android:layout_width="150dp"
             android:layout_height="40dp"
             android:layout_column="1"
@@ -132,6 +146,7 @@
             android:gravity="center"
             android:singleLine="false"
             android:text="REGENERATE"
+            android:onClick="regenerateClickHandler"
             android:textColor="#ffffff"
             android:layout_marginLeft="10dp"
             android:textSize="17sp" />

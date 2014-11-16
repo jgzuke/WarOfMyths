@@ -113,10 +113,10 @@ public class PlayerGestureDetector implements OnTouchListener {
 				if(player.transformed == 0)
 				{
 					clickDownNotPausedNormal(x, y, ID, firstPointer);
-				} else if(player.transformed == 1&&control.levelNum!=10)
+				} else if(player.transformed == 1)
 				{
 					clickDownNotPausedGolem(x, y, ID, firstPointer);
-				} else if(player.transformed == 2&&control.levelNum!=10)
+				} else if(player.transformed == 2)
 				{
 					clickDownNotPausedHammer(x, y, ID, firstPointer);
 				}
@@ -172,10 +172,10 @@ public class PlayerGestureDetector implements OnTouchListener {
 	 */
 	protected void clickDownNotPausedNormal(float x, float y, int ID, boolean firstPointer)
 	{
-		if(control.pointOnSquare(x, y, buttonShiftX+12, 41, buttonShiftX+82, 111)&&control.levelNum!=10)
+		if(control.pointOnSquare(x, y, buttonShiftX+12, 41, buttonShiftX+82, 111))
         {
         	player.burst();
-        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 145, buttonShiftX+82, 215)&&control.levelNum!=10)
+        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 145, buttonShiftX+82, 215))
         {
         	player.roll();
         } else if(control.pointOnCircle(x, y, 53+(buttonShiftX*0.95897), 267, 65) && !control.activity.shootTapScreen)
