@@ -102,7 +102,7 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 				if(control.enemies.get(i) != null && !deleted && !control.enemies.get(i).action.equals("Roll"))
 				{
 					control.enemies.get(i).setLevels(control.enemies.get(i).levelCurrentPosition, x, y, xForward, yForward);
-					control.enemies.get(i).incrementLevelCurrentPosition();
+					control.enemies.get(i).levelCurrentPosition++;
 					xDif = x - control.enemies.get(i).x;
 					yDif = y - control.enemies.get(i).y;
 					double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);

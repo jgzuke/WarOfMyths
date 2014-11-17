@@ -11,10 +11,7 @@ import android.graphics.BitmapFactory;
 public final class ImageLibrary
 {
 	protected Bitmap[] player_Image = new Bitmap[32];
-	protected Bitmap[] archer_Image = new Bitmap[49];
-	protected Bitmap[] mage_Image = new Bitmap[49];
-	protected Bitmap[] rogue_Image = new Bitmap[49];
-	protected Bitmap[] shield_Image = new Bitmap[55];
+	protected Bitmap[] enemy_Image = new Bitmap[95];
 	protected Bitmap structure_Spawn;
 	protected Bitmap[] effects = new Bitmap[4];
 	protected Bitmap target_Image;
@@ -123,8 +120,7 @@ public final class ImageLibrary
 		powerUpBigs = loadArray1D(5, "icon_powerupbig", 70, 70);
 		coins = loadArray1D(2, "icon_menu_coin", 30, 30);
 		target_Image = loadImage("human_target", 48, 53);
-		archer_Image = loadArray1D(44, "human_archer", 60, 32);
-		shield_Image = loadArray1D(82, "human_swordsman", 110, 70);
+		enemy_Image = loadArray1D(95, "human_enemy", 60, 32);//TODO change size
 
 		shotAOEEnemy = loadImage("shotexplodeenemy", 80, 80);
 		shotEnemy = loadImage("shotenemy", 40, 3);

@@ -33,27 +33,42 @@ abstract public class Enemy extends Human
 	private double pYSpot=0;
 	protected double xMove;
 	protected double yMove;
+	protected boolean hasSheild;
+	protected boolean hasGun;
+	protected boolean hasSword;
 	protected double projectileVelocity=20;
+	protected int enemyType;
 	protected String action; //"Nothing", "Move", "Alert", "Shoot", "Melee", "Roll", "Hide", "Sheild", "Stun"
 	/**
 	 * sets danger arrays, speed and control object
 	 * @param creator control object
 	 */
-	public Enemy(Controller creator, double setX, double setY)
+	public Enemy(Controller creator, double X, double Y, int HP, int Worth,
+			boolean gun, boolean sheild, boolean hide, boolean sword, boolean Sick, int type)
 	{
 		control = creator;
 		danger[0] = levelX;
 		danger[1] = levelY;
 		danger[2] = levelXForward;
 		danger[3] = levelYForward;
+		hasSheild = sheild;
+		hasGun = gun;
+		sick = Sick;
+		hasSword = sword;
 		currentFrame=0;
-		x = setX;
-		y = setY;
+		x = X;
+		y = Y;
+		enemyType = type;
 		width = 30;
 		height = 30;
 		lastPlayerX = x;
 		lastPlayerY = y;
 		speedCur = 1.8 + (Math.pow(control.getDifficultyLevelMultiplier(), 0.4)*2.6);
+		visualImage = control.imageLibrary.enemy_Image[0];
+		if(hide) visualImage = control.imageLibrary.enemy_Image[94]; //TODO change to arrayList position
+		setImageDimensions();
+		baseHp(HP);
+		worth = Worth;
 	}
 	/**
 	 * clears desired array
@@ -327,34 +342,21 @@ abstract public class Enemy extends Human
 		return Math.sqrt((Math.pow(fromX - toX, 2)) + (Math.pow(fromY - toY, 2)));
 	}
 	/**
-	 * returns last distance found
-	 * @return distanceFound
-	 */
-	protected double getDistanceFound() {
-		return distanceFound;
-	}
-	/**
-	 * sets distanceFound
-	 * @param distanceFound sets to distanceFound
-	 */
-	protected void setDistanceFound(double distanceFound) {
-		this.distanceFound = distanceFound;
-	}
-	/**
 	 * rolls forward for 11 frames
 	 */
 	protected void roll()
 	{
 		currentFrame = 82;
+		action = "Roll";
+		rotation = rads * r2d;
 		xMove = Math.cos(rads) * 8;
 		yMove = Math.sin(rads) * 8;
 	}
 	/**
 	 * rolls sideways for 11 frames
 	 */
-	protected boolean rollSideways()
+	protected void rollSideways()
 	{
-		boolean rolledSideways = true;
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
 		rotation = rads * r2d;
 		rads = (rotation + 90) / r2d;
@@ -363,7 +365,7 @@ abstract public class Enemy extends Human
 			rads = (rotation - 90) / r2d;
 			if(control.checkObstructions(x, y, rads, 42, true))
 			{
-				rolledSideways = false;
+				rollAway();
 			}
 			else
 			{
@@ -394,7 +396,43 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		return rolledSideways;
+	}
+	/**
+	 * Rolls away from player
+	 */
+	protected void rollAway()
+	{
+		rads = Math.atan2(-(control.player.y - y), -(control.player.x - x));
+		rotation = rads * r2d;
+		if(!control.checkObstructions(x, y, rads, 42, true))
+		{
+			roll();
+		} else
+		{
+			int rollPathChooseCounter = 0;
+			double rollPathChooseRotationStore = rotation;
+			while(rollPathChooseCounter < 180)
+			{
+				rollPathChooseCounter += 10;
+				rotation = rollPathChooseRotationStore + rollPathChooseCounter;
+				rads = rotation / r2d;
+				if(!control.checkObstructions(x, y, rads, 42, true))
+				{
+					roll();
+					rollPathChooseCounter = 180;
+				}
+				else
+				{
+					rotation = rollPathChooseRotationStore - rollPathChooseCounter;
+					rads = rotation / r2d;
+					if(!control.checkObstructions(x, y, rads, 42, true))
+					{
+						roll();
+						rollPathChooseCounter = 180;
+					}
+				}
+			}
+		}
 	}
 	/**
 	 * rolls towards player for 11 frames
@@ -402,7 +440,6 @@ abstract public class Enemy extends Human
 	protected void rollTowards()
 	{
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
-		rotation = rads * r2d;
 		roll();
 	}
 	/**
@@ -688,40 +725,5 @@ abstract public class Enemy extends Human
 	{
 		hp = (int)(setHP*Math.pow(control.getDifficultyLevelMultiplier(), ((double)hp/10000)));
 		setHpMax(hp);
-	}
-	/**
-	 * adds 1 to levelCurrentPosition
-	 */
-	protected void incrementLevelCurrentPosition()
-	{
-		levelCurrentPosition ++;
-	}
-	/**
-	 * returns last known player x
-	 * @return last known player x
-	 */
-	protected double getLastPlayerX() {
-		return lastPlayerX;
-	}
-	/**
-	 * returns last known player y
-	 * @return last known player y
-	 */
-	protected double getLastPlayerY() {
-		return lastPlayerY;
-	}
-	/**
-	 * sets whether you have checked where you saw the player last for his existence
-	 * @param checkedPlayerLast have you checked where you saw him
-	 */
-	protected void setCheckedPlayerLast(boolean checkedPlayerLast) {
-		this.checkedPlayerLast = checkedPlayerLast;
-	}
-	/**
-	 * returns whether players last whereabouts have been investigated
-	 * @return whether players last whereabouts have been investigated
-	 */
-	protected boolean isCheckedPlayerLast() {
-		return checkedPlayerLast;
 	}
 }

@@ -279,11 +279,11 @@ public final class Controller extends View
 			player.y = 30; // player start y
 			exitX = 35;
 			exitY = 165;
-			enemies.add(new Enemy_Archer(this, 269, 86));
-			enemies.add(new Enemy_Archer(this, 358, 140, true));
-			enemies.add(new Enemy_Archer(this, 365, 204));
-			enemies.add(new Enemy_Shield(this, 146, 61));
-			enemies.add(new Enemy_Shield(this, 327, 231));
+			makeEnemy(1, 269, 86);
+			makeEnemy(1, 358, 140, true);
+			makeEnemy(1, 365, 204);
+			makeEnemy(2, 146, 61);
+			makeEnemy(2, 327, 231);
 			makeWall_Rectangle(78, 122, 41, 24, true, false);
 			makeWall_Rectangle(63, -20, 31, 142, true, true);
 			makeWall_Rectangle(73, 238, 47, 62, true, true);
@@ -304,15 +304,15 @@ public final class Controller extends View
 			player.y = 640; // player start y
 			exitX = 227;
 			exitY = 610;
-			enemies.add(new Enemy_Shield(this, 150, 315));
-			enemies.add(new Enemy_Archer(this, 54, 377));
-			enemies.add(new Enemy_Archer(this, 150, 100, true));
-			enemies.add(new Enemy_Archer(this, 35, 484));
-			enemies.add(new Enemy_Archer(this, 227, 333));
-			enemies.add(new Enemy_Archer(this, 35, 114));
-			enemies.add(new Enemy_Archer(this, 262, 110));
-			enemies.add(new Enemy_Shield(this, 99, 195));
-			enemies.add(new Enemy_Shield(this, 213, 195));
+			makeEnemy(1, 54, 377);
+			makeEnemy(1, 150, 100, true);
+			makeEnemy(1, 35, 484);
+			makeEnemy(1, 227, 333);
+			makeEnemy(1, 35, 114);
+			makeEnemy(1, 262, 110);
+			makeEnemy(2, 150, 315);
+			makeEnemy(2, 99, 195);
+			makeEnemy(2, 213, 195);
 			makeWall_Rectangle(105, 279, 15, 120, true, true);
 			makeWall_Rectangle(180, 280, 15, 120, true, true);
 			makeWall_Rectangle(-22, 565, 143, 16, true, true);
@@ -338,26 +338,6 @@ public final class Controller extends View
 			makeWall_Rectangle(-7, 585, 46, 35, true, false);
 			makeWall_Rectangle(235, 637, 71, 35, true, false);
 			makeWall_Rectangle(72, 637, 73, 43, true, false);
-		}
-		if(levelNum == 30)
-		{
-			levelWidth = 480;
-			levelHeight = 310;
-			player.x = 436;
-			player.y = 112;
-			exitX = 40; // exit x coordinate
-			exitY = 112; // exit y coordinate
-			enemies.add(new Enemy_Shield(this, 245, 85));
-			enemies.add(new Enemy_Archer(this, 60, 192));
-			enemies.add(new Enemy_Shield(this, 80, 249));
-			enemies.get(1).keyHolder = true;			// THIS ENEMY HOLDS KEY TO NEXT LEVEL
-			makeWall_Rectangle(-5, 8, 100, 70, true, true);
-			makeWall_Rectangle(83, -9, 141, 153, true, true);
-			makeWall_Rectangle(99, 125, 108, 59, true, true);
-			makeWall_Rectangle(311, 67, 96, 1210, true, true);
-			makeWall_Rectangle(300, 175, 1220, 1350, true, true);
-			makeWall_Rectangle(116, 177, 13, 80, true, false);
-			makeWall_Rectangle(116, 245, 56, 13, true, false);
 		}
 		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
 	}
@@ -391,7 +371,7 @@ public final class Controller extends View
 			{
 				if(!enemies.get(i).deleted)
 				{
-					saveEnemyInformation.get(j)[0] = enemies.get(i).getType();
+					saveEnemyInformation.get(j)[0] = enemies.get(i).enemyType;
 					saveEnemyInformation.get(j)[1] = (int) enemies.get(i).x;
 					saveEnemyInformation.get(j)[2] = (int) enemies.get(i).y;
 					saveEnemyInformation.get(j)[3] = enemies.get(i).hp;
@@ -411,11 +391,7 @@ public final class Controller extends View
 		{
 			levelWidth = 555;
 			player.x = 25; 						// same format as loading levels
-			enemies.add(new Enemy_Target(this, 653 - 506, 125, 180, false));
-			enemies.add(new Enemy_Target(this, 653 - 506, 176, 180, false));
-			enemies.add(new Enemy_Target(this, 670 - 506, 150, 180, false));
-			enemies.add(new Enemy_Target(this, 358, 150, 180, false));
-			enemies.add(new Enemy_Target(this, 1014 - 506+40, 150, 180, false));
+			makeEnemy(2, 99, 195);
 			makeWall_Rectangle(503 - 506, -100, 15, 500, true, true);
 			makeWall_Rectangle(665 - 506, -77, 15, 205, true, true);
 			makeWall_Rectangle(665 - 506, 172, 15, 205, true, true);
@@ -423,22 +399,6 @@ public final class Controller extends View
 			makeWall_Rectangle(825 - 506+40, 172, 15, 205, true, true);
 			makeWall_Rectangle(1014 - 506+40, -77, 15, 205, true, true);
 			makeWall_Rectangle(1014 - 506+40, 172, 15, 205, true, true);
-		}
-		if(levelNum == 22)
-		{
-			levelWidth = 632;
-			player.x = 25;
-			exitX = 582;
-			exitY = 150;
-			enemies.add(new Enemy_Target(this, 1204 - 1017, 150, 180, false));
-			enemies.add(new Enemy_Target(this, 1400 - 1017, 150, 180, false));
-			enemies.add(new Enemy_Target(this, 1522 - 1017, 150, 180, false));
-			enemies.get(2).keyHolder = true;
-			makeWall_Rectangle(1014 - 1017, -100, 15, 500, true, true);
-			makeWall_Rectangle(1198 - 1017, -77, 15, 205, true, true);
-			makeWall_Rectangle(1198 - 1017, 172, 15, 205, true, true);
-			makeWall_Rectangle(1393 - 1017, -77, 15, 205, true, true);
-			makeWall_Rectangle(1393 - 1017, 172, 15, 205, true, true);
 		}
 		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
 	}
@@ -449,21 +409,7 @@ public final class Controller extends View
 	 */
 	private void createEnemy(int[] info)
 	{
-		switch(info[0])
-		{
-		case 1:
-			enemies.add(new Enemy_Shield(this, info[1], info[2])); // creates shield in alternate level section
-			break;
-		case 4:
-			enemies.add(new Enemy_Rogue(this, info[1], info[2]));
-			break;
-		case 5:
-			enemies.add(new Enemy_Archer(this, info[1], info[2]));
-			break;
-		case 6:
-			enemies.add(new Enemy_Mage(this, info[1], info[2]));
-			break;
-		}
+		makeEnemy(info[0], info[1], info[2]);
 		if(info[3] != 0) // if enemy has set health change it, otherwise leave as starting health
 		{
 			enemies.get(enemies.size()-1).hp = info[3];
@@ -471,6 +417,23 @@ public final class Controller extends View
 		if(info[4] == 1)
 		{
 			enemies.get(enemies.size()-1).keyHolder = true; // if saved enemy has key
+		}
+	}
+	protected void makeEnemy(int type, int x, int y, boolean key)
+	{
+		makeEnemy(type, x, y);
+		enemies.get(enemies.size()-1).keyHolder=true;
+	}
+	protected void makeEnemy(int type, int x, int y)
+	{
+		if(type==1)
+		{
+			enemies.add(new Enemy_Default(this, x, y, 2000, 9, //x, y, hp, worth 
+					true, false, false, false, false, type)); //gun, sheild, hide, sword, sick
+		} else if(type==2)
+		{
+			enemies.add(new Enemy_Default(this, x, y, 2000, 9, //x, y, hp, worth 
+				false, true, false, true, false, type)); //gun, sheild, hide, sword, sick
 		}
 	}
 	/**
@@ -547,31 +510,16 @@ public final class Controller extends View
 		{
 			if(enemies.get(i) != null)
 			{
-				if(!enemies.get(i).rogue || enemies.get(i).currentFrame != 49)
-				{
 					minX = (int) enemies.get(i).x - 20;
 					maxX = (int) enemies.get(i).x + 20;
 					minY = (int) enemies.get(i).y - 30;
 					maxY = (int) enemies.get(i).y - 20;
-					/*offset = fixXBoundsHpBar(minX, maxX);
-					minX += offset;
-					maxX += offset;
-					offset = fixYBoundsHpBar(minY, maxY);
-					minY += offset;
-					maxY += offset;
-					paint.setColor(Color.RED);
-					paint.setStyle(Paint.Style.FILL);
-					drawRect(minX, minY, minX + (40 * enemies[i].getHp() / enemies[i].getHpMax()), maxY, g);
-					paint.setColor(Color.BLACK);
-					paint.setStyle(Paint.Style.STROKE);
-					drawRect(minX, minY, maxX, maxY, g);*/
 					paint.setColor(Color.RED);
 					paint.setStyle(Paint.Style.FILL);
 					drawRect(minX, minY, minX + (40 * enemies.get(i).getHp() / enemies.get(i).getHpMax()), maxY, g);
 					paint.setColor(Color.BLACK);
 					paint.setStyle(Paint.Style.STROKE);
 					drawRect(minX, minY, maxX, maxY, g);
-				}
 			}
 		}
 		for(int i = 0; i < structures.size(); i++)

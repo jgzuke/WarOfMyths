@@ -4,19 +4,10 @@
 package com.magegame;
 public final class Enemy_Default extends Enemy
 {
-	/**
-	 * Sets health, worth, and image
-	 * @param creator control object
-	 * @param setX starting x position
-	 * @param setY starting y position
-	 */
-	public Enemy_Default(Controller creator, double setX, double setY, int setHP, int setWorth)
+	public Enemy_Default(Controller creator, double X, double Y, int HP, int Worth,
+		boolean gun, boolean sheild, boolean hide, boolean sword, boolean Sick, int type)
 	{
-		super(creator, setX, setY);
-		visualImage = control.imageLibrary.rogue_Image[53]; //TODO change to arrayList position
-		setImageDimensions();
-		baseHp(setHP);
-		worth = setWorth;
+		super(creator, X, Y, HP, Worth, gun, sheild, hide, sword, Sick, type);
 	}
 	@Override
 	protected void frameCall()
@@ -58,10 +49,11 @@ public final class Enemy_Default extends Enemy
 			if(currentFrame<27) //geting weapon ready+aiming
 			{
 				aimAheadOfPlayer();
-			} else if(currentFrame==36) // 
+			} else if(currentFrame==36) // shoots
 			{
 				shootLaser();
-			} else if(currentFrame==45) action = "Nothing"; // attack done
+				if(LOS) currentFrame=25; // shoots again
+			} else if(currentFrame==45) action = "Nothing";   // attack done
 		} else if(action.equals("Move"))
 		{
 			currentFrame++;
@@ -97,58 +89,79 @@ public final class Enemy_Default extends Enemy
 				}
 			}
 		}
-		visualImage = control.imageLibrary.rogue_Image[currentFrame];
+		visualImage = control.imageLibrary.enemy_Image[currentFrame];
 		super.frameCall();
 	}
 	protected void frameReactionsDangerLOS()
 	{
-			distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
-			if(distanceFound < 100 && distanceFound > 60)
-			{
-				if(control.getRandomInt(3) == 0)
-				{
-					rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
-					if(!rollSideways())
-					{
-						rollTowards();
-					}
-				}
-			}
-			else
-			{
-				frameReactionsNoDangerLOS();
-			}
+		frameReactionsNoDangerLOS();
 	}
 	protected void frameReactionsDangerNoLOS()
 	{
-			distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
-			if(distanceFound < 100)
+		distanceFound = checkDistance(danger[0][0], danger[1][0], x, y);
+		if(distanceFound < 100)
+		{
+			if(hasSheild)
+			{
+				action = "Sheild";
+				currentFrame=72;
+			} else
 			{
 				rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
-				if(!rollSideways())
-				{
-					rollTowards();
-				}
+				roll();
 			}
-			else
-			{
-				frameReactionsNoDangerNoLOS();
-			}
+		} else
+		{
+			frameReactionsNoDangerNoLOS();
+		}
 	}
 	protected void frameReactionsNoDangerLOS()
 	{
-			rads = Math.atan2(( control.player.y - y), (control.player.x - x));
-			rotation = rads * r2d;
-			distanceFound = checkDistance(x, y, control.player.x,  control.player.y);
-			if(distanceFound < 30)
+		rads = Math.atan2(( control.player.y - y), (control.player.x - x));
+		rotation = rads * r2d;
+		distanceFound = checkDistance(x, y, control.player.x,  control.player.y);
+		if(distanceFound < 30)
+		{
+			if(hp<200)
 			{
-				attacking = true;
-				playing = true;
-				currentFrame = 21;
+				rollAway();
+			} else
+			{
+				if(hasSword)
+				{
+					action = "Melee";
+					currentFrame = 46;
+				} else
+				{
+					rollSideways();
+				}
+			}
+		} else if(distanceFound < 150)
+		{
+			if(hp<200)
+			{
+				runAway();
+			} else
+			{
+				if(hasGun)
+				{
+					action = "Shoot";
+					currentFrame = 21;
+				} else
+				{
+					runTowardPlayer();
+				}
+			}
+		} else
+		{
+			if(hp<200)
+			{
+				runAway();//TODO change to run to safe
 			} else
 			{
 				runTowardPlayer();
 			}
+		}
 	}
 	protected void frameReactionsNoDangerNoLOS()
 	{

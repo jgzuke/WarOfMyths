@@ -31,9 +31,7 @@ public class Structure_Spawn extends Structure
 		if(timer == 100)
 		{
 			timer = 0;
-			Enemy_Default newEnemy = new Enemy_Default(control, (int)x, (int)y, 200, 2);
-			newEnemy.sick=true;
-			control.enemies.add(newEnemy);
+			control.makeEnemy(1, (int)x, (int)y);
 			control.createProj_TrackerEnemyAOE(x, y, 140, false);
 			control.activity.playEffect("burst");
 		}
