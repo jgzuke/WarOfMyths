@@ -2,6 +2,7 @@
  * all variables to store as well as some base level behaviors, pause and resume and start functions
  */
 package com.magegame;
+import android.view.ViewGroup;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -104,7 +105,8 @@ public class StartActivity extends Activity
 	private String SKU_1000 = "platinum_1000";
 	private String SKU_5000 = "platinum_5000";
 	private int RC_REQUEST = 10001;
-	IabHelper mHelper;@
+	IabHelper mHelper;
+	private Context context;@
 	Override
 	/**
 	 * sets screen and window variables and reads in data
@@ -115,6 +117,7 @@ public class StartActivity extends Activity
 		super.onCreate(savedInstanceState);
 		setWindowAndAudio();
 		boolean firstTime = readSavedData();
+		context = this;
 		startMusic();
 		control = new Controller(this, this);
 		setContentView(R.layout.activity_main);
@@ -191,7 +194,7 @@ public class StartActivity extends Activity
 	
 	private LayoutInflater layoutInflater;
 	private int levelSelectedToPlay = 10;
-	private String[] levelNames = new String[] {"Tutorial", "Level 1", "Level 2"};
+	private String[] levelNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
 	ListView playLevelList;
 	public void playClickHandler(View v)
 	{
@@ -216,27 +219,37 @@ public class StartActivity extends Activity
 		limitedClick = (Button) findViewById(R.id.limit);
 		regenerateClick = (Button) findViewById(R.id.regen);
 		playLevelList = (ListView) findViewById(R.id.scroll);
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, levelNames);
-		playLevelList.setAdapter(adapter); 
+		playLevelList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, levelNames)
+		{
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent)
+			{
+			    TextView textView = (TextView) super.getView(position, convertView, parent);
+			    textView.setTextColor(Color.parseColor("#FFFFFF"));
+			    return textView;
+			}
+		});
 		playLevelList.setOnItemClickListener(new OnItemClickListener()
 		{
 	         @Override
              public void onItemClick(AdapterView<?> parent, View view,int position, long id)
 	         {
+	        	 highlightSelectedLevel((levelSelectedToPlay/10)-1, false);
 	        	 levelSelectedToPlay=(position+1)*10;
-	        	 highlightSelectedLevel();
-             }
-	    }); 
-		highlightSelectedLevel();
+	        	 highlightSelectedLevel(position, true);
+	         }
+	    });
 	}
-	public void highlightSelectedLevel()
+	public void highlightSelectedLevel(int position, boolean selected)
 	{
-		/*for(int i = 0; i < levelNames.length; i++)
+		if(selected)
 		{
-			playLevelList.getChildAt(i).setBackgroundResource(R.drawable.menu_text150x40);
+			((TextView)playLevelList.getChildAt(position)).setTextColor(Color.parseColor("#1D8BD9"));
+		} else
+		{
+			((TextView)playLevelList.getChildAt(position)).setTextColor(Color.parseColor("#FFFFFF"));
 		}
-		playLevelList.getChildAt((levelSelectedToPlay/10)-1).setBackgroundResource(R.drawable.menu_text_selected150x40);
-	*/}
+	}
 	public void optionsClickHandler(View v)
 	{
 		//setContentView(R.layout.options);

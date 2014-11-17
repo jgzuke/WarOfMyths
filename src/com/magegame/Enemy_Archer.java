@@ -24,6 +24,11 @@ public final class Enemy_Archer extends Enemy_Muggle
 		weight = 1;
 		projectileVelocity = 40*(0.4+control.getDifficultyLevelMultiplier());
 	}
+	public Enemy_Archer(Controller creator, int setX, int setY, boolean hasKey)
+	{
+		this(creator, setX, setY);
+		keyHolder = hasKey;
+	}
 	@
 	Override
 	protected void frameCall()

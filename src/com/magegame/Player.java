@@ -295,7 +295,15 @@ public final class Player extends Human
 						}
 						else
 						{
-							movement();
+							if(!touchingShoot)
+							{
+								movement();
+							} else
+							{
+								currentFrame = 31;
+								rads = Math.atan2(touchShootY, touchShootX);
+				        		rotation=rads*180/Math.PI;
+							}
 						}
 				}
 			}

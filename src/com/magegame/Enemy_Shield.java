@@ -18,6 +18,11 @@ public class Enemy_Shield extends Enemy_Muggle
 		visualImage = control.imageLibrary.shield_Image[0];
 		setImageDimensions();
 		setHpMax(hp);
+	}
+	public Enemy_Shield(Controller creator, int setX, int setY, boolean hasKey)
+	{
+		this(creator, setX, setY);
+		keyHolder = hasKey;
 	}@
 	Override
 	protected void frameCall()
