@@ -28,7 +28,13 @@ public final class Enemy_Default extends Enemy
 		} else if(action.equals("Melee"))
 		{
 			currentFrame++;
-			attacking();
+			if(currentFrame==53)
+			{
+				meleeAttack(300);
+			} else if(currentFrame==63)
+			{
+				meleeAttack(420);
+			}
 			if(currentFrame==71) action = "Nothing";	//attack over
 		} else if(action.equals("Sheild"))
 		{
@@ -49,12 +55,7 @@ public final class Enemy_Default extends Enemy
 			}
 		} else if(action.equals("Shoot"))
 		{
-			if(currentFrame<26) //geting weapon ready
-			{
-				action = "Melee";
-				aimAheadOfPlayer();
-				currentFrame = 49;
-			} else if(currentFrame==26) //aims at shooting point
+			if(currentFrame<27) //geting weapon ready+aiming
 			{
 				aimAheadOfPlayer();
 			} else if(currentFrame==36) // 
@@ -71,12 +72,11 @@ public final class Enemy_Default extends Enemy
 			if(runTimer==0) action = "Nothing"; // stroll done
 		} else
 		{
-			if(getCheckLOSTimer() < 1)
-			{
-				checkLOS();
-			}
+			currentFrame=0;
+			checkLOSTimer--;
+			if(checkLOSTimer < 1) checkLOS();
 			checkDanger();
-			if(getPathedToHitLength() > 0)
+			if(pathedToHitLength > 0)
 			{
 				if(LOS)
 				{
@@ -145,68 +145,16 @@ public final class Enemy_Default extends Enemy
 				attacking = true;
 				playing = true;
 				currentFrame = 21;
-			}
-			else
+			} else
 			{
-				rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x));
-				rotation = rads * r2d;
 				runTowardPlayer();
 			}
 	}
 	protected void frameReactionsNoDangerNoLOS()
 	{
-			currentFrame = 0;
-			playing = false;
-			if(control.getRandomInt(5) == 0)
-			{
-				if(control.getRandomInt(6) == 0)
-				{
-					playing = true;
-					currentFrame = 46;
-					discovered = false;
-				} else
-				{
-					runRandom();
-				}
-			}
-	}
-	protected void attacking()
-	{
-		if(currentFrame == 28)
+		if(control.getRandomInt(20) == 0)
 		{
-			distanceFound = checkDistance(x + Math.cos(rads) * 30, y + Math.sin(rads) * 30, control.player.x, control.player.y);
-			if(distanceFound < 25)
-			{
-				if(charged)
-				{
-					control.player.getHit((int)(2000*control.getDifficultyLevelMultiplier()));
-				} else
-				{
-					control.player.getHit((int)(300*control.getDifficultyLevelMultiplier()));
-				}
-				charged = false;
-				control.activity.playEffect("sword1");
-			} else
-			{
-				control.activity.playEffect("swordmiss");
-			}
-		}
-		if(currentFrame == 40)
-		{
-			distanceFound = checkDistance(x + Math.cos(rads) * 25, y + Math.sin(rads) * 25, control.player.x, control.player.y);
-			if(distanceFound < 25)
-			{
-				control.player.getHit((int)(450*control.getDifficultyLevelMultiplier()));
-				control.activity.playEffect("sword2");
-				if(control.getRandomInt(3) == 0)
-				{
-					control.player.rads = Math.atan2(control.player.y-y, control.player.x-x);
-					control.player.stun();
-				}
-			} else
-			{
-				control.activity.playEffect("swordmiss");
-			}
+			runRandom();
 		}
 	}
 }

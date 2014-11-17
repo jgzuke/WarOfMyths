@@ -21,7 +21,7 @@ abstract public class Enemy extends Human
 	protected int levelCurrentPosition = 0;
 	protected int pathedToHitLength = 0;
 	protected boolean LOS;
-	private int checkLOSTimer = 1;
+	protected int checkLOSTimer = 1;
 	protected double distanceFound;
 	private int dangerCheckCounter;
 	protected boolean keyHolder = false;
@@ -34,7 +34,7 @@ abstract public class Enemy extends Human
 	protected double xMove;
 	protected double yMove;
 	protected double projectileVelocity=20;
-	protected String action; //"Nothing", "Alert", "Shoot", "Melee", "Roll", "Hide", "Sheild", "Stun"
+	protected String action; //"Nothing", "Move", "Alert", "Shoot", "Melee", "Roll", "Hide", "Sheild", "Stun"
 	/**
 	 * sets danger arrays, speed and control object
 	 * @param creator control object
@@ -92,8 +92,6 @@ abstract public class Enemy extends Human
 			hp += 40;
 		}
 		hp += 4;
-		checkLOSTimer--;		
-        runTimer--;		
 		super.frameCall();
 		clearArray(levelX, 30);
 		clearArray(levelY, 30);
@@ -244,7 +242,7 @@ abstract public class Enemy extends Human
 			}
 			if(runPathChooseCounter == 300)
 			{
-				run();
+				run(10);
 			}
 		}
 	}        
@@ -273,12 +271,13 @@ abstract public class Enemy extends Human
 	/**
 	 * Runs in direction object is rotated for 10 frames
 	 */
-	protected void run()
+	protected void run(int time)
 	{
-		runTimer = 5;
+		runTimer = time;
+		action = "Move";
 		xMove = Math.cos(rads) * speedCur;
 		yMove = Math.sin(rads) * speedCur;
-        currentFrame = 0;
+        if(currentFrame>17) currentFrame = 0;
 	}
 	/**
 	 * Checks whether object can 'see' player
@@ -296,7 +295,7 @@ abstract public class Enemy extends Human
 		{
 			LOS = false;
 		}
-		resetCheckLOSTimer();
+		checkLOSTimer = 10;
 	}
 	/**
 	 * Checks whether any Proj_Trackers are headed for object
@@ -430,6 +429,26 @@ abstract public class Enemy extends Human
 		this.levelYForward[i] = levelYForward;
 	}
 	/**
+	 * when enemy swings at player, check whether it hits
+	 */
+	protected void meleeAttack(int damage)
+	{
+		distanceFound = checkDistance(x + Math.cos(rads) * 25, y + Math.sin(rads) * 25, control.player.x, control.player.y);
+		if(distanceFound < 25)
+		{
+			control.player.getHit((int)(damage*control.getDifficultyLevelMultiplier()));
+			control.activity.playEffect("sword2");
+			if(control.getRandomInt(3) == 0)
+			{
+				control.player.rads = Math.atan2(control.player.y-y, control.player.x-x);
+				control.player.stun();
+			}
+		} else
+		{
+			control.activity.playEffect("swordmiss");
+		}
+	}
+	/**
 	 * Runs towards player, if you cant, run randomly
 	 */
 	protected void runTowardPlayer()
@@ -462,7 +481,7 @@ abstract public class Enemy extends Human
 			}
 		} else
 		{
-			runTimer = 8;
+			run(8);
 		}
 	}
 	/**
@@ -504,7 +523,7 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		runTimer = distance/4;
+		run(distance/4);
 		return goodMove;
 	}
 	/**
@@ -548,7 +567,7 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		runTimer = 15;
+		run(15);
 		return goodMove;
 	}
 	/**
@@ -659,11 +678,10 @@ abstract public class Enemy extends Human
 		}
 		if(canMove)
 		{
-			runTimer = 20;
-		}
-		else
+			run(20);
+		} else
 		{
-			runTimer = 10;
+			run(10);
 		}
 	}
 	protected void baseHp(int setHP)
@@ -677,26 +695,6 @@ abstract public class Enemy extends Human
 	protected void incrementLevelCurrentPosition()
 	{
 		levelCurrentPosition ++;
-	}
-	/**
-	 * returns checkLOSTimer
-	 * @return checkLOSTimer
-	 */
-	protected int getCheckLOSTimer() {
-		return checkLOSTimer;
-	}
-	/**
-	 * resets checkLOSTimer to 10
-	 */
-	protected void resetCheckLOSTimer() {
-		checkLOSTimer = 10;
-	}
-	/**
-	 * returns runTimer
-	 * @return runTimer
-	 */
-	protected int getRunTimer() {
-		return runTimer;
 	}
 	/**
 	 * returns last known player x
