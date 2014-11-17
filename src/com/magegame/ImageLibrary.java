@@ -14,7 +14,6 @@ public final class ImageLibrary
 	protected Bitmap[] enemy_Image = new Bitmap[95];
 	protected Bitmap structure_Spawn;
 	protected Bitmap[] effects = new Bitmap[4];
-	protected Bitmap target_Image;
 	protected Bitmap isPlayer;
 	protected int isPlayerWidth;
 	protected Bitmap haskey;
@@ -119,8 +118,7 @@ public final class ImageLibrary
 		powerUps = loadArray1D(11, "icon_powerup", 30, 30);
 		powerUpBigs = loadArray1D(5, "icon_powerupbig", 70, 70);
 		coins = loadArray1D(2, "icon_menu_coin", 30, 30);
-		target_Image = loadImage("human_target", 48, 53);
-		enemy_Image = loadArray1D(95, "human_enemy", 60, 32);//TODO change size
+		enemy_Image = loadArray1D(95, "human_enemy", 100, 70);//TODO change size
 
 		shotAOEEnemy = loadImage("shotexplodeenemy", 80, 80);
 		shotEnemy = loadImage("shotenemy", 40, 3);

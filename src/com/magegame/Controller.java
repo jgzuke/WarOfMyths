@@ -81,7 +81,7 @@ public final class Controller extends View
 	protected Context context;
 	protected ImageLibrary imageLibrary;
 	private Random randomGenerator = new Random();
-	protected int difficultyLevel = 10;
+	protected int difficultyLevel;
 	private double difficultyLevelMultiplier;
 	protected int levelNum = 10;
 	private Bitmap background;
@@ -124,9 +124,12 @@ public final class Controller extends View
 		 */
 		public void run()
 		{
-			if(activity.gameRunning) // if game is running call framecalls
+			if(activity.gameOnAtAll) // if game is running call framecalls
 			{
-				frameCall();
+				if(activity.gameRunning) // if game is running call framecalls
+				{
+					frameCall();
+				}
 				mHandler.postDelayed(this, 50);
 			}
 		}
@@ -134,11 +137,12 @@ public final class Controller extends View
 	/** 
 	 * Initializes all undecided variables, loads level, creates player and enemy objects, and starts frameCaller
 	 */
-	public Controller(Context startSet, StartActivity activitySet)
+	public Controller(Context startSet, StartActivity activitySet, int levelToStart, int difficulty)
 	{
 		super(startSet);
 		activity = activitySet;
 		context = startSet;
+		changeDifficulty(difficulty);
 		imageLibrary = new ImageLibrary(startSet, this); // creates image library
 		screenMinX = activitySet.screenMinX;
 		screenMinY = activitySet.screenMinY;
@@ -152,9 +156,10 @@ public final class Controller extends View
 		detect = new PlayerGestureDetector(this); // creates gesture detector object
 		setOnTouchListener(detect);
 		detect.setPlayer(player);
-		changeDifficulty(10);
 		shootStick.visualImage = imageLibrary.loadImage("icon_shoot", 70, 35);
 		changePlayOptions();
+		frameCaller.run();
+		startFighting(levelToStart);
 	}
 	/**
 	 * starts a new round of fighting, sets difficulty and loads level
@@ -247,11 +252,7 @@ public final class Controller extends View
 		moneyMade = 0;
 		hasKey = false;
 		clearObjectArrays();
-		
-		//TODO clean arrays
-		
 		clearWallArrays();
-		
 		gameEnded = false;
 		imageLibrary.currentLevelTop = null;
 		activity.saveGame(); // saves game in case phone shuts down etc.
@@ -1076,6 +1077,7 @@ public final class Controller extends View
 	protected void createConsumable(double X, double Y, int ID) // 0: random powerup or
 	{															// 1-6:powerups 7:coin1
 		powerUps.add(new PowerUp(this, X, Y, 7));				// 9: coin5, 10:coin20, 8:key 
+		Log.e("dropped", "dropped");
 	}
 	/**
 	 * creates a player power ball

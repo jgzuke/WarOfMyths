@@ -88,7 +88,8 @@ public class StartActivity extends Activity
 	protected boolean highGraphics = false;
 	protected byte currentSkin = 0;
 	protected byte levelBeaten = 18;
-	protected boolean gameRunning = true;
+	protected boolean gameRunning = false;
+	protected boolean gameOnAtAll = false;
 	private FileOutputStream fileWrite;
 	private FileInputStream fileRead;
 	private int savePoints = 50;
@@ -119,7 +120,6 @@ public class StartActivity extends Activity
 		boolean firstTime = readSavedData();
 		context = this;
 		startMusic();
-		control = new Controller(this, this);
 		setContentView(R.layout.activity_main);
 		setUpPlayStoreBuyingThings();
 	}
@@ -191,11 +191,15 @@ public class StartActivity extends Activity
 	Button hurtClick;
 	Button limitedClick;
 	Button regenerateClick;
-	
+	private int difficultyLevel = 10;
 	private LayoutInflater layoutInflater;
 	private int levelSelectedToPlay = 10;
 	private String[] levelNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
 	ListView playLevelList;
+	private boolean drainHp=false;
+	private boolean lowerHp=false;
+	private boolean limitSpells=false;
+	private boolean enemyRegen=false;
 	public void playClickHandler(View v)
 	{
 		setContentView(R.layout.play);
@@ -203,7 +207,7 @@ public class StartActivity extends Activity
 		medClick = (Button) findViewById(R.id.med);
 		hardClick = (Button) findViewById(R.id.hard);
 		extClick = (Button) findViewById(R.id.ext);
-		switch(control.difficultyLevel)
+		switch(difficultyLevel)
 		{
 			case 10: easyClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 				break;
@@ -214,10 +218,15 @@ public class StartActivity extends Activity
 			case 0: extClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 				break;
 		}
+		levelSelectedToPlay=0;
 		sickClick = (Button) findViewById(R.id.sick);
 		hurtClick = (Button) findViewById(R.id.hurt);
 		limitedClick = (Button) findViewById(R.id.limit);
 		regenerateClick = (Button) findViewById(R.id.regen);
+		if(drainHp) sickClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		if(lowerHp) hurtClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		if(limitSpells) limitedClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		if(enemyRegen) regenerateClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		playLevelList = (ListView) findViewById(R.id.scroll);
 		playLevelList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, levelNames)
 		{
@@ -234,7 +243,7 @@ public class StartActivity extends Activity
 	         @Override
              public void onItemClick(AdapterView<?> parent, View view,int position, long id)
 	         {
-	        	 highlightSelectedLevel((levelSelectedToPlay/10)-1, false);
+	        	 if(levelSelectedToPlay!=0) highlightSelectedLevel((levelSelectedToPlay/10)-1, false);
 	        	 levelSelectedToPlay=(position+1)*10;
 	        	 highlightSelectedLevel(position, true);
 	         }
@@ -264,13 +273,20 @@ public class StartActivity extends Activity
 	}
 	public void playRoundClickHandler(View v)
 	{
-		setContentView(control);
-		control.frameCaller.run();
-		control.startFighting(levelSelectedToPlay);
+		if(levelSelectedToPlay!=0)
+		{
+			gameRunning = true;
+			gameOnAtAll = true;
+			control = new Controller(this, this, levelSelectedToPlay, difficultyLevel);
+			setContentView(control);
+		} else
+		{
+			Toast.makeText(context, "Choose a Level", Toast.LENGTH_LONG).show();
+		}
 	}
 	public void difEasyClickHandler(View v)
 	{
-		control.changeDifficulty(10);
+		difficultyLevel = 10;
 		easyClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		medClick.setBackgroundResource(R.drawable.menu_text150x40);
 		hardClick.setBackgroundResource(R.drawable.menu_text150x40);
@@ -278,7 +294,7 @@ public class StartActivity extends Activity
 	}
 	public void difMedClickHandler(View v)
 	{
-		control.changeDifficulty(6);
+		difficultyLevel = 6;
 		easyClick.setBackgroundResource(R.drawable.menu_text150x40);
 		medClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		hardClick.setBackgroundResource(R.drawable.menu_text150x40);
@@ -286,7 +302,7 @@ public class StartActivity extends Activity
 	}
 	public void difHardClickHandler(View v)
 	{
-		control.changeDifficulty(3);
+		difficultyLevel = 3;
 		easyClick.setBackgroundResource(R.drawable.menu_text150x40);
 		medClick.setBackgroundResource(R.drawable.menu_text150x40);
 		hardClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
@@ -294,7 +310,7 @@ public class StartActivity extends Activity
 	}
 	public void difExtClickHandler(View v)
 	{
-		control.changeDifficulty(0);
+		difficultyLevel = 0;
 		easyClick.setBackgroundResource(R.drawable.menu_text150x40);
 		medClick.setBackgroundResource(R.drawable.menu_text150x40);
 		hardClick.setBackgroundResource(R.drawable.menu_text150x40);
@@ -302,8 +318,8 @@ public class StartActivity extends Activity
 	}
 	public void sickClickHandler(View v)
 	{
-		control.drainHp = !control.drainHp;
-		if(control.drainHp)
+		drainHp = !drainHp;
+		if(drainHp)
 		{
 			sickClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		} else
@@ -313,8 +329,8 @@ public class StartActivity extends Activity
 	}
 	public void hurtClickHandler(View v)
 	{
-		control.lowerHp = !control.lowerHp;
-		if(control.lowerHp)
+		lowerHp = !lowerHp;
+		if(lowerHp)
 		{
 			hurtClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		} else
@@ -324,8 +340,8 @@ public class StartActivity extends Activity
 	}
 	public void limitedClickHandler(View v)
 	{
-		control.limitSpells = !control.limitSpells;
-		if(control.limitSpells)
+		limitSpells = !limitSpells;
+		if(limitSpells)
 		{
 			limitedClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		} else
@@ -335,8 +351,8 @@ public class StartActivity extends Activity
 	}
 	public void regenerateClickHandler(View v)
 	{
-		control.enemyRegen = !control.enemyRegen;
-		if(control.enemyRegen)
+		enemyRegen = !enemyRegen;
+		if(enemyRegen)
 		{
 			regenerateClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		} else
@@ -424,7 +440,9 @@ public class StartActivity extends Activity
 	 */
 	protected void loseFight()
 	{
+		control=null;
 		gameRunning = false;
+		gameOnAtAll=false;
 		setContentView(R.layout.activity_main);
 	}
 	/**
@@ -604,7 +622,8 @@ public class StartActivity extends Activity
 			saveGame();
 		} else
 		{
-			control.startWarningImediate("Not enough Money");
+			//TODO
+			Toast.makeText(context, "Not enough Money", Toast.LENGTH_LONG).show();
 		}
 	}
 	/**
@@ -621,7 +640,7 @@ public class StartActivity extends Activity
 			saveGame();
 		} else
 		{
-			control.startWarningImediate("Not enough Money");
+			Toast.makeText(context, "Not enough Money", Toast.LENGTH_LONG).show();
 		}
 	}
 	/**

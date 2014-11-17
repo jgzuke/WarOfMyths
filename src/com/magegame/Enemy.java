@@ -4,6 +4,8 @@
  */
 package com.magegame;
 
+import android.widget.Toast;
+
 abstract public class Enemy extends Human
 {
 	protected int runTimer = 0;
@@ -69,6 +71,7 @@ abstract public class Enemy extends Human
 		setImageDimensions();
 		baseHp(HP);
 		worth = Worth;
+		action = "Nothing";
 	}
 	/**
 	 * clears desired array
@@ -197,6 +200,7 @@ abstract public class Enemy extends Human
 			{
 				if(keyHolder)
 				{
+					Toast.makeText(control.context, "Key Dropped!", Toast.LENGTH_LONG).show();
 					control.createConsumable(x, y, 8);
 				} else
 				{

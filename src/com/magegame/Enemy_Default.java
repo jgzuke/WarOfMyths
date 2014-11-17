@@ -14,6 +14,7 @@ public final class Enemy_Default extends Enemy
 	{
 		if(action.equals("Stun"))
 		{
+			currentFrame=93;
 			stunTimer--;
 			if(stunTimer==0) action = "Nothing";		//stun over, go have fun
 		} else if(action.equals("Melee"))
@@ -39,6 +40,7 @@ public final class Enemy_Default extends Enemy
 			if(currentFrame==93) action = "Nothing";	//roll done
 		} else if(action.equals("Hide"))
 		{
+			currentFrame = 94;
 			if(checkDistance(x, y, control.player.x,  control.player.y) < 30) //player close enough to attack
 			{
 				action = "Melee";
@@ -46,13 +48,15 @@ public final class Enemy_Default extends Enemy
 			}
 		} else if(action.equals("Shoot"))
 		{
+			currentFrame++;
 			if(currentFrame<27) //geting weapon ready+aiming
 			{
 				aimAheadOfPlayer();
 			} else if(currentFrame==36) // shoots
 			{
 				shootLaser();
-				if(LOS) currentFrame=25; // shoots again
+				checkLOS();
+				if(LOS&&hp>600) currentFrame=25; // shoots again
 			} else if(currentFrame==45) action = "Nothing";   // attack done
 		} else if(action.equals("Move"))
 		{
@@ -122,7 +126,7 @@ public final class Enemy_Default extends Enemy
 		distanceFound = checkDistance(x, y, control.player.x,  control.player.y);
 		if(distanceFound < 30)
 		{
-			if(hp<200)
+			if(hp<800)
 			{
 				rollAway();
 			} else
@@ -136,9 +140,9 @@ public final class Enemy_Default extends Enemy
 					rollSideways();
 				}
 			}
-		} else if(distanceFound < 150)
+		} else if(distanceFound < 200)
 		{
-			if(hp<200)
+			if(hp<800)
 			{
 				runAway();
 			} else
@@ -154,7 +158,7 @@ public final class Enemy_Default extends Enemy
 			}
 		} else
 		{
-			if(hp<200)
+			if(hp<800)
 			{
 				runAway();//TODO change to run to safe
 			} else
