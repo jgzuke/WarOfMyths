@@ -10,7 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 public final class ImageLibrary
 {
-	protected Bitmap[] player_Image = new Bitmap[41];
+	protected Bitmap[] player_Image = new Bitmap[32];
 	protected Bitmap[] archer_Image = new Bitmap[49];
 	protected Bitmap[] mage_Image = new Bitmap[49];
 	protected Bitmap[] rogue_Image = new Bitmap[49];
@@ -63,7 +63,7 @@ public final class ImageLibrary
 	 */
 	protected void loadPlayerImage()
 	{
-		player_Image = loadArray1D(31, "human_playerzack", 46, 50);
+		player_Image = loadArray1D(32, "human_playerzack", 46, 50);
 		isPlayerWidth = 26;
 		/*switch(control.activity.currentSkin)
 		{

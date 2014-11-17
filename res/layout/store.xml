@@ -3,21 +3,21 @@
     android:layout_height="360dp"
     android:id="@+id/mainLayout"
     android:layout_gravity="center"
-    android:background="#000000" >
+    android:background="@drawable/menu_back3" >
     <Button
         android:id="@+id/back"
-        android:layout_width="20dp"
-		android:layout_height="20dp"
+        android:layout_width="30dp"
+		android:layout_height="30dp"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="5dp"
         android:onClick="toMenuClickHandler"
-        android:background="@drawable/menu_text20x20"/>
+        android:background="@drawable/menu_text30x30"/>
     <TextView
         android:id="@+id/boosts"
         android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
         android:textColor="#ffffff"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="40dp"
         android:layout_marginRight="10dp"
         android:layout_marginLeft="10dp"
         android:textSize="25sp"
@@ -27,7 +27,7 @@
     <ListView
         android:layout_below="@id/boosts"
         android:layout_width="200dp"
-        android:layout_height="270dp"
+        android:layout_height="260dp"
         android:layout_marginLeft="10dp"
         android:id="@+id/scroll1"
 		android:background="@drawable/menu_text200x270"/>
@@ -37,7 +37,7 @@
         android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
         android:textColor="#ffffff"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="40dp"
         android:layout_marginRight="10dp"
         android:textSize="25sp"
         android:text="STORE"
@@ -47,7 +47,7 @@
         android:layout_below="@id/store"
         android:layout_toRightOf="@id/scroll1"
         android:layout_width="200dp"
-        android:layout_height="270dp"
+        android:layout_height="260dp"
         android:layout_marginLeft="10dp"
         android:id="@+id/scroll2"
 		android:background="@drawable/menu_text200x270"/>
@@ -57,7 +57,7 @@
         android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
         android:textColor="#ffffff"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="40dp"
         android:textSize="25sp"
         android:text="PLAY"
         android:gravity="center"
@@ -67,7 +67,7 @@
         android:layout_toRightOf="@id/scroll2"
         android:layout_width="200dp"
         android:layout_marginLeft="10dp"
-        android:layout_height="270dp"
+        android:layout_height="260dp"
         android:id="@+id/scroll3"
 		android:background="@drawable/menu_text200x270"/>
 </RelativeLayout>

@@ -3,15 +3,15 @@
     android:layout_height="360dp"
     android:id="@+id/mainLayout"
     android:layout_gravity="center"
-    android:background="#000000" >
+    android:background="@drawable/menu_back2" >
     <Button
         android:id="@+id/back"
-        android:layout_width="20dp"
-		android:layout_height="20dp"
+        android:layout_width="30dp"
+		android:layout_height="30dp"
         android:layout_marginTop="5dp"
         android:layout_marginLeft="5dp"
         android:onClick="toMenuClickHandler"
-        android:background="@drawable/menu_text20x20"/>
+        android:background="@drawable/menu_text30x30"/>
     <Button
         android:id="@+id/play"
         android:layout_width="wrap_content"

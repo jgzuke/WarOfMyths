@@ -275,10 +275,12 @@ public final class Controller extends View
 		{			// *******EXAMPLE FOR COMMENTS FOR LOADLEVEL SECTION
 			levelWidth = 450; // height of level
 			levelHeight = 300; // width of level
-			player.x = 150; // player start x
-			player.y = 150; // player start y
+			player.x = 30; // player start x
+			player.y = 30; // player start y
+			exitX = 35;
+			exitY = 165;
 			enemies.add(new Enemy_Archer(this, 269, 86));
-			enemies.add(new Enemy_Archer(this, 358, 140));
+			enemies.add(new Enemy_Archer(this, 358, 140, true));
 			enemies.add(new Enemy_Archer(this, 365, 204));
 			enemies.add(new Enemy_Shield(this, 146, 61));
 			enemies.add(new Enemy_Shield(this, 327, 231));
@@ -296,26 +298,46 @@ public final class Controller extends View
 		}
 		if(levelNum == 20)
 		{
-			levelWidth = 450; // height of level
-			levelHeight = 300; // width of level
-			player.x = 150; // player start x
-			player.y = 150; // player start y
-			enemies.add(new Enemy_Archer(this, 269, 86));
-			enemies.add(new Enemy_Archer(this, 358, 140));
-			enemies.add(new Enemy_Archer(this, 365, 204));
-			enemies.add(new Enemy_Shield(this, 146, 61));
-			enemies.add(new Enemy_Shield(this, 327, 231));
-			makeWall_Rectangle(78, 122, 41, 24, true, false);
-			makeWall_Rectangle(63, -20, 31, 142, true, true);
-			makeWall_Rectangle(73, 238, 47, 62, true, true);
-			makeWall_Rectangle(94, -19, 25, 152, true, false);
-			makeWall_Rectangle(252, 269, 234, 62, true, true);
-			makeWall_Rectangle(412, 82, 74, 250, true, true);
-			makeWall_Rectangle(382, 133, 30, 83, true, false);
-			makeWall_Circle(330, 297, 47, 1, false);
-			makeWall_Rectangle(217, -15, 109, 81, true, false);
-			makeWall_Rectangle(179, -32, 38, 63, true, true);
-			makeWall_Rectangle(318, -41, 66, 63, true, true);
+			levelWidth = 300; // height of level
+			levelHeight = 660; // width of level
+			player.x = 20; // player start x
+			player.y = 640; // player start y
+			exitX = 227;
+			exitY = 610;
+			enemies.add(new Enemy_Shield(this, 150, 315));
+			enemies.add(new Enemy_Archer(this, 54, 377));
+			enemies.add(new Enemy_Archer(this, 150, 100, true));
+			enemies.add(new Enemy_Archer(this, 35, 484));
+			enemies.add(new Enemy_Archer(this, 227, 333));
+			enemies.add(new Enemy_Archer(this, 35, 114));
+			enemies.add(new Enemy_Archer(this, 262, 110));
+			enemies.add(new Enemy_Shield(this, 99, 195));
+			enemies.add(new Enemy_Shield(this, 213, 195));
+			makeWall_Rectangle(105, 279, 15, 120, true, true);
+			makeWall_Rectangle(180, 280, 15, 120, true, true);
+			makeWall_Rectangle(-22, 565, 143, 16, true, true);
+			makeWall_Rectangle(105, 461, 15, 120, true, true);
+			makeWall_Rectangle(180, 565, 143, 16, true, true);
+			makeWall_Rectangle(180, 460, 15, 120, true, true);
+			makeWall_Rectangle(263, 571, 61, 76, true, true);
+			makeWall_Rectangle(-9, 572, 47, 33, true, true);
+			makeWall_Rectangle(262, 321, 47, 60, true, true);
+			makeWall_Rectangle(262, 400, 47, 60, true, true);
+			makeWall_Rectangle(262, 481, 47, 60, true, true);
+			makeWall_Rectangle(-7, 253, 102, 41, true, true);
+			makeWall_Rectangle(207, 253, 102, 42, true, true);
+			makeWall_Rectangle(-55, -45, 425, 84, true, true);
+			makeWall_Circle(225, 38, 56, 1, false);
+			makeWall_Circle(74, 38, 56, 1, false);
+			makeWall_Rectangle(216, 224, 89, 54, true, false);
+			makeWall_Rectangle(241, 200, 29, 77, true, false);
+			makeWall_Rectangle(10, 224, 79, 54, true, false);
+			makeWall_Rectangle(35, 200, 29, 77, true, false);
+			makeWall_Rectangle(0, 284, 111, 72, true, false);
+			makeWall_Rectangle(0, 502, 114, 101, true, false);
+			makeWall_Rectangle(-7, 585, 46, 35, true, false);
+			makeWall_Rectangle(235, 637, 71, 35, true, false);
+			makeWall_Rectangle(72, 637, 73, 43, true, false);
 		}
 		if(levelNum == 30)
 		{

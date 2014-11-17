@@ -300,9 +300,10 @@ public final class Player extends Human
 								movement();
 							} else
 							{
-								currentFrame = 31;
+								/*currentFrame = 31;
+								playing = false;
 								rads = Math.atan2(touchShootY, touchShootX);
-				        		rotation=rads*180/Math.PI;
+				        		rotation=rads*180/Math.PI;*/
 							}
 						}
 				}
