@@ -10,10 +10,7 @@ abstract public class Human extends DrawnSprite
 	protected double rads;
 	protected double speedCur;
 	protected boolean hitBack;
-	protected boolean playing = false;
-	protected boolean createSpecialGraphicGainCounter = false;
 	protected boolean thisPlayer = false;
-	protected double weight = 2;
 	/**
 	 * Regains health, ends walk animation, plays animation
 	 */
@@ -21,14 +18,6 @@ abstract public class Human extends DrawnSprite
 	Override
 	protected void frameCall()
 	{
-		if(currentFrame == 19)
-		{
-			currentFrame = 0;
-		}
-		if(playing)
-		{
-			currentFrame++;
-		}
 		if(hp > hpMax)
 		{
 			hp = hpMax;

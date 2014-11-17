@@ -99,9 +99,9 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 		{
 			for(int i = 0; i < control.enemies.size(); i++)
 			{
-				if(control.enemies.get(i) != null && !deleted && control.enemies.get(i).getRollTimer() < 1)
+				if(control.enemies.get(i) != null && !deleted && !control.enemies.get(i).action.equals("Roll"))
 				{
-					control.enemies.get(i).setLevels(control.enemies.get(i).getLevelCurrentPosition(), x, y, xForward, yForward);
+					control.enemies.get(i).setLevels(control.enemies.get(i).levelCurrentPosition, x, y, xForward, yForward);
 					control.enemies.get(i).incrementLevelCurrentPosition();
 					xDif = x - control.enemies.get(i).x;
 					yDif = y - control.enemies.get(i).y;

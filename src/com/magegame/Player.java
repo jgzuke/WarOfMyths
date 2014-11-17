@@ -11,6 +11,7 @@ public final class Player extends Human
 	protected int transformed = 0;
 	protected double touchY;
 	private double damageMultiplier = 1;
+	protected boolean playing = false;
 	protected int rollTimer = 0;
 	private double xMoveRoll;
 	private double yMoveRoll;
@@ -43,7 +44,6 @@ public final class Player extends Human
 		control = creator;
 		resetVariables();
 		visualImage = control.imageLibrary.player_Image[0];
-		weight = 1;
 		/*if(control.activity.useHestiasBlessing>0)
 		{
 			control.activity.useHestiasBlessing --;
@@ -85,7 +85,6 @@ public final class Player extends Human
 		setHpMax(hp);
 		deleted = false;
 		playing = false;
-		createSpecialGraphicGainCounter = false;
 		powerUpTimer=0;
 	}
 	/**
@@ -163,6 +162,14 @@ public final class Player extends Human
 				abilityTimerTransformed_hit = 20;
 			}
 			super.frameCall();
+			if(playing)
+			{
+				currentFrame++;
+			}
+			if(currentFrame == 19)
+			{
+				currentFrame = 0;
+			}
 			if(currentFrame<21)
 			{
 				rads = Math.atan2(touchY, touchX);
@@ -312,10 +319,6 @@ public final class Player extends Human
 			{			
 					x += xMoveRoll;
 					y += yMoveRoll;
-					if(rollTimer == 2)
-					{
-						weight = 1;
-					}
 			}
 		}
 		visualImage = control.imageLibrary.player_Image[currentFrame];

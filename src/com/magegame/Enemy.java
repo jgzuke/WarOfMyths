@@ -6,8 +6,8 @@ package com.magegame;
 
 abstract public class Enemy extends Human
 {
-	protected boolean rogue = false;
-	private int runTimer = 0;
+	protected int runTimer = 0;
+	protected int stunTimer = 0;
 	protected int worth = 3;
 	protected double lastPlayerX;
 	protected double lastPlayerY;
@@ -31,19 +31,29 @@ abstract public class Enemy extends Human
 	protected double pYVelocity=0;
 	private double pXSpot=0;
 	private double pYSpot=0;
+	protected double xMove;
+	protected double yMove;
+	protected double projectileVelocity=20;
+	protected String action; //"Nothing", "Alert", "Shoot", "Melee", "Roll", "Hide", "Sheild", "Stun"
 	/**
 	 * sets danger arrays, speed and control object
 	 * @param creator control object
 	 */
-	public Enemy(Controller creator)
+	public Enemy(Controller creator, double setX, double setY)
 	{
 		control = creator;
 		danger[0] = levelX;
 		danger[1] = levelY;
 		danger[2] = levelXForward;
 		danger[3] = levelYForward;
-		speedCur = 1.5 + (Math.pow(control.getDifficultyLevelMultiplier(), 0.4)*2.6);
-		speedCur *= 1.2;
+		currentFrame=0;
+		x = setX;
+		y = setY;
+		width = 30;
+		height = 30;
+		lastPlayerX = x;
+		lastPlayerY = y;
+		speedCur = 1.8 + (Math.pow(control.getDifficultyLevelMultiplier(), 0.4)*2.6);
 	}
 	/**
 	 * clears desired array
@@ -64,6 +74,10 @@ abstract public class Enemy extends Human
 	Override
 	protected void frameCall()
 	{
+		everySingleFrame();
+	}
+	private void everySingleFrame()
+	{
 		if(sick)
 		{
 			hp -= 20;
@@ -79,7 +93,7 @@ abstract public class Enemy extends Human
 		}
 		hp += 4;
 		checkLOSTimer--;		
-                runTimer--;		
+        runTimer--;		
 		super.frameCall();
 		clearArray(levelX, 30);
 		clearArray(levelY, 30);
@@ -87,29 +101,29 @@ abstract public class Enemy extends Human
 		clearArray(levelYForward, 30);
 		clearArray(pathedToHit, 30);
 		setImageDimensions();
-		double xdif = x - control.player.x;
-		double ydif = y - control.player.y;
+		pushOtherPeople();
+	}
+	/**
+	 * checks who else this guy is getting in the way of and pushes em
+	 */
+	private void pushOtherPeople()
+	{
 		double movementX;
 		double movementY;
 		double moveRads;
+		double xdif = x - control.player.x;
+		double ydif = y - control.player.y;
 		if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < Math.pow(radius, 2))
 		{
 			moveRads = Math.atan2(ydif, xdif);
-			movementX = x - (Math.cos(moveRads) * radius) - control.player.x;
-			movementY = y - (Math.sin(moveRads) * radius) - control.player.y;
-			double added = weight+control.player.weight;
-			if(control.player.rollTimer>0)
+			movementX = (x - (Math.cos(moveRads) * radius) - control.player.x)/2;
+			movementY = (y - (Math.sin(moveRads) * radius) - control.player.y)/2;
+			if(control.player.rollTimer<1)
 			{
-				control.player.x += movementX*(weight/added)/2;
-				control.player.y += movementY*(weight/added)/2;
-				x -= movementX*(control.player.weight/added)/3;
-				y -= movementY*(control.player.weight/added)/3;
-			} else
-			{
-				control.player.x += movementX*(weight/added);
-				control.player.y += movementY*(weight/added);
-				x -= movementX*(control.player.weight/added);
-				y -= movementY*(control.player.weight/added);
+				control.player.x += movementX;
+				control.player.y += movementY;
+				x -= movementX;
+				y -= movementY;
 			}
 		}
 		for(int i = 0; i < control.enemies.size(); i++)
@@ -121,13 +135,12 @@ abstract public class Enemy extends Human
 				if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < Math.pow(radius, 2))
 				{
 					moveRads = Math.atan2(ydif, xdif);
-					movementX = x - (Math.cos(moveRads) * radius) - control.enemies.get(i).x;
-					movementY = y - (Math.sin(moveRads) * radius) - control.enemies.get(i).y;
-					double added = weight+control.enemies.get(i).weight;
-					control.enemies.get(i).x += movementX*(weight/added);
-					control.enemies.get(i).y += movementY*(weight/added);
-					x -= movementX*(control.enemies.get(i).weight/added);
-					y -= movementY*(control.enemies.get(i).weight/added);
+					movementX = (x - (Math.cos(moveRads) * radius) - control.enemies.get(i).x)/2;
+					movementY = (y - (Math.sin(moveRads) * radius) - control.enemies.get(i).y)/2;
+					control.enemies.get(i).x += movementX;
+					control.enemies.get(i).y += movementY;
+					x -= movementX;
+					y -= movementY;
 				}
 			}
 		}
@@ -141,6 +154,8 @@ abstract public class Enemy extends Human
 	{
 		if(!deleted)
 		{
+			if(action.equals("Hide")) action = "Nothing";
+			damage /= control.getDifficultyLevelMultiplier();
 			damage /= 1.2;
 			if(control.player.powerUpTimer>0 && control.player.powerID == 4)
 			{
@@ -154,40 +169,47 @@ abstract public class Enemy extends Human
 			control.player.sp += damage*0.00003;
 			if(deleted)
 			{
-				control.player.sp += 0.15;
-				control.createProj_TrackerEnemyAOE(x, y, 140, false);
-				if(!sick)
-				{
-					if(keyHolder)
-					{
-						control.createConsumable(x, y, 8);
-					} else
-					{
-						if(control.getRandomDouble()>0.7)
-						{
-							control.createConsumable(x, y, 0);
-						}
-					}
-					for(int i = 0; i < worth; i ++)
-					{
-						double rads = control.getRandomDouble()*6.28;
-						if(worth-i>20)
-						{
-							control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 10);
-							i+=19;
-						} else if(worth-i>5)
-						{
-							control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 9);
-							i+=4;
-						} else
-						{
-							control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 7);
-						}
-					}
-				}
-				control.activity.playEffect("burst");
+				dieDrops();
 			}
 		}
+	}
+	/**
+	 * Drops items and stuff if enemy dead
+	 */
+	protected void dieDrops()
+	{
+			control.player.sp += 0.15;
+			control.createProj_TrackerEnemyAOE(x, y, 140, false);
+			if(!sick)
+			{
+				if(keyHolder)
+				{
+					control.createConsumable(x, y, 8);
+				} else
+				{
+					if(control.getRandomDouble()>0.7)
+					{
+						control.createConsumable(x, y, 0);
+					}
+				}
+				for(int i = 0; i < worth; i ++)
+				{
+					double rads = control.getRandomDouble()*6.28;
+					if(worth-i>20)
+					{
+						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 10);
+						i+=19;
+					} else if(worth-i>5)
+					{
+						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 9);
+						i+=4;
+					} else
+					{
+						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 7);
+					}
+				}
+			}
+			control.activity.playEffect("burst");
 	}
 	/**
 	 * Rotates to run away from player 
@@ -208,7 +230,7 @@ abstract public class Enemy extends Human
 				rads = rotation / r2d;
 				if(!control.checkObstructions(x, y, rads, 40, true))
 				{
-					runPathChooseCounter = 180;
+					runPathChooseCounter = 300;
 				}
 				else
 				{
@@ -216,19 +238,46 @@ abstract public class Enemy extends Human
 					rads = rotation / r2d;
 					if(!control.checkObstructions(x, y,  rads, 40, true))
 					{
-						runPathChooseCounter = 180;
+						runPathChooseCounter = 300;
 					}
 				}
 			}
+			if(runPathChooseCounter == 300)
+			{
+				run();
+			}
 		}
 	}        
+	/**
+	 * Aims towards player
+	 */
+	protected void aimAheadOfPlayer()
+	{
+			double timeToHit = (checkDistance(x, y, control.player.x, control.player.y))/projectileVelocity;
+			timeToHit *= (control.getRandomDouble()*0.7)+0.4;
+			double newPX = control.player.x+(pXVelocity*timeToHit);
+			double newPY = control.player.y+(pYVelocity*timeToHit);
+			double xDif = newPX-x;
+			double yDif = newPY-y;
+			rads = Math.atan2(yDif, xDif); // ROTATES TOWARDS PLAYER
+			rotation = rads * r2d;
+	}
+	/**
+	 * Releases arrow towards player
+	 */
+	protected void shootLaser()
+	{
+			control.createCrossbowBolt(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
+			control.activity.playEffect("arrowrelease");
+	}
 	/**
 	 * Runs in direction object is rotated for 10 frames
 	 */
 	protected void run()
 	{
-		runTimer = 10;
-		playing = true;
+		runTimer = 5;
+		xMove = Math.cos(rads) * speedCur;
+		yMove = Math.sin(rads) * speedCur;
         currentFrame = 0;
 	}
 	/**
@@ -240,11 +289,14 @@ abstract public class Enemy extends Human
 		if(!control.checkObstructionsPoint((float)x, (float)y, (float)control.player.x, (float)control.player.y, false))
 		{
 			LOS = true;
-		}
-		else
+			lastPlayerX = control.player.x;
+			lastPlayerY = control.player.y;
+			checkedPlayerLast = false;
+		} else
 		{
 			LOS = false;
 		}
+		resetCheckLOSTimer();
 	}
 	/**
 	 * Checks whether any Proj_Trackers are headed for object
@@ -290,56 +342,78 @@ abstract public class Enemy extends Human
 		this.distanceFound = distanceFound;
 	}
 	/**
-	 * reaction when in danger with LOS
+	 * rolls forward for 11 frames
 	 */
-	abstract protected void frameReactionsDangerLOS();
+	protected void roll()
+	{
+		currentFrame = 82;
+		xMove = Math.cos(rads) * 8;
+		yMove = Math.sin(rads) * 8;
+	}
 	/**
-	 * reaction when in danger with no LOS
+	 * rolls sideways for 11 frames
 	 */
-	abstract protected void frameReactionsDangerNoLOS();
+	protected boolean rollSideways()
+	{
+		boolean rolledSideways = true;
+		rads = Math.atan2((control.player.y - y), (control.player.x - x));
+		rotation = rads * r2d;
+		rads = (rotation + 90) / r2d;
+		if(control.checkObstructions(x, y, rads, 42, true))
+		{
+			rads = (rotation - 90) / r2d;
+			if(control.checkObstructions(x, y, rads, 42, true))
+			{
+				rolledSideways = false;
+			}
+			else
+			{
+				rotation -= 90;
+				rads = rotation / r2d;
+				roll();
+			}
+		} else
+		{
+			rads = (rotation - 90) / r2d;
+			if(control.checkObstructions(x, y, rads, 42, true))
+			{
+				rotation += 90;
+				rads = rotation / r2d;
+				roll();
+			}
+			else
+			{
+				if(Math.random() > 0.5)
+				{
+					rotation += 90;
+					roll();
+				}
+				else
+				{
+					rotation -= 90;
+					roll();
+				}
+			}
+		}
+		return rolledSideways;
+	}
 	/**
-	 * reaction when in no danger with LOS
+	 * rolls towards player for 11 frames
 	 */
-	abstract protected void frameReactionsNoDangerLOS();
-	/**
-	 * returns type
-	 * @return type of enemy
-	 */
-	abstract protected int getType();
+	protected void rollTowards()
+	{
+		rads = Math.atan2((control.player.y - y), (control.player.x - x));
+		rotation = rads * r2d;
+		roll();
+	}
 	/**
 	 * stuns enemy
 	 * @param time time to stun enemy for
 	 */
-	abstract protected void stun(int time);
-	/**
-	 * returns roll timer
-	 * @return roll timer
-	 */
-	abstract protected int getRollTimer();
-	/**
-	 * sets run timer
-	 * @param runTimer sets to run timer
-	 */
-	protected void setRunTimer(int runTimer) {
-		this.runTimer = runTimer;
-	}
-	/**
-	 * reaction when in no danger with no LOS
-	 */
-	abstract protected void frameReactionsNoDangerNoLOS();
-	/**
-	 * returns levelCurrentPosition
-	 * @return levelCurrentPosition
-	 */
-	protected int getLevelCurrentPosition() {
-		return levelCurrentPosition;
-	}
-	/**
-	 * returns pathedToHitLength
-	 * @return pathedToHitLength
-	 */
-	protected int getPathedToHitLength() {
-		return pathedToHitLength;
+	protected void stun(int time)
+	{
+		action ="Stun";
+		stunTimer=time;
 	}
 	/**
 	 * sets a certain index in danger arrays
@@ -388,9 +462,8 @@ abstract public class Enemy extends Human
 			}
 		} else
 		{
-			setRunTimer(8);
+			runTimer = 8;
 		}
-		playing = true;
 	}
 	/**
 	 * runs towards a set x and y
@@ -431,7 +504,7 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		setRunTimer(distance/4);
+		runTimer = distance/4;
 		return goodMove;
 	}
 	/**
@@ -475,7 +548,7 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
-		setRunTimer(15);
+		runTimer = 15;
 		return goodMove;
 	}
 	/**
@@ -586,16 +659,17 @@ abstract public class Enemy extends Human
 		}
 		if(canMove)
 		{
-			setRunTimer(20);
+			runTimer = 20;
 		}
 		else
 		{
-			setRunTimer(10);
+			runTimer = 10;
 		}
-		playing = true;
 	}
-	protected void baseHp() {
-		hp *= Math.pow(control.getDifficultyLevelMultiplier(), ((double)hp/10000));
+	protected void baseHp(int setHP)
+	{
+		hp = (int)(setHP*Math.pow(control.getDifficultyLevelMultiplier(), ((double)hp/10000)));
+		setHpMax(hp);
 	}
 	/**
 	 * adds 1 to levelCurrentPosition
