@@ -1,5 +1,5 @@
 /**
- * behavior for enemy power ball, much like crossbowbolt
+ * Defines behavior for enemy crossbowmans projectiles
  */
 package com.magegame;
 public final class Proj_Tracker_Enemy extends Proj_Tracker
@@ -27,17 +27,16 @@ public final class Proj_Tracker_Enemy extends Proj_Tracker
 		setImageDimensions();
 		power = Power;
 		rotation = Rotation;
-		if(control.player.currentFrame < 22 && !deleted)
+		if(control.player.currentFrame < 22 && !deleted) // currentframe under 22 because if player rolls it doesnt hit
 		{
 			xDif = x - control.player.x;
 			yDif = y - control.player.y;
-			if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100)
+			if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100) // if player within 10 pixels
 			{
-				control.player.getHit(power);
-				control.createProj_TrackerEnemyAOE(x, y, power, true);
+				control.player.getHit(power*4);
 				deleted = true;
-				control.activity.playEffect("electric");
-				if(control.getRandomDouble()*(0.5+control.getDifficultyLevelMultiplier()) > 1.2)
+				control.activity.playEffect("arrowhit");
+				if(control.getRandomDouble()*(0.5+control.getDifficultyLevelMultiplier()) > 1.7) // chance of stunning player
 				{
 					control.player.rads = Math.atan2(yForward, xForward);
 					control.player.stun();
@@ -52,30 +51,53 @@ public final class Proj_Tracker_Enemy extends Proj_Tracker
 	protected void frameCall()
 	{
 		super.frameCall();
-		if(control.checkHitBack(x, y, false) && !deleted)
+		double tempX = x;
+		double tempY = y;
+	}
+	@ Override
+	/**
+	 * explodes power ball when it hits back
+	 */
+	public void explodeBack()
+	{
+		control.createProj_TrackerEnemyAOE((int) realX, (int) realY, 30, false);
+		deleted = true;
+	}
+	@ Override
+	/**
+	 * explodes power ball when it hits enemy
+	 */
+	public void explode()
+	{
+		control.createProj_TrackerEnemyAOE((int) realX, (int) realY, power/2, true);
+		deleted = true;
+	}
+	@Override
+	protected void hitTarget(int px, int py)
+	{
+		if(control.player.currentFrame < 22 && !deleted) // currentframe under 22 because if player rolls it doesnt hit
 		{
-			x -= xForward;
-			y -= yForward;
-			control.createProj_TrackerEnemyAOE(x, y, 10, true);
-			deleted = true;
-			control.activity.playEffect("electric");
-		}
-		if(control.player.currentFrame < 22 && !deleted)
-		{
-			xDif = x - control.player.x;
-			yDif = y - control.player.y;
-			if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 100)
+			xDif = px - control.player.x;
+			yDif = py - control.player.y;
+			if(Math.pow(xDif, 2) + Math.pow(yDif, 2) < 225) // if player within 10 pixels
 			{
-				control.player.getHit(power);
-				control.createProj_TrackerEnemyAOE(x, y, power, true);
+				control.player.getHit(power*4);
 				deleted = true;
-				control.activity.playEffect("electric");
-				if(control.getRandomDouble()*(0.5+control.getDifficultyLevelMultiplier()) > 1.2)
+				control.activity.playEffect("arrowhit");
+				if(control.getRandomDouble()*(0.5+control.getDifficultyLevelMultiplier()) > 1.7) // chance of stunning player
 				{
 					control.player.rads = Math.atan2(yForward, xForward);
 					control.player.stun();
 				}
 			}
+		}
+	}
+	@Override
+	protected void hitBack(int px, int py)
+	{
+		if(control.checkHitBack(px, py, false) && !deleted)
+		{
+			explodeBack();
 		}
 	}
 }
