@@ -47,7 +47,7 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 		setImageDimensions();
 		power = Power;
 		rotation = Rotation;
-		rotChange = 6+(control.activity.buyExtraTracking*1);
+		rotChange = 6+(control.activity.premiumUpgrades[3]*1);
 		while(rotation<0)
 		{
 			rotation+=360;
@@ -135,7 +135,7 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 				double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 				if(distance < 600)
 				{
-					power*=Math.pow((double)control.activity.buyUpgradeAttack/10, 0.5);
+					power*=Math.pow((double)control.activity.upgrades[0]/10, 0.5);
 					spriteController.enemies.get(i).getHit((int)power);
 					explode();
 				}
@@ -150,7 +150,7 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 				double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 				if(distance < 600)
 				{
-					power*=Math.pow((double)control.activity.buyUpgradeAttack/10, 0.5);
+					power*=Math.pow((double)control.activity.upgrades[0]/10, 0.5);
 					spriteController.structures.get(i).getHit((int)power);
 					explode();
 				}

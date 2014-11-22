@@ -45,18 +45,9 @@ public class StartActivity extends Activity
 	protected int screenMinY;
 	protected int gameCurrency = 2000;
 	protected int realCurrency = 2000;
-	
-	protected byte buyUpgradeAttack = 0;
-	protected byte buyUpgradeHealth = 0;
-	protected byte buyUpgradeSpeed = 0;
-	protected byte buyUpgradeCooldown = 0;
-	protected byte buyAttackBoost = 0;
-	protected byte buyHeal = 0;
-	protected byte buyExtraReserve = 0;
-	protected byte buyExtraExcess = 0;
-	protected byte buyExtraReplentish = 0;
-	protected byte buyExtraTracking = 0;
-	
+	protected byte [] boosts = {0, 0}; // attack, heal
+	protected byte [] upgrades = {0, 0, 0, 0}; // attack, hp, speed, cooldown
+	protected byte [] premiumUpgrades = {0, 0, 0, 0}; // reserve, excess, replentish, tracking
 	protected boolean [] skins = {false, false, false, false, false, false, false};
 	protected byte currentSkin = 0;
 	protected byte levelBeaten = 18;
@@ -262,9 +253,129 @@ public class StartActivity extends Activity
 	{
 		//setContentView(R.layout.options);
 	}
+	private String[] boostNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
+	ListView boostList;
+	private String[] upgradeNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
+	ListView upgradeList;
+	private String[] skinNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
+	ListView skinList;
 	public void storeClickHandler(View v)
 	{
 		setContentView(R.layout.store);
+		boostList = (ListView) findViewById(R.id.scroll1);
+		boostList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, boostNames)
+		{
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent)
+			{
+			    TextView textView = (TextView) super.getView(position, convertView, parent);
+			    textView.setTextColor(Color.parseColor("#FFFFFF"));
+			    return textView;
+			}
+		});
+		boostList.setOnItemClickListener(new OnItemClickListener()
+		{
+	         @Override
+             public void onItemClick(AdapterView<?> parent, View view,int position, long id)
+	         {
+	        	 clickBuyItem(position);
+	         }
+	    });
+		upgradeList = (ListView) findViewById(R.id.scroll2);
+		upgradeList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, upgradeNames)
+		{
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent)
+			{
+			    TextView textView = (TextView) super.getView(position, convertView, parent);
+			    textView.setTextColor(Color.parseColor("#FFFFFF"));
+			    return textView;
+			}
+		});
+		upgradeList.setOnItemClickListener(new OnItemClickListener()
+		{
+	         @Override
+             public void onItemClick(AdapterView<?> parent, View view,int position, long id)
+	         {
+	        	 clickBuyItem(position+10);
+	         }
+	    });
+		skinList = (ListView) findViewById(R.id.scroll3);
+		skinList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, skinNames)
+		{
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent)
+			{
+			    TextView textView = (TextView) super.getView(position, convertView, parent);
+			    textView.setTextColor(Color.parseColor("#FFFFFF"));
+			    return textView;
+			}
+		});
+		skinList.setOnItemClickListener(new OnItemClickListener()
+		{
+	         @Override
+             public void onItemClick(AdapterView<?> parent, View view,int position, long id)
+	         {
+	        	 clickBuyItem(position+20);
+	         }
+	    });
+		/*
+		 protected byte buyUpgradeAttack = 0;
+	protected byte buyUpgradeHealth = 0;
+	protected byte buyUpgradeSpeed = 0;
+	protected byte buyUpgradeCooldown = 0;
+	protected byte buyAttackBoost = 0;
+	protected byte buyHeal = 0;
+	protected byte buyExtraReserve = 0;
+	protected byte buyExtraExcess = 0;
+	protected byte buyExtraReplentish = 0;
+	protected byte buyExtraTracking = 0;
+	
+	protected boolean [] skins = {false, false, false, false, false, false, false};
+		 */
+	}
+	private int getPrice(int ID)
+	{
+		double power = 3.4;
+		if(ID<10) // upgrades
+		{
+			return (int)(Math.pow(upgrades[ID], power)/2.49);
+		}
+		if(ID<20) // boosts
+		{
+			if(ID<13)return 200;
+			if(ID==13)return 100;
+			if(ID==14)return 600;
+			if(ID==15)return 2500;
+		}
+		return 200;
+	}
+	private boolean afford(int ID, int currency)
+	{
+		if(getPrice(ID)>currency) return false;
+		return true;
+	}
+	private int buyItem(int ID, int currency)
+	{
+		if(!afford(ID, currency))
+		{
+			Toast.makeText(context, "Can't Afford", Toast.LENGTH_LONG).show();
+		} else
+		{
+			currency -= getPrice(ID);
+			getItem(ID);
+		}
+		return currency;
+	}
+	private void clickBuyItem(int ID)
+	{
+		boolean real = false;
+		if(real) realCurrency = buyItem(ID, realCurrency);
+		if(!real) gameCurrency = buyItem(ID, gameCurrency);
+	}
+	private void getItem(int ID)
+	{
+		
 	}
 	public void toMenuClickHandler(View v)
 	{
@@ -608,360 +719,6 @@ public class StartActivity extends Activity
 		}
 	}
 	/**
-	 * buys an item with in game money
-	 * @param toBuy item to buy
-	 */
-	protected void buyGame(String toBuy)
-	{
-		int cost = buy(toBuy, gameCurrency, true);
-		if(cost != 0)
-		{
-			playMoney();
-			gameCurrency -= cost;
-			saveGame();
-		} else
-		{
-			//TODO
-			Toast.makeText(context, "Not enough Money", Toast.LENGTH_LONG).show();
-		}
-	}
-	/**
-	 * buys an item with real money
-	 * @param toBuy item to buy
-	 */
-	protected void buyReal(String toBuy)
-	{
-		int cost = buy(toBuy, realCurrency, true);
-		if(cost != 0)
-		{
-			playMoney();
-			realCurrency -= cost;
-			saveGame();
-		} else
-		{
-			Toast.makeText(context, "Not enough Money", Toast.LENGTH_LONG).show();
-		}
-	}
-	/**
-	 * checks whether an item is affordable
-	 * @param toBuy item to check
-	 * @return whether you can buy it
-	 */
-	protected boolean canBuyGame(String toBuy)
-	{
-		return !(buy(toBuy, gameCurrency, false) == 0);
-	}
-	/**
-	 * checks whether an item is affordable
-	 * @param toBuy item to check
-	 * @return whether you can buy it
-	 */
-	protected boolean canBuyReal(String toBuy)
-	{
-		return !(buy(toBuy, realCurrency, false) == 0);
-	}
-	/**
-	 * buys or checks price of an item
-	 * @param toBuy item to buy or check
-	 * @param currency how much currency you have
-	 * @param buying whether you are buying or checking price
-	 * @return price of item, returns 0 if unaffordable 
-	 */
-	protected int buy(String toBuy, int currency, boolean buying)
-	{
-		int ID = getItemID(toBuy);
-		int cost = 0;
-		boolean afforded = false;
-		double power = 3.4;
-		switch(ID)
-		{
-		case 1:
-			cost = (int)(Math.pow(buyUpgradeAttack, power)/2.49);
-			if(currency >= cost)
-			{
-				if(buying) buyUpgradeAttack++;
-				afforded = true;
-			}
-			break;
-		case 2:
-			cost = (int)(Math.pow(buyUpgradeHealth, power)/2.49);
-			if(currency >= cost)
-			{
-				if(buying) buyUpgradeHealth++;
-				afforded = true;
-			}
-			break;
-		case 3:
-			cost = (int)(Math.pow(buyUpgradeSpeed, power)/2.49);
-			if(currency >= cost)
-			{
-				if(buying) buyUpgradeSpeed++;
-				afforded = true;
-			}
-			break;
-		case 4:
-			cost = (int)(Math.pow(buyUpgradeCooldown, power)/2.49);
-			if(currency >= cost)
-			{
-				if(buying) buyUpgradeCooldown++;
-				afforded = true;
-			}
-			break;
-		case 9:
-			cost = 200;
-			if(currency >= cost&&buyHeal<10)
-			{
-				if(buying) buyHeal++;
-				afforded = true;
-			}
-			break;
-		case 10:
-			cost = 200;
-			if(currency >= cost&&buyAttackBoost<10)
-			{
-				if(buying) buyAttackBoost++;
-				afforded = true;
-			}
-			break;
-		case 16:
-			cost = 100;
-			if(currency >= cost && !skins[1])
-			{
-				if(buying) skins[1]=true;
-				afforded = true;
-			}
-			break;
-		case 17:
-			cost = 100;
-			if(currency >= cost && !skins[2])
-			{
-				if(buying) skins[2]=true;
-				afforded = true;
-			}
-			break;
-		case 18:
-			cost = 200;
-			if(currency >= cost && !skins[3])
-			{
-				if(buying) skins[3]=true;
-				afforded = true;
-			}
-			break;
-		case 19:
-			cost = 200;
-			if(currency >= cost && !skins[4])
-			{
-				if(buying) skins[4]=true;
-				afforded = true;
-			}
-			break;
-		case 20:
-			cost = 500;
-			if(currency >= cost && !skins[5])
-			{
-				if(buying) skins[5]=true;
-				afforded = true;
-			}
-			break;
-		case 21:
-			cost = 700;
-			if(currency >= cost && !skins[6])
-			{
-				if(buying) skins[6]=true;
-				afforded = true;
-			}
-			break;
-		case 22:
-			cost = 1000;
-			if(currency >= cost && !skins[7])
-			{
-				if(buying) skins[7]=true;
-				afforded = true;
-			}
-			break;
-		case 23:
-			cost = 100;
-			if(currency >= cost)
-			{
-				if(buying) gameCurrency += 1000;
-				afforded = true;
-			}
-			break;
-		case 24:
-			cost = 600;
-			if(currency >= cost)
-			{
-				if(buying) gameCurrency += 8000;
-				afforded = true;
-			}
-			break;
-		case 25:
-			cost = 2500;
-			if(currency >= cost)
-			{
-				if(buying) gameCurrency += 40000;
-				afforded = true;
-			}
-			break;
-		case 28:
-			cost = 30*(int)(Math.pow(buyExtraReserve, 2)+1);
-			if(currency >= cost)
-			{
-				if(buying) buyExtraReserve++;
-				afforded = true;
-			}
-			break;
-		case 29:
-			cost = 30*(int)(Math.pow(buyExtraExcess, 2)+1);
-			if(currency >= cost)
-			{
-				if(buying) buyExtraExcess++;
-				afforded = true;
-			}
-			break;
-		case 30:
-			cost = 30*(int)(Math.pow(buyExtraReplentish, 2)+1);
-			if(currency >= cost)
-			{
-				if(buying) buyExtraReplentish++;
-				afforded = true;
-			}
-			break;
-		case 31:
-			cost = 30*(int)(Math.pow(buyExtraTracking, 2)+1);
-			if(currency >= cost)
-			{
-				if(buying) buyExtraTracking++;
-				afforded = true;
-			}
-			break;
-		}
-		if(!afforded)
-		{
-			cost = 0;
-			//playEffect(R.raw.nomoney);
-		}
-		return(int) cost;
-	}
-	/**
-	 * returns items ID
-	 * @param toBuy item to get id for
-	 * @return id of item
-	 */
-	protected int getItemID(String toBuy)
-	{
-		int ID = 0;
-		if(toBuy.equals("Worship Apollo"))
-		{
-			ID = 1;
-		}
-		else if(toBuy.equals("Worship Posiedon"))
-		{
-			ID = 2;
-		}
-		else if(toBuy.equals("Worship Zues"))
-		{
-			ID = 3;
-		}
-		else if(toBuy.equals("Worship Hades"))
-		{
-			ID = 4;
-		}
-		else if(toBuy.equals("Worship Hephaestus"))
-		{
-			ID = 5;
-		}
-		else if(toBuy.equals("Worship Ares"))
-		{
-			ID = 6;
-		}
-		else if(toBuy.equals("Worship Athena"))
-		{
-			ID = 7;
-		}
-		else if(toBuy.equals("Worship Hermes"))
-		{
-			ID = 8;
-		}
-		else if(toBuy.equals("Ambrosia"))
-		{
-			ID = 9;
-		}
-		else if(toBuy.equals("Cooldown"))
-		{
-			ID = 10;
-		}
-		else if(toBuy.equals("Posiedon's Shell"))
-		{
-			ID = 11;
-		}
-		else if(toBuy.equals("Hades' Helm"))
-		{
-			ID = 12;
-		}
-		else if(toBuy.equals("Zues's Armor"))
-		{
-			ID = 13;
-		}
-		else if(toBuy.equals("Apollo's Flame"))
-		{
-			ID = 14;
-		}
-		else if(toBuy.equals("Worship Hera"))
-		{
-			ID = 15;
-		} else if(toBuy.equals("skin1"))
-		{
-			ID = 16;
-		} else if(toBuy.equals("skin2"))
-		{
-			ID = 17;
-		} else if(toBuy.equals("skin3"))
-		{
-			ID = 18;
-		} else if(toBuy.equals("skin4"))
-		{
-			ID = 19;
-		} else if(toBuy.equals("skin5"))
-		{
-			ID = 20;
-		} else if(toBuy.equals("skin6"))
-		{
-			ID = 21;
-		} else if(toBuy.equals("skin7"))
-		{
-			ID = 22;
-		} else if(toBuy.equals("1000g"))
-		{
-			ID = 23;
-		} else if(toBuy.equals("8000g"))
-		{
-			ID = 24;
-		} else if(toBuy.equals("40000g"))
-		{
-			ID = 25;
-		} else if(toBuy.equals("Iron Golem"))
-		{
-			ID = 26;
-		} else if(toBuy.equals("Gold Golem"))
-		{
-			ID = 27;
-		} else if(toBuy.equals("Reserve"))
-		{
-			ID = 28;
-		} else if(toBuy.equals("Excess"))
-		{
-			ID = 29;
-		} else if(toBuy.equals("Replentish"))
-		{
-			ID = 30;
-		} else if(toBuy.equals("Trailing"))
-		{
-			ID = 31;
-		}
-		return ID;
-	}
-	/**
 	 * returns item description
 	 * @param toBuy item to get description for
 	 * @return description
@@ -1167,16 +924,16 @@ public class StartActivity extends Activity
 		savedData[3] = 1;
 		savedData[29] = 0;
 		savedData[4] = levelBeaten;
-		savedData[5] = buyUpgradeAttack;
-		savedData[6] = buyUpgradeHealth;
-		savedData[7] = buyUpgradeSpeed;
-		savedData[8] = buyUpgradeCooldown;
-		savedData[9] = buyAttackBoost;
-		savedData[10] = buyHeal;
-		savedData[11] = buyExtraReserve;
-		savedData[12] = buyExtraExcess;
-		savedData[13] = buyExtraReplentish;
-		savedData[14] = buyExtraTracking;
+		savedData[5] = upgrades[0];
+		savedData[6] = upgrades[1];
+		savedData[7] = upgrades[2];
+		savedData[8] = upgrades[3];
+		savedData[9] = boosts[0];
+		savedData[10] = boosts[1];
+		savedData[11] = premiumUpgrades[0];
+		savedData[12] = premiumUpgrades[1];
+		savedData[13] = premiumUpgrades[2];
+		savedData[14] = premiumUpgrades[3];
 		savedData[24] = (byte)((int) volumeMusic);
 		savedData[25] = (byte)((int) volumeEffect);
 		String temp = correctDigits(Integer.toBinaryString(gameCurrency), 21);
@@ -1219,16 +976,16 @@ public class StartActivity extends Activity
 	public void readSaveData()
 	{
 		levelBeaten = savedData[4];
-		buyUpgradeAttack = savedData[5];
-		buyUpgradeHealth = savedData[6];
-		buyUpgradeSpeed = savedData[7];
-		buyUpgradeCooldown = savedData[8];
-		buyAttackBoost = savedData[9];
-		buyHeal = savedData[10];
-		buyExtraReserve = savedData[11];
-		buyExtraExcess = savedData[12];
-		buyExtraReplentish = savedData[13];
-		buyExtraTracking = savedData[14];
+		upgrades[0] = savedData[5];
+		upgrades[1] = savedData[6];
+		upgrades[2] = savedData[7];
+		upgrades[3] = savedData[8];
+		boosts[0] = savedData[9];
+		boosts[1] = savedData[10];
+		premiumUpgrades[0] = savedData[11];
+		premiumUpgrades[1] = savedData[12];
+		premiumUpgrades[2] = savedData[13];
+		premiumUpgrades[3] = savedData[14];
 		gameCurrency = savedData[20] + (128 * savedData[19]) + (16384*savedData[27]);
 		realCurrency = savedData[22] + (128 * savedData[21]) + (16384*savedData[28]);
 		volumeMusic = savedData[24];

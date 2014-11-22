@@ -464,7 +464,7 @@ public final class Controller extends View
 		paint.setColor(cooldownColor);
 		drawRect(404, 94, 404 + (int)((63 * player.abilityTimer_burst) / 500), 104, g);
 		drawRect(404, 199, 404 + (int)((63 * player.abilityTimer_roll) / 120), 209, g);
-		drawRect(404, 303, 404 + (int)((63 * player.abilityTimer_Proj_Tracker) / (91+(activity.buyExtraReserve*20))), 313, g);
+		drawRect(404, 303, 404 + (int)((63 * player.abilityTimer_Proj_Tracker) / (91+(activity.premiumUpgrades[0]*20))), 313, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(151);
