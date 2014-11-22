@@ -100,16 +100,7 @@ public class PlayerGestureDetector implements OnTouchListener {
 			clickDownNotPaused(x, y, ID, firstPointer);
 			if(!clickDownNotPaused(x, y, ID, firstPointer))
 			{
-				if(player.transformed == 0)
-				{
 					clickDownNotPausedNormal(x, y, ID, firstPointer);
-				} else if(player.transformed == 1)
-				{
-					clickDownNotPausedGolem(x, y, ID, firstPointer);
-				} else if(player.transformed == 2)
-				{
-					clickDownNotPausedHammer(x, y, ID, firstPointer);
-				}
 			}
 	}
 	/**
@@ -174,40 +165,6 @@ public class PlayerGestureDetector implements OnTouchListener {
         		touchingShootID = ID;
         		player.touchShootY = visualY(y)-267;
         		player.touchShootX = visualX(x)-(53+(buttonShiftX*0.95897));
-        }
-	}
-	/**
-	 * checks clicks when player is transformed into golem
-	 * @param x x value of click
-	 * @param y y value of click
-	 * @param ID id of click
-	 * @param firstPointer whether this is the only pointer on screen
-	 */
-	protected void clickDownNotPausedGolem(float x, float y, int ID, boolean firstPointer)
-	{
-		if(control.pointOnSquare(x, y, buttonShiftX+12, 41, buttonShiftX+82, 111))
-        {
-        	player.pound();
-        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 145, buttonShiftX+82, 215))
-        {
-        	player.hit();
-        }
-	}
-	/**
-	 * checks clicks when player is transformed into hammer guy
-	 * @param x x value of click
-	 * @param y y value of click
-	 * @param ID id of click
-	 * @param firstPointer whether this is the only pointer on screen
-	 */
-	protected void clickDownNotPausedHammer(float x, float y, int ID, boolean firstPointer)
-	{
-		if(control.pointOnSquare(x, y, buttonShiftX+12, 41, buttonShiftX+82, 111))
-        {
-        	player.pound();
-        }else if(control.pointOnSquare(x, y, buttonShiftX+12, 145, buttonShiftX+82, 215))
-        {
-        	player.hit();
         }
 	}
 	/**

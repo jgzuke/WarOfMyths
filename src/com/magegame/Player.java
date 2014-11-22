@@ -7,8 +7,6 @@ import android.widget.Toast;
 
 public final class Player extends Human
 {
-	protected int transformedTimer = 30000;
-	protected int transformed = 0;
 	protected double touchY;
 	private double damageMultiplier = 1;
 	protected boolean playing = false;
@@ -60,12 +58,7 @@ public final class Player extends Human
 	 */
 	public void resetVariables()
 	{
-		if(transformed != 0)
-		{
-			transformed = 0;
-			control.imageLibrary.loadPlayerImage();
-		}
-		transformedTimer = 30000;
+		control.imageLibrary.loadPlayerImage();
 		damageMultiplier = 1;
 		rollTimer = 0;
 		sp = 1;
@@ -94,25 +87,6 @@ public final class Player extends Human
 	Override
 	protected void frameCall()
 	{
-		if(transformedTimer == 0)
-		{
-			control.imageLibrary.loadTrans();
-			if(transformed == 1)
-			{
-				control.imageLibrary.player_Image = control.imageLibrary.loadArray1D(58, "human_playergolem", 85, 85);
-			} else
-			{
-				control.imageLibrary.player_Image = control.imageLibrary.loadArray1D(58, "human_playerhammer", 80, 80);
-			}
-		}
-		transformedTimer++;
-		if(transformedTimer == 500)
-		{
-			transformed = 0;
-			control.imageLibrary.transattack.recycle();
-			control.imageLibrary.loadPlayerImage();
-			control.imageLibrary.recycleArray(control.imageLibrary.trans);
-		}
 		if(control.drainHp)
 		{
 			hpAccurate += (double)hp/1000;
@@ -176,21 +150,6 @@ public final class Player extends Human
 			super.frameCall();
 			if(rollTimer < 1)
 			{
-				if(touchingShoot)
-	            {
-	            	if(abilityTimer_Proj_Tracker > 30&&minimumShootTime<1)
-	            	{
-			        	double temp1 = rads;
-			            rads = Math.atan2(touchShootY, touchShootX);
-			            rotation=rads*r2d;
-			        	releaseProj_Tracker();
-			        	control.shootStick.rotation=rads*180/Math.PI;
-			        	rads = temp1;
-		            	minimumShootTime = 2;
-	            	}
-	            }
-				rads = Math.atan2(touchY, touchX);
-				rotation = rads * r2d;
 				if(!deleted)
 				{
 					if(touchingShoot)
@@ -199,6 +158,12 @@ public final class Player extends Human
 						playing = false;
 						rads = Math.atan2(touchShootY, touchShootX);
 				        rotation=rads*180/Math.PI;
+				        if(abilityTimer_Proj_Tracker > 30&&minimumShootTime<1)
+		            	{
+				        	releaseProj_Tracker();
+				        	control.shootStick.rotation=rads*180/Math.PI;
+			            	minimumShootTime = 2;
+		            	}
 					} else
 					{
 						if(!touching || (Math.abs(touchX) < 5 && Math.abs(touchY) < 5))
@@ -208,6 +173,8 @@ public final class Player extends Human
 						}
 						else
 						{
+							rads = Math.atan2(touchY, touchX);
+							rotation = rads * r2d;
 							movement();
 						}
 					}
@@ -332,8 +299,6 @@ public final class Player extends Human
 	 */
 	protected void stun()
 	{
-		if(transformed == 0)
-		{
 			if(rollTimer<2)
 			{
 				rotation = rads * r2d + 180;
@@ -344,7 +309,6 @@ public final class Player extends Human
 		        abilityTimer_roll += 20;
 		        Toast.makeText(control.context, "Stunned!", Toast.LENGTH_SHORT).show();
 			}
-		}
 	}
 	/**
 	 * reduces and amplifies damage based on shields etc.
@@ -353,14 +317,6 @@ public final class Player extends Human
 	protected void getHit(double damage)
 	{
 		control.playerHit = 0;
-		if(transformed == 1)
-		{
-			damage *= 0.08;
-		}
-		if(transformed == 2)
-		{
-			damage *= 0.1;
-		}
 		damage *= 0.7;
 			damage *= damageMultiplier;
 			super.getHit(damage);
@@ -416,14 +372,6 @@ public final class Player extends Human
 		case 10:
 			control.moneyMade += 20*control.moneyMultiplier;
 			control.activity.gameCurrency += 20*control.moneyMultiplier;
-			break;
-		case 11:
-			transformedTimer = 0;
-			transformed = 1;
-			break;
-		case 12:
-			transformedTimer = 0;
-			transformed = 2;
 			break;
 		}
 	}

@@ -94,21 +94,6 @@ public final class ImageLibrary
 		isPlayer = loadImage("icon_isplayer", 2*isPlayerWidth, 2*isPlayerWidth);
 	}
 	/**
-	 * load transformation background
-	 */
-	protected void loadTrans()
-	{
-		String temp;
-		if(control.player.transformed==1)
-		{
-			transattack = loadImage("attacksword", 66, 66);
-		} else
-		{
-			transattack = loadImage("attackhammer", 66, 66);
-		}
-		trans = loadArray1D(10, "human_trans", 119, 119);
-	}
-	/**
 	 * loads all required images for all games
 	 */
 	protected void loadAllImages()

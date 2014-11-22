@@ -462,7 +462,7 @@ abstract public class Enemy extends Human
 	}
 	protected void hitWall()
 	{
-		action="Nothing";
+		//action="Nothing";
 	}
 	/**
 	 * rolls towards player for 11 frames
@@ -691,7 +691,7 @@ abstract public class Enemy extends Human
 	protected void runRandom()
 	{
 		boolean canMove = false;
-		rotation = control.getRandomInt(360);
+		rotation += control.getRandomInt(10)-5;
 		rads = rotation / r2d;
 		if(control.checkObstructions(x, y,rads, (int)(speedCur*20), true))
 		{

@@ -456,86 +456,28 @@ public final class Controller extends View
 	 */
 	protected void drawContestantStats(Canvas g)
 	{
-		int fix = 390;
 		paint.setAlpha(255);
 		paint.setStyle(Paint.Style.FILL);
-		paint.setColor(Color.WHITE);
-		//drawRect(395, 240, 475, 316, g);
-		//drawRect(5, 240, 85, 316, g);
 		paint.setColor(healthColor);
-		drawRect(400 - fix, 148, 400 - fix + (70 * player.getHp() / player.hpMax), 164, g);
-		paint.setColor(specialColor);
-		drawRect(400 - fix, 192, 400 - fix + (int)(140*player.sp/3), 208, g);
-		paint.setColor(Color.BLACK);
-		paint.setStyle(Paint.Style.STROKE);
-		drawRect(400 - fix, 148, 470 - fix, 164, g);
-		drawRect(400 - fix, 192, 470 - fix, 208, g);
-		paint.setTextSize(12);
-		paint.setTextAlign(Align.CENTER);
-		paint.setColor(Color.WHITE);
-		drawText(Integer.toString(player.getHp()), 435 - fix, 158, g);
-		drawText(Integer.toString((int)(2000*player.sp)), 435 - fix, 202, g);
-		//drawText(Integer.toString(activity.gameCurrency), 435 - fix, 205, g);
+		drawRect(14, 169, 14 + (62 * player.getHp() / player.hpMax), 181, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(cooldownColor);
-		if(player.transformed==0)
-		{
-			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimer_burst) / 500), 111, g);
-			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.abilityTimer_roll) / 120), 215, g);
-			drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.abilityTimer_Proj_Tracker) / (91+(activity.buyExtraReserve*20))), 310, g);
-		} else if(player.transformed==1)
-		{
-			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimerTransformed_pound) / 120), 111, g);
-			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.abilityTimerTransformed_hit) / 20), 215, g);
-			drawRect(90, 300, 90 + (int)((500 - player.transformedTimer) *3/5), 310, g);
-		} else
-		{
-			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimerTransformed_pound) / 120), 111, g);
-			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.abilityTimerTransformed_hit) / 20), 215, g);
-			drawRect(90, 300, 90 + (int)((500 - player.transformedTimer) *3/5), 310, g);
-		}
-		//drawRect(12 + fix, 134, 12 + fix + (int)((66 * player.getAbilityTimer_teleport()) / 350), 144, g);
-		paint.setStyle(Paint.Style.STROKE);
-		paint.setColor(Color.BLACK);
-		drawRect(12 + fix, 101, 78 + fix, 111, g);
-		if(player.transformed==0) drawRect(12 + fix, 300, 78 + fix, 310, g);
-		drawRect(12 + fix, 205, 78 + fix, 215, g);
+		drawRect(404, 94, 404 + (int)((63 * player.abilityTimer_burst) / 500), 104, g);
+		drawRect(404, 199, 404 + (int)((63 * player.abilityTimer_roll) / 120), 209, g);
+		drawRect(404, 303, 404 + (int)((63 * player.abilityTimer_Proj_Tracker) / (91+(activity.buyExtraReserve*20))), 313, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(151);
-			if(player.transformed==0)
-			{
 				if(player.abilityTimer_burst < 300)
 				{
-					drawRect(12 + fix, 45, 78 + fix, 111, g);
+					drawRect(404, 42, 466, 104, g);
 				}
 				if(player.abilityTimer_roll < 40)
 				{
-					drawRect(12 + fix, 149, 78 + fix, 215, g);
+					drawRect(402, 147, 466, 209, g);
 				}
-			} else if(player.transformed==0)
-			{
-				if(player.abilityTimerTransformed_pound < 100)
-				{
-					drawRect(12 + fix, 45, 78 + fix, 111, g);
-				}
-				if(player.abilityTimerTransformed_hit < 15)
-				{
-					drawRect(12 + fix, 149, 78 + fix, 215, g);
-				}
-			} else
-			{
-				if(player.abilityTimerTransformed_pound < 100)
-				{
-					drawRect(12 + fix, 45, 78 + fix, 111, g);
-				}
-				if(player.abilityTimerTransformed_hit < 15)
-				{
-					drawRect(12 + fix, 149, 78 + fix, 215, g);
-				}
-			}
 		paint.setAlpha(255);
-		if(player.transformed==0) drawBitmapRotated(shootStick, g);
+		drawBitmapRotated(shootStick, g);
 	}
 	/**
 	 * Sets deleted objects to null to be gc'd and tests player and enemy hitting arena bounds
@@ -638,15 +580,6 @@ public final class Controller extends View
 		{
 			drawBitmap(imageLibrary.isPlayer, (int)player.x-imageLibrary.isPlayerWidth, (int)player.y-imageLibrary.isPlayerWidth, g);
 			drawBitmapRotatedLevel(player, g);
-			if(player.transformedTimer>1&&player.transformedTimer<500)
-			{
-				int frame = player.transformedTimer;
-				while(frame>9)
-				{
-					frame -= 10;
-				}
-				drawBitmapLevel(imageLibrary.trans[frame], (int)player.x - 60, (int)player.y - 60, g);
-			}
 		}
 		spriteController.drawSprites(g, paint, imageLibrary, aoeRect);
 		if(imageLibrary.currentLevelTop != null)
@@ -799,10 +732,6 @@ public final class Controller extends View
 		paint.setColor(Color.GREEN);
 		paint.setAlpha(255);
 		drawBitmap(background, 0, 0, g);
-		if(player.transformedTimer>1&&player.transformedTimer<500)
-		{
-			drawBitmap(imageLibrary.transattack, 402, 149, g);
-		}
 		drawContestantStats(g);
 		paint.setStyle(Paint.Style.STROKE);
 		if(player.powerUpTimer > 0)

@@ -128,25 +128,54 @@ public class Wall_Rectangle extends Wall
 						{
 							holdY = Math.abs(enemies.get(i).y - oRY1Player);
 						}
+						while(enemies.get(i).rotation<0) enemies.get(i).rotation+=360;
 						if((holdX) < (holdY))
 						{
 							if(enemies.get(i).x > x)
 							{
 								enemies.get(i).x = oRX2Player;
+								if(enemies.get(i).rotation>90&&enemies.get(i).rotation<180)
+								{
+									enemies.get(i).rotation -=2;
+								} else
+								{
+									enemies.get(i).rotation +=2;
+								}
 							}
 							else
 							{
 								enemies.get(i).x = oRX1Player;
+								if(enemies.get(i).rotation>0&&enemies.get(i).rotation<90)
+								{
+									enemies.get(i).rotation +=2;
+								} else
+								{
+									enemies.get(i).rotation -=2;
+								}
 							}
 						} else
 						{
 							if(enemies.get(i).y > y)
 							{
 								enemies.get(i).y = oRY2Player;
+								if(enemies.get(i).rotation>180&&enemies.get(i).rotation<270)
+								{
+									enemies.get(i).rotation -=2;
+								} else
+								{
+									enemies.get(i).rotation +=2;
+								}
 							}
 							else
 							{
 								enemies.get(i).y = oRY1Player;
+								if(enemies.get(i).rotation>0&&enemies.get(i).rotation<90)
+								{
+									enemies.get(i).rotation -=2;
+								} else
+								{
+									enemies.get(i).rotation +=2;
+								}
 							}
 						}
 				}

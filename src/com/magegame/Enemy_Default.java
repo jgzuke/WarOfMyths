@@ -94,7 +94,7 @@ public final class Enemy_Default extends Enemy
 						frameReactionsNoDangerNoLOS();
 					} else
 					{
-						if(control.getRandomInt(5) != 0) // we probably just keep wandering
+						if(control.getRandomInt(20) != 0) // we probably just keep wandering
 						{
 							runRandom();
 						} else
@@ -200,10 +200,11 @@ public final class Enemy_Default extends Enemy
 	protected void frameReactionsNoDangerNoLOS()
 	{
 		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY); // lastPlayerX and Y are the last seen coordinates
-		if(checkedPlayerLast || distanceFound < 10)
+		if(checkedPlayerLast || distanceFound < 20)
 		{
 			currentFrame=0;
-			if(control.getRandomInt(30) == 0) // around ten frames of pause between random wandering
+			action = "Nothing";
+			if(control.getRandomInt(20) == 0) // around ten frames of pause between random wandering
 			{
 				runRandom();
 			}
@@ -212,7 +213,7 @@ public final class Enemy_Default extends Enemy
 		{
 			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x)); // move towards last seen coordinates
 			rotation = rads * r2d;
-			run(5);
+			run(3);
 			action = "Move";
 		}
 	}
