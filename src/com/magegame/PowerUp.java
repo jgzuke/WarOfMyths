@@ -2,6 +2,9 @@
  * Handles behavior for powerups
  */
 package com.magegame;
+
+import android.util.Log;
+
 public final class PowerUp extends DrawnSprite
 {
 	protected int ID;
@@ -24,6 +27,7 @@ public final class PowerUp extends DrawnSprite
 		{
 			ID = control.getRandomInt(6)+1;
 		}
+		if(Type==8) Log.e("done", "doneo");
 		visualImage = control.imageLibrary.powerUps[ID-1];
 	}
 	/**

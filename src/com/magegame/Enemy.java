@@ -263,6 +263,9 @@ abstract public class Enemy extends Human
 			{
 				run(10);
 			}
+		} else
+		{
+			run(10);
 		}
 	}        
 	/**
@@ -284,7 +287,7 @@ abstract public class Enemy extends Human
 	 */
 	protected void shootLaser()
 	{
-			control.createCrossbowBolt(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
+			control.createProj_TrackerEnemy(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
 			control.activity.playEffect("arrowrelease");
 	}
 	/**

@@ -536,27 +536,6 @@ public final class Player extends Human
 		}
 	}
 	/**
-	 * returns roll timer
-	 * @return roll timer
-	 */
-	protected double getAbilityTimer_roll() {
-		return abilityTimer_roll;
-	}
-	/**
-	 * returns last x
-	 * @return last x
-	 */
-	protected double getXSave() {
-		return xSave;
-	}
-	/**
-	 * returns last y
-	 * @return last y
-	 */
-	protected double getYSave() {
-		return ySave;
-	}
-	/**
 	 * checks distance between two points
 	 * @param fromX point one x
 	 * @param fromY point one y
@@ -567,61 +546,5 @@ public final class Player extends Human
 	private double checkDistance(double fromX, double fromY, double toX, double toY)
 	{
 		return Math.sqrt((Math.pow(fromX - toX, 2)) + (Math.pow(fromY - toY, 2)));
-	}
-	/**
-	 * returns burst timer
-	 * @return burst timer
-	 */
-	protected double getAbilityTimer_burst() {
-		return abilityTimer_burst;
-	}
-	/**
-	 * returns power ball timer
-	 * @return power ball timer
-	 */
-	protected double getAbilityTimer_Proj_Tracker() {
-		return abilityTimer_Proj_Tracker;
-	}
-	/**
-	 * returns roll timer
-	 * @return roll timer
-	 */
-	protected int getRollTimer() {
-		return rollTimer;
-	}
-	/**
-	 * sets rolling timer
-	 * @param rollTimer time to set
-	 */
-	protected void setRollTimer(int rollTimer) {
-		this.rollTimer = rollTimer;
-	}
-	/**
-	 * sets roll cooldown timer
-	 * @param abilityTimer_roll time to set
-	 */
-	protected void setAbilityTimer_roll(int abilityTimer_roll) {
-		this.abilityTimer_roll = abilityTimer_roll;
-	}
-	/**
-	 * sets power ball timer
-	 * @param abilityTimer_Proj_Tracker time to set
-	 */
-	protected void setAbilityTimer_burst(int abilityTimer_burst) {
-		this.abilityTimer_burst = abilityTimer_burst;
-	}
-	/**
-	 * sets burst timer
-	 * @param abilityTimer_Proj_Tracker time to set
-	 */
-	protected void setAbilityTimer_Proj_Tracker(int abilityTimer_Proj_Tracker) {
-		this.abilityTimer_Proj_Tracker = abilityTimer_Proj_Tracker;
-	}
-	/**
-	 * returns special
-	 * @return special
-	 */
-	protected double getSp() {
-		return sp;
 	}
 }
