@@ -62,12 +62,6 @@ public final class Controller extends View
 	protected StartActivity activity;
 	protected int currentTutorial = 1;
 	protected ArrayList<int[]> saveEnemyInformation = new ArrayList<int[]>();
-	protected ArrayList<Enemy> enemies = new ArrayList<Enemy>();
-	protected ArrayList<Structure> structures = new ArrayList<Structure>();
-	protected ArrayList<PowerUp> powerUps = new ArrayList<PowerUp>();
-	protected ArrayList<Proj_Tracker> proj_Trackers = new ArrayList<Proj_Tracker>();
-	protected ArrayList<Proj_Tracker_AOE> proj_Tracker_AOEs = new ArrayList<Proj_Tracker_AOE>();
-	
 	private ArrayList<Wall_Rectangle> wallRects = new ArrayList<Wall_Rectangle>();
 	private ArrayList<Wall_Ring> wallRings = new ArrayList<Wall_Ring>();
 	private ArrayList<Wall_Circle> wallCircles = new ArrayList<Wall_Circle>();
@@ -115,6 +109,7 @@ public final class Controller extends View
 	protected DrawnSprite shootStick = new Graphic_shootStick();
 	protected int playerHit=0;
 	protected int playerBursted = 0;
+	SpriteController spriteController;
 	Typeface magicMedieval; 
 	protected Runnable frameCaller = new Runnable()
 	{
@@ -139,6 +134,7 @@ public final class Controller extends View
 	public Controller(Context startSet, StartActivity activitySet, int levelToStart, int difficulty)
 	{
 		super(startSet);
+		spriteController = new SpriteController(startSet, this);
 		activity = activitySet;
 		context = startSet;
 		changeDifficulty(difficulty);
@@ -250,20 +246,11 @@ public final class Controller extends View
 		player.resetVariables(); // resets players variables
 		moneyMade = 0;
 		hasKey = false;
-		clearObjectArrays();
+		spriteController.clearObjectArrays();
 		clearWallArrays();
 		gameEnded = false;
 		imageLibrary.currentLevelTop = null;
 		activity.saveGame(); // saves game in case phone shuts down etc.
-	}
-	private void clearObjectArrays()
-	{
-		saveEnemyInformation.clear();
-		enemies.clear();
-		structures.clear();
-		powerUps.clear();
-		proj_Trackers.clear();
-		proj_Tracker_AOEs.clear();
 	}
 	/**
 	 * loads a new level, creates walls enemies etc.
@@ -279,11 +266,11 @@ public final class Controller extends View
 			player.y = 30; // player start y
 			exitX = 35;
 			exitY = 165;
-			makeEnemy(1, 269, 86);
-			makeEnemy(1, 358, 140, true);
-			makeEnemy(1, 365, 204);
-			makeEnemy(2, 146, 61);
-			makeEnemy(2, 327, 231);
+			spriteController.makeEnemy(1, 269, 86);
+			spriteController.makeEnemy(1, 358, 140, true);
+			spriteController.makeEnemy(1, 365, 204);
+			spriteController.makeEnemy(2, 146, 61);
+			spriteController.makeEnemy(2, 327, 231);
 			makeWall_Rectangle(78, 122, 41, 24, true, false);
 			makeWall_Rectangle(63, -20, 31, 142, true, true);
 			makeWall_Rectangle(73, 238, 47, 62, true, true);
@@ -304,15 +291,15 @@ public final class Controller extends View
 			player.y = 640; // player start y
 			exitX = 227;
 			exitY = 610;
-			makeEnemy(1, 54, 377);
-			makeEnemy(1, 150, 100, true);
-			makeEnemy(1, 35, 484);
-			makeEnemy(1, 227, 333);
-			makeEnemy(1, 35, 114);
-			makeEnemy(1, 262, 110);
-			makeEnemy(2, 150, 315);
-			makeEnemy(2, 99, 195);
-			makeEnemy(2, 213, 195);
+			spriteController.makeEnemy(1, 54, 377);
+			spriteController.makeEnemy(1, 150, 100, true);
+			spriteController.makeEnemy(1, 35, 484);
+			spriteController.makeEnemy(1, 227, 333);
+			spriteController.makeEnemy(1, 35, 114);
+			spriteController.makeEnemy(1, 262, 110);
+			spriteController.makeEnemy(2, 150, 315);
+			spriteController.makeEnemy(2, 99, 195);
+			spriteController.makeEnemy(2, 213, 195);
 			makeWall_Rectangle(105, 279, 15, 120, true, true);
 			makeWall_Rectangle(180, 280, 15, 120, true, true);
 			makeWall_Rectangle(-22, 565, 143, 16, true, true);
@@ -361,14 +348,15 @@ public final class Controller extends View
 		Log.e("worked", "worked");
 		clearWallArrays();
 		levelNum = level;
-		for(int i = 0; i < powerUps.size(); i++)
+		for(int i = 0; i < spriteController.powerUps.size(); i++)
 		{
-			if(powerUps.get(i) != null) player.getPowerUp(powerUps.get(i).ID);
+			if(spriteController.powerUps.get(i) != null) player.getPowerUp(spriteController.powerUps.get(i).ID);
 		}			 // READS IN AND CREATES ENEMIES IN NEW SECTION, SAVES ENEMIES IN OLD SECTION
 			ArrayList<int[]> tempSave = (ArrayList<int[]>)saveEnemyInformation.clone();
 			int j = 0;
 			for(int i = 0; i < saveEnemyInformation.size(); i++)
 			{
+				ArrayList<Enemy> enemies = spriteController.enemies;
 				if(!enemies.get(i).deleted)
 				{
 					saveEnemyInformation.get(j)[0] = enemies.get(i).enemyType;
@@ -391,7 +379,7 @@ public final class Controller extends View
 		{
 			levelWidth = 555;
 			player.x = 25; 						// same format as loading levels
-			makeEnemy(2, 99, 195);
+			spriteController.makeEnemy(2, 99, 195);
 			makeWall_Rectangle(503 - 506, -100, 15, 500, true, true);
 			makeWall_Rectangle(665 - 506, -77, 15, 205, true, true);
 			makeWall_Rectangle(665 - 506, 172, 15, 205, true, true);
@@ -403,40 +391,6 @@ public final class Controller extends View
 		imageLibrary.loadLevel(levelNum, levelWidth, levelHeight);
 	}
 	/**
-	 * creates an enemy based off of saved info
-	 * @param info array of stored values
-	 * @param index which spot in enemy array to populate
-	 */
-	private void createEnemy(int[] info)
-	{
-		makeEnemy(info[0], info[1], info[2]);
-		if(info[3] != 0) // if enemy has set health change it, otherwise leave as starting health
-		{
-			enemies.get(enemies.size()-1).hp = info[3];
-		}
-		if(info[4] == 1)
-		{
-			enemies.get(enemies.size()-1).keyHolder = true; // if saved enemy has key
-		}
-	}
-	protected void makeEnemy(int type, int x, int y, boolean key)
-	{
-		makeEnemy(type, x, y);
-		enemies.get(enemies.size()-1).keyHolder=true;
-	}
-	protected void makeEnemy(int type, int x, int y)
-	{
-		if(type==1)
-		{
-			enemies.add(new Enemy_Default(this, x, y, 2000, 9, //x, y, hp, worth 
-					true, false, false, false, false, type)); //gun, sheild, hide, sword, sick
-		} else if(type==2)
-		{
-			enemies.add(new Enemy_Default(this, x, y, 2000, 9, //x, y, hp, worth 
-				false, true, false, true, false, type)); //gun, sheild, hide, sword, sick
-		}
-	}
-	/**
 	 * end a section of a fight, stored enemies in current states
 	 * @param enemyData enemies to create
 	 * @param tempEnemies number of enemies to create
@@ -446,7 +400,7 @@ public final class Controller extends View
 		endFightSection();
 		for(int i = 0; i < enemyData.size(); i++)
 		{
-			createEnemy(enemyData.get(i)); // CREATES SAVED ENEMIES
+			spriteController.createEnemy(enemyData.get(i)); // CREATES SAVED ENEMIES
 		}
 	}
 	/**
@@ -454,7 +408,7 @@ public final class Controller extends View
 	 */
 	private void endFightSection()
 	{
-		clearObjectArrays();
+		spriteController.clearObjectArrays();
 		clearWallArrays();
 	}
 	/**
@@ -494,50 +448,6 @@ public final class Controller extends View
 			offset = 310 - maxY;
 		}
 		return offset;
-	}
-	/**
-	 * draws all enemy health bars
-	 * @param g canvas to draw to
-	 */
-	protected void drawHealthBars(Canvas g)
-	{
-		int minX;
-		int maxX;
-		int minY;
-		int maxY;
-		//int offset;
-		for(int i = 0; i < enemies.size(); i++)
-		{
-			if(enemies.get(i) != null)
-			{
-					minX = (int) enemies.get(i).x - 20;
-					maxX = (int) enemies.get(i).x + 20;
-					minY = (int) enemies.get(i).y - 30;
-					maxY = (int) enemies.get(i).y - 20;
-					paint.setColor(Color.RED);
-					paint.setStyle(Paint.Style.FILL);
-					drawRect(minX, minY, minX + (40 * enemies.get(i).getHp() / enemies.get(i).getHpMax()), maxY, g);
-					paint.setColor(Color.BLACK);
-					paint.setStyle(Paint.Style.STROKE);
-					drawRect(minX, minY, maxX, maxY, g);
-			}
-		}
-		for(int i = 0; i < structures.size(); i++)
-		{
-			if(structures.get(i) != null)
-			{
-				minX = (int) structures.get(i).x - 20;
-				maxX = (int) structures.get(i).x + 20;
-				minY = (int) structures.get(i).y - 30;
-				maxY = (int) structures.get(i).y - 20;
-				paint.setColor(Color.BLUE);
-				paint.setStyle(Paint.Style.FILL);
-				drawRect(minX, minY, minX + (40 * structures.get(i).hp / structures.get(i).hpMax), maxY, g);
-				paint.setColor(Color.BLACK);
-				paint.setStyle(Paint.Style.STROKE);
-				drawRect(minX, minY, maxX, maxY, g);
-			}
-		}
 	}
 	/**
 	 * Draws hp, mp, sp, and cooldown bars for player and enemies
@@ -633,91 +543,7 @@ public final class Controller extends View
 	{
 		playerHit++;
 		playerBursted++;
-		for(int i = 0; i < proj_Trackers.size(); i++)
-		{
-			if(proj_Trackers.get(i) != null)
-			{
-				if(proj_Trackers.get(i).deleted)
-				{
-					proj_Trackers.remove(i);
-				}
-				else
-				{
-					proj_Trackers.get(i).frameCall();
-				}
-			}
-		}
-		for(int i = 0; i < proj_Tracker_AOEs.size(); i++)
-		{
-			if(proj_Tracker_AOEs.get(i) != null)
-			{
-				if(proj_Tracker_AOEs.get(i).deleted)
-				{
-					proj_Tracker_AOEs.remove(i);
-				}
-				else
-				{
-					proj_Tracker_AOEs.get(i).frameCall();
-				}
-			}
-		}
-		for(int i = 0; i < powerUps.size(); i++)
-		{
-			if(powerUps.get(i) != null)
-			{
-				if(powerUps.get(i).deleted)
-				{
-					powerUps.remove(i);
-				}
-				else
-				{
-					powerUps.get(i).frameCall();
-				}
-			}
-		}
-		for(int i = 0; i < enemies.size(); i++)
-		{
-			if(enemies.get(i) != null)
-			{
-				if(enemies.get(i).deleted)
-				{
-					enemies.remove(i);
-				}
-				else
-				{
-					enemies.get(i).levelCurrentPosition = 0;
-					enemies.get(i).pathedToHitLength = 0;
-					if(enemyInView(enemies.get(i).x, enemies.get(i).y))
-					{
-						enemies.get(i).frameCall();
-						if(enemies.get(i) != null)
-						{
-							if(enemies.get(i).x < 10) enemies.get(i).x = 10;
-							if(enemies.get(i).x > levelWidth - 10) enemies.get(i).x = (levelWidth - 10);
-							if(enemies.get(i).y < 10) enemies.get(i).y = 10;
-							if(enemies.get(i).y > levelHeight - 10) enemies.get(i).y = (levelHeight - 10);
-						}
-					}
-				}
-			}
-		}
-		for(int i = 0; i < structures.size(); i++)
-		{
-			if(structures.get(i) != null)
-			{
-				if(structures.get(i).deleted)
-				{
-					structures.remove(i);
-				}
-				else
-				{
-					if(enemyInView(structures.get(i).x, structures.get(i).y))
-					{
-						structures.get(i).frameCall();
-					}
-				}
-			}
-		}
+		spriteController.frameCall();
 		if(hasKey && getDistance(player.x, player.y, exitX, exitY) < 30)
 		{
 			activity.winFight();
@@ -803,27 +629,10 @@ public final class Controller extends View
 	{
 		Bitmap drawTo = Bitmap.createBitmap(levelWidth, levelHeight, Config.ARGB_8888);
 		Canvas g = new Canvas(drawTo);
-		int w = 0;
-		int h = 0;
-		while(w < levelWidth)
-		{
-			while(h < levelHeight)
-			{
-				drawBitmapLevel(imageLibrary.backDrop, w, h, g);
-				h += 90;
-			}
-			w += 90;
-			h = 0;
-		}
+		drawBitmapLevel(imageLibrary.backDrop, 0, 0, g);
 		drawBitmap(imageLibrary.currentLevel, 0, 0, g);
 		drawBitmapLevel(imageLibrary.exitFightPortal, exitX - 30, exitY - 30, g);
-		for(int i = 0; i < structures.size(); i++)
-		{
-			if(structures.get(i) != null)
-			{
-				drawBitmapLevel(imageLibrary.structure_Spawn, (int)structures.get(i).x-structures.get(i).width, (int)structures.get(i).y-structures.get(i).height, g);
-			}
-		}
+		spriteController.drawStructures(g, paint, imageLibrary);
 		if(player != null)
 		{
 			drawBitmap(imageLibrary.isPlayer, (int)player.x-imageLibrary.isPlayerWidth, (int)player.y-imageLibrary.isPlayerWidth, g);
@@ -838,44 +647,7 @@ public final class Controller extends View
 				drawBitmapLevel(imageLibrary.trans[frame], (int)player.x - 60, (int)player.y - 60, g);
 			}
 		}
-		for(int i = 0; i < enemies.size(); i++)
-		{
-			if(enemies.get(i) != null)
-			{
-				if(enemies.get(i).keyHolder)
-				{
-					drawBitmapLevel(imageLibrary.haskey, (int) enemies.get(i).x - 20, (int) enemies.get(i).y - 20, g);
-				}
-				drawBitmapRotatedLevel(enemies.get(i), g);
-			}
-		}
-		for(int i = 0; i < proj_Trackers.size(); i++)
-		{
-			if(proj_Trackers.get(i) != null)
-			{
-				drawBitmapRotatedLevel(proj_Trackers.get(i), g);
-			}
-		}
-		for(int i = 0; i < proj_Tracker_AOEs.size(); i++)
-		{
-			if(proj_Tracker_AOEs.get(i) != null)
-			{
-				aoeRect.top = (int)(proj_Tracker_AOEs.get(i).y - (proj_Tracker_AOEs.get(i).getHeight() / 2.5));
-				aoeRect.bottom = (int)(proj_Tracker_AOEs.get(i).y + (proj_Tracker_AOEs.get(i).getHeight() / 2.5));
-				aoeRect.left = (int)(proj_Tracker_AOEs.get(i).x - (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
-				aoeRect.right = (int)(proj_Tracker_AOEs.get(i).x + (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
-				paint.setAlpha(proj_Tracker_AOEs.get(i).getAlpha());
-				drawBitmapRectLevel(proj_Tracker_AOEs.get(i).getVisualImage(), aoeRect, g);
-			}
-		}
-		paint.setAlpha(255);
-		for(int i = 0; i < powerUps.size(); i++)
-		{
-			if(powerUps.get(i) != null)
-			{
-				drawBitmapLevel(powerUps.get(i).getVisualImage(), (int) powerUps.get(i).x - 15, (int) powerUps.get(i).y - 15, g);
-			}
-		}
+		spriteController.drawSprites(g, paint, imageLibrary, aoeRect);
 		if(imageLibrary.currentLevelTop != null)
 		{
 			drawBitmapLevel(imageLibrary.currentLevelTop, 0, 0, g);
@@ -884,7 +656,7 @@ public final class Controller extends View
 		{
 			drawBitmapLevel(imageLibrary.effects[player.powerID - 1], (int) player.x - 30, (int) player.y - 30, g);
 		}
-		drawHealthBars(g);
+		spriteController.drawHealthBars(g, paint);
 		return drawTo;
 	}
 	/**
@@ -1040,86 +812,6 @@ public final class Controller extends View
 		{
 			drawBitmap(imageLibrary.powerUpBigs[4], 10, 25, g);
 		}
-	}
-	/**
-	 * creates an enemy power ball
-	 * @param rotation rotation of Proj_Tracker
-	 * @param xVel horizontal velocity of ball
-	 * @param yVel vertical velocity of ball
-	 * @param power power of ball
-	 * @param x x position
-	 * @param y y position
-	 */
-	protected void createProj_TrackerEnemy(double rotation, double xVel, double yVel, int power, double x, double y)
-	{
-		proj_Trackers.add(new Proj_Tracker_Enemy(this, (int) (x+xVel*2), (int) (y+yVel*2), power, xVel, yVel, rotation));
-	}
-	/**
-	 * creates a consumable the player can pick up
-	 * @param X x position
-	 * @param Y y position
-	 * @param ID 0:random power, 1-6:power, 7:coin1, 8:key, 9:coin5, 10:coin20
-	 */
-	protected void createConsumable(double X, double Y, int ID) // 0: random powerup or
-	{															// 1-6:powerups 7:coin1
-		powerUps.add(new PowerUp(this, X, Y, ID));				// 9: coin5, 10:coin20, 8:key 
-		Log.e("dropped", "dropped");
-	}
-	/**
-	 * creates a player power ball
-	 * @param rotation rotation of bolt
-	 * @param xVel horizontal velocity of bolt
-	 * @param yVel vertical velocity of bolt
-	 * @param power power of bolt
-	 * @param x x position
-	 * @param y y position
-	 */
-	protected void createProj_TrackerPlayer(double rotation, double Vel, int power, double x, double y)
-	{
-		proj_Trackers.add(new Proj_Tracker_Player(this, (int)x, (int)y, power, Vel, rotation));
-	}
-	/**
-	 * creates an emeny AOE explosion
-	 * @param x x position
-	 * @param y y position
-	 * @param power power of explosion
-	 * @param damaging whether it damages player
-	 */
-	protected void createProj_TrackerEnemyAOE(double x, double y, double power, boolean damaging)
-	{
-		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Enemy(this, (int) x, (int) y, power, true));
-		if(!damaging) proj_Tracker_AOEs.get(proj_Tracker_AOEs.size()-1).damaging = false;
-	}
-	/**
-	 * creates a player AOE explosion
-	 * @param x x position
-	 * @param y y position
-	 * @param power power of explosion
-	 */
-	protected void createProj_TrackerPlayerAOE(double x, double y, double power, boolean damaging)
-	{
-		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Player(this, (int) x, (int) y, power, true));
-		if(!damaging) proj_Tracker_AOEs.get(proj_Tracker_AOEs.size()-1).damaging = false;
-	}
-	/**
-	 * creates an enemy burst
-	 * @param x x position
-	 * @param y y position
-	 * @param power power of explosion
-	 */
-	protected void createProj_TrackerEnemyBurst(double x, double y, double power)
-	{
-		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Enemy(this, (int) x, (int) y, power, false));
-	}
-	/**
-	 * creates a player burst
-	 * @param x x position
-	 * @param y y position
-	 * @param power power of explosion
-	 */
-	protected void createProj_TrackerPlayerBurst(double x, double y, double power)
-	{
-		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Player(this, (int) x, (int) y, power, false));
 	}
 	/**
 	 * Starts warning label

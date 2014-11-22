@@ -21,8 +21,10 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 	private double r2d = 180/Math.PI;
 	private double speed;
 	private int rotChange;
-	protected Proj_Tracker_Player(Controller creator, int X, int Y, int Power, double Speed, double Rotation)
+	private SpriteController spriteController;
+	protected Proj_Tracker_Player(Controller creator, int X, int Y, int Power, double Speed, double Rotation, SpriteController spriteControllerSet)
 	{
+		spriteController = spriteControllerSet;
 		control = creator;
 		speed = Speed;
 		xForward = Math.cos(Rotation/r2d) * Speed;
@@ -82,12 +84,12 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 		}
 		if(control.enemyInView(x, y))
 		{
-			for(int i = 0; i < control.enemies.size(); i++)
+			for(int i = 0; i < spriteController.enemies.size(); i++)
 			{
-				if(control.enemies.get(i) != null && !deleted && control.enemies.get(i).action.equals("Nothing"))
+				if(spriteController.enemies.get(i) != null && !deleted && spriteController.enemies.get(i).action.equals("Nothing"))
 				{
-					control.enemies.get(i).setLevels(control.enemies.get(i).levelCurrentPosition, x, y, xForward, yForward);
-					control.enemies.get(i).levelCurrentPosition++;
+					spriteController.enemies.get(i).setLevels(spriteController.enemies.get(i).levelCurrentPosition, x, y, xForward, yForward);
+					spriteController.enemies.get(i).levelCurrentPosition++;
 				}
 			}
 		}
@@ -109,7 +111,7 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 	 */
 	public void explodeBack()
 	{
-		control.createProj_TrackerPlayerAOE((int) realX, (int) realY, 30, false);
+		spriteController.createProj_TrackerPlayerAOE((int) realX, (int) realY, 30, false);
 		deleted = true;
 	}
 	@ Override
@@ -118,38 +120,38 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 	 */
 	public void explode()
 	{
-		control.createProj_TrackerPlayerAOE((int) realX, (int) realY, power/2, true);
+		spriteController.createProj_TrackerPlayerAOE((int) realX, (int) realY, power/2, true);
 		deleted = true;
 	}
 	@Override
 	protected void hitTarget(int x, int y)
 	{
-		for(int i = 0; i < control.enemies.size(); i++)
+		for(int i = 0; i < spriteController.enemies.size(); i++)
 		{
-			if(control.enemies.get(i) != null && !deleted && !control.enemies.get(i).action.equals("Roll"))
+			if(spriteController.enemies.get(i) != null && !deleted && !spriteController.enemies.get(i).action.equals("Roll"))
 			{
-				xDif = x - control.enemies.get(i).x;
-				yDif = y - control.enemies.get(i).y;
+				xDif = x - spriteController.enemies.get(i).x;
+				yDif = y - spriteController.enemies.get(i).y;
 				double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 				if(distance < 600)
 				{
 					power*=Math.pow((double)control.activity.buyUpgradeAttack/10, 0.5);
-					control.enemies.get(i).getHit((int)power);
+					spriteController.enemies.get(i).getHit((int)power);
 					explode();
 				}
 			}
 		}
-		for(int i = 0; i < control.structures.size(); i++)
+		for(int i = 0; i < spriteController.structures.size(); i++)
 		{
-			if(control.structures.get(i) != null && !deleted)
+			if(spriteController.structures.get(i) != null && !deleted)
 			{
-				xDif = x - control.structures.get(i).x;
-				yDif = y - control.structures.get(i).y;
+				xDif = x - spriteController.structures.get(i).x;
+				yDif = y - spriteController.structures.get(i).y;
 				double distance = Math.pow(xDif, 2) + Math.pow(yDif, 2);
 				if(distance < 600)
 				{
 					power*=Math.pow((double)control.activity.buyUpgradeAttack/10, 0.5);
-					control.structures.get(i).getHit((int)power);
+					spriteController.structures.get(i).getHit((int)power);
 					explode();
 				}
 			}

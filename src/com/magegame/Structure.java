@@ -52,23 +52,23 @@ abstract public class Structure extends DrawnSprite
 				hp = 0;
 				deleted = true;
 				control.player.sp += 0.30;
-				control.createProj_TrackerEnemyAOE(x, y, 180, false);
+				control.spriteController.createProj_TrackerEnemyAOE(x, y, 180, false);
 				control.activity.playEffect("burst");
-				control.createConsumable(x, y, 0);
+				control.spriteController.createConsumable(x, y, 0);
 				for(int i = 0; i < worth; i ++)
 				{
 					double rads = control.getRandomDouble()*6.28;
 					if(worth-i>20)
 					{
-						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 10);
+						control.spriteController.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 10);
 						i+=19;
 					} else if(worth-i>5)
 					{
-						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 9);
+						control.spriteController.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 9);
 						i+=4;
 					} else
 					{
-						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 7);
+						control.spriteController.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 7);
 					}
 				}
 			}

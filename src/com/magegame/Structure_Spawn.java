@@ -31,8 +31,8 @@ public class Structure_Spawn extends Structure
 		if(timer == 100)
 		{
 			timer = 0;
-			control.makeEnemy(1, (int)x, (int)y);
-			control.createProj_TrackerEnemyAOE(x, y, 140, false);
+			control.spriteController.makeEnemy(1, (int)x, (int)y);
+			control.spriteController.createProj_TrackerEnemyAOE(x, y, 140, false);
 			control.activity.playEffect("burst");
 		}
 	}

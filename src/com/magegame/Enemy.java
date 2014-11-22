@@ -4,6 +4,8 @@
  */
 package com.magegame;
 
+import java.util.ArrayList;
+
 import android.widget.Toast;
 
 abstract public class Enemy extends Human
@@ -142,19 +144,20 @@ abstract public class Enemy extends Human
 				y -= movementY;
 			}
 		}
-		for(int i = 0; i < control.enemies.size(); i++)
+		ArrayList<Enemy> enemies = control.spriteController.enemies;
+		for(int i = 0; i < enemies.size(); i++)
 		{
-			if(control.enemies.get(i) != null&& control.enemies.get(i).x != x)
+			if(enemies.get(i) != null&& enemies.get(i).x != x)
 			{
-				xdif = x - control.enemies.get(i).x;
-				ydif = y - control.enemies.get(i).y;
+				xdif = x - enemies.get(i).x;
+				ydif = y - enemies.get(i).y;
 				if(Math.pow(xdif, 2) + Math.pow(ydif, 2) < Math.pow(radius, 2))
 				{
 					moveRads = Math.atan2(ydif, xdif);
-					movementX = (x - (Math.cos(moveRads) * radius) - control.enemies.get(i).x)/2;
-					movementY = (y - (Math.sin(moveRads) * radius) - control.enemies.get(i).y)/2;
-					control.enemies.get(i).x += movementX;
-					control.enemies.get(i).y += movementY;
+					movementX = (x - (Math.cos(moveRads) * radius) - enemies.get(i).x)/2;
+					movementY = (y - (Math.sin(moveRads) * radius) - enemies.get(i).y)/2;
+					enemies.get(i).x += movementX;
+					enemies.get(i).y += movementY;
 					x -= movementX;
 					y -= movementY;
 				}
@@ -191,18 +194,18 @@ abstract public class Enemy extends Human
 	protected void dieDrops()
 	{
 			control.player.sp += 0.15;
-			control.createProj_TrackerEnemyAOE(x, y, 140, false);
+			control.spriteController.createProj_TrackerEnemyAOE(x, y, 140, false);
 			if(!sick)
 			{
 				if(keyHolder)
 				{
 					Toast.makeText(control.context, "Key Dropped!", Toast.LENGTH_LONG).show();
-					control.createConsumable(x, y, 8);
+					control.spriteController.createConsumable(x, y, 8);
 				} else
 				{
 					if(control.getRandomDouble()>0.7)
 					{
-						control.createConsumable(x, y, 0);
+						control.spriteController.createConsumable(x, y, 0);
 					}
 				}
 				for(int i = 0; i < worth; i ++)
@@ -210,15 +213,15 @@ abstract public class Enemy extends Human
 					double rads = control.getRandomDouble()*6.28;
 					if(worth-i>20)
 					{
-						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 10);
+						control.spriteController.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 10);
 						i+=19;
 					} else if(worth-i>5)
 					{
-						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 9);
+						control.spriteController.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 9);
 						i+=4;
 					} else
 					{
-						control.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 7);
+						control.spriteController.createConsumable(x+Math.cos(rads)*12, y+Math.sin(rads)*12, 7);
 					}
 				}
 			}
@@ -283,7 +286,7 @@ abstract public class Enemy extends Human
 	 */
 	protected void shootLaser()
 	{
-			control.createProj_TrackerEnemy(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
+			control.spriteController.createProj_TrackerEnemy(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
 			control.activity.playEffect("arrowrelease");
 	}
 	/**

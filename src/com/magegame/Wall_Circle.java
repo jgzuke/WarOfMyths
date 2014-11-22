@@ -2,6 +2,9 @@
  * behavior for circular walls
  */
 package com.magegame;
+
+import java.util.ArrayList;
+
 public class Wall_Circle extends Wall
 {
 	private double xdif;
@@ -51,19 +54,20 @@ public class Wall_Circle extends Wall
 					control.player.y = oCY - (Math.sin(rads) * oCR);
 				}
 			}
-		for(int i = 0; i < control.enemies.size(); i++)
+			ArrayList<Enemy> enemies = control.spriteController.enemies;
+		for(int i = 0; i < enemies.size(); i++)
 		{
-			if(control.enemies.get(i) != null)
+			if(enemies.get(i) != null)
 			{
-				xdif = oCX - control.enemies.get(i).x;
-				ydif = oCY - control.enemies.get(i).y;
+				xdif = oCX - enemies.get(i).x;
+				ydif = oCY - enemies.get(i).y;
 				rads = Math.atan2(ydif, xdif);
 				if(Math.pow(xdif, 2) + Math.pow(ydif/oCRatio, 2) < oCRS)
 				{
-					if(!control.checkHitBackPass(control.enemies.get(i).x, control.enemies.get(i).y, true))
+					if(!control.checkHitBackPass(enemies.get(i).x, enemies.get(i).y, true))
 					{
-						control.enemies.get(i).x = oCX - (Math.cos(rads) * oCR);
-						control.enemies.get(i).y = oCY - (Math.sin(rads) * oCR);
+						enemies.get(i).x = oCX - (Math.cos(rads) * oCR);
+						enemies.get(i).y = oCY - (Math.sin(rads) * oCR);
 					}
 				}
 			}

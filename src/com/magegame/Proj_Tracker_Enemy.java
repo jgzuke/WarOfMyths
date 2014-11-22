@@ -60,7 +60,7 @@ public final class Proj_Tracker_Enemy extends Proj_Tracker
 	 */
 	public void explodeBack()
 	{
-		control.createProj_TrackerEnemyAOE((int) realX, (int) realY, 30, false);
+		control.spriteController.createProj_TrackerEnemyAOE((int) realX, (int) realY, 30, false);
 		deleted = true;
 	}
 	@ Override
@@ -69,7 +69,7 @@ public final class Proj_Tracker_Enemy extends Proj_Tracker
 	 */
 	public void explode()
 	{
-		control.createProj_TrackerEnemyAOE((int) realX, (int) realY, power/2, true);
+		control.spriteController.createProj_TrackerEnemyAOE((int) realX, (int) realY, power/2, true);
 		deleted = true;
 	}
 	@Override

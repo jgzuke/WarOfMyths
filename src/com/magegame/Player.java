@@ -240,7 +240,7 @@ public final class Player extends Human
 		{
 			if(rollTimer < 0)
 			{
-					control.createProj_TrackerPlayer(rads*r2d, projectileSpeed, 130, x, y);
+					control.spriteController.createProj_TrackerPlayer(rads*r2d, projectileSpeed, 130, x, y);
 					abilityTimer_Proj_Tracker -= 30;
 					control.activity.playEffect("shoot");
 			}
@@ -314,9 +314,9 @@ public final class Player extends Human
 		{
 			for(int i = 0; i<6; i++)
 			{	
-				control.createProj_TrackerPlayerAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130, true);
+				control.spriteController.createProj_TrackerPlayerAOE(x-20+control.getRandomInt(40), y-20+control.getRandomInt(40), 130, true);
 			}
-			control.createProj_TrackerPlayerBurst(x, y, 0);
+			control.spriteController.createProj_TrackerPlayerBurst(x, y, 0);
 			abilityTimer_burst -= 300;
 			control.activity.playEffect("burst");
 			control.activity.playEffect("burst");

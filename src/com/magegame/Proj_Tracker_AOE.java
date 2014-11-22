@@ -12,6 +12,7 @@ abstract public class Proj_Tracker_AOE extends DrawnSprite
 	protected byte alpha;
 	protected int alphaDown;
 	protected int timeToDeath;
+	protected SpriteController spriteController;
 	protected boolean damaging = true;
 	/**
 	 * sets position, size, and behaviors
@@ -21,8 +22,9 @@ abstract public class Proj_Tracker_AOE extends DrawnSprite
 	 * @param Power power or size to start at
 	 * @param Shrinking whether it is shrinking or growing
 	 */
-	public Proj_Tracker_AOE(Controller creator, int X, int Y, double Power, boolean Shrinking)
+	public Proj_Tracker_AOE(Controller creator, int X, int Y, double Power, boolean Shrinking, SpriteController spriteControllerSet)
 	{
+		spriteController = spriteControllerSet;
 		normal = Shrinking;
 		control = creator;
 		x = X;

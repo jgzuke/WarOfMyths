@@ -2,6 +2,9 @@
  * behavior for ring walls
  */
 package com.magegame;
+
+import java.util.ArrayList;
+
 public class Wall_Ring extends Wall
 {
 	private double xdif;
@@ -69,12 +72,13 @@ public class Wall_Ring extends Wall
 					}
 				}
 			}
-		for(int i = 0; i < control.enemies.size(); i++)
+			ArrayList<Enemy> enemies = control.spriteController.enemies;
+		for(int i = 0; i < enemies.size(); i++)
 		{
-			if(control.enemies.get(i) != null)
+			if(enemies.get(i) != null)
 			{
-				curX = control.enemies.get(i).x;
-				curY = control.enemies.get(i).y;
+				curX = enemies.get(i).x;
+				curY = enemies.get(i).y;
 				xdif = oCX - curX;
 				ydif = oCY - curY;
 				rads = Math.atan2(ydif, xdif);
@@ -85,12 +89,12 @@ public class Wall_Ring extends Wall
 					{
 						if(dist<oCRSAve)
 						{
-							control.enemies.get(i).x = oCX - (Math.cos(rads) * oCRIn);
-							control.enemies.get(i).y = oCY - (Math.sin(rads) * oCRIn);
+							enemies.get(i).x = oCX - (Math.cos(rads) * oCRIn);
+							enemies.get(i).y = oCY - (Math.sin(rads) * oCRIn);
 						} else
 						{
-							control.enemies.get(i).x = oCX - (Math.cos(rads) * oCROut);
-							control.enemies.get(i).y = oCY - (Math.sin(rads) * oCROut);
+							enemies.get(i).x = oCX - (Math.cos(rads) * oCROut);
+							enemies.get(i).y = oCY - (Math.sin(rads) * oCROut);
 						}
 					}
 				}

@@ -12,9 +12,9 @@ public final class Proj_Tracker_AOE_Enemy extends Proj_Tracker_AOE
 	 * @param Power power or size to start at
 	 * @param Shrinking whether it is shrinking or growing
 	 */
-	public Proj_Tracker_AOE_Enemy(Controller creator, int X, int Y, double Power, boolean Shrinking)
+	public Proj_Tracker_AOE_Enemy(Controller creator, int X, int Y, double Power, boolean Shrinking, SpriteController spriteController)
 	{
-		super(creator, X, Y, Power, Shrinking);
+		super(creator, X, Y, Power, Shrinking, spriteController);
 		visualImage = control.imageLibrary.shotAOEEnemy;
 	}
 	/**
@@ -43,7 +43,7 @@ public final class Proj_Tracker_AOE_Enemy extends Proj_Tracker_AOE
 		control.activity.playEffect("electric");
 		for(int i = 0; i<6; i++)
 		{
-			control.createProj_TrackerEnemyAOE(x-15+control.getRandomInt(30), y-15+control.getRandomInt(30), power, true);
+			spriteController.createProj_TrackerEnemyAOE(x-15+control.getRandomInt(30), y-15+control.getRandomInt(30), power, true);
 		}
 		/*int power = 130;
 		double veloc = 2+(control.getDifficultyLevelMultiplier()*5);

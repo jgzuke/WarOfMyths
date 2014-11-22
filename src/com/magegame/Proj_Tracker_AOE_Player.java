@@ -12,9 +12,9 @@ public final class Proj_Tracker_AOE_Player extends Proj_Tracker_AOE
 	 * @param Power power or size to start at
 	 * @param Shrinking whether it is shrinking or growing
 	 */
-	public Proj_Tracker_AOE_Player(Controller creator, int X, int Y, double Power, boolean Shrinking)
+	public Proj_Tracker_AOE_Player(Controller creator, int X, int Y, double Power, boolean Shrinking, SpriteController spriteController)
 	{
-		super(creator, X, Y, Power, Shrinking);
+		super(creator, X, Y, Power, Shrinking, spriteController);
 		visualImage = control.imageLibrary.shotAOEPlayer;
 	}
 	/**
@@ -26,29 +26,29 @@ public final class Proj_Tracker_AOE_Player extends Proj_Tracker_AOE
 		super.frameCall();
 		if(damaging)
 		{
-			for(int i = 0; i < control.enemies.size(); i++)
+			for(int i = 0; i < spriteController.enemies.size(); i++)
 			{
-				if(control.enemies.get(i) != null)
+				if(spriteController.enemies.get(i) != null)
 				{
-					xDif = x - control.enemies.get(i).x;
-					yDif = y - control.enemies.get(i).y;
+					xDif = x - spriteController.enemies.get(i).x;
+					yDif = y - spriteController.enemies.get(i).y;
 					if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone+15)
 					{
 						double damage = 60*Math.pow((double)control.activity.buyUpgradeAttack/10, 0.5);
-						control.enemies.get(i).getHit((int)damage);
+						spriteController.enemies.get(i).getHit((int)damage);
 					}
 				}
 			}
-			for(int i = 0; i < control.structures.size(); i++)
+			for(int i = 0; i < spriteController.structures.size(); i++)
 			{
-				if(control.structures.get(i) != null)
+				if(spriteController.structures.get(i) != null)
 				{
-					xDif = x - control.structures.get(i).x;
-					yDif = y - control.structures.get(i).y;
+					xDif = x - spriteController.structures.get(i).x;
+					yDif = y - spriteController.structures.get(i).y;
 					if(Math.sqrt(Math.pow(xDif, 2) + Math.pow(yDif, 2)) < widthDone+15)
 					{
 						double damage = 60*Math.pow((double)control.activity.buyUpgradeAttack/10, 0.5);
-						control.structures.get(i).getHit((int)damage);
+						spriteController.structures.get(i).getHit((int)damage);
 					}
 				}
 			}
@@ -62,7 +62,7 @@ public final class Proj_Tracker_AOE_Player extends Proj_Tracker_AOE
 	{
 		for(int i = 0; i<9; i++)
 		{
-			control.createProj_TrackerPlayerAOE(x-15+control.getRandomInt(30), y-15+control.getRandomInt(30), power+22, true);
+			spriteController.createProj_TrackerPlayerAOE(x-15+control.getRandomInt(30), y-15+control.getRandomInt(30), power+22, true);
 		}
 		/*int power = 130;
 		double veloc = 2+(control.getDifficultyLevelMultiplier()*5);
