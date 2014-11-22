@@ -231,6 +231,33 @@ public class StartActivity extends Activity
 			((TextView)playLevelList.getChildAt(position)).setTextColor(Color.parseColor("#FFFFFF"));
 		}
 	}
+	public void startRetry()
+	{
+		setContentView(R.layout.lostfight);
+		easyClick = (Button) findViewById(R.id.easy);
+		medClick = (Button) findViewById(R.id.med);
+		hardClick = (Button) findViewById(R.id.hard);
+		extClick = (Button) findViewById(R.id.ext);
+		switch(difficultyLevel)
+		{
+			case 10: easyClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+				break;
+			case 6: medClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+				break;
+			case 3: hardClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+				break;
+			case 0: extClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+				break;
+		}
+		sickClick = (Button) findViewById(R.id.sick);
+		hurtClick = (Button) findViewById(R.id.hurt);
+		limitedClick = (Button) findViewById(R.id.limit);
+		regenerateClick = (Button) findViewById(R.id.regen);
+		if(drainHp) sickClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		if(lowerHp) hurtClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		if(limitSpells) limitedClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+		if(enemyRegen) regenerateClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
+	}
 	public void optionsClickHandler(View v)
 	{
 		//setContentView(R.layout.options);
@@ -415,7 +442,7 @@ public class StartActivity extends Activity
 		control=null;
 		gameRunning = false;
 		gameOnAtAll=false;
-		setContentView(R.layout.activity_main);
+		startRetry();
 	}
 	/**
 	 * player wins a fight, increases level, starts next level
