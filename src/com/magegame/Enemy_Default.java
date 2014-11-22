@@ -8,6 +8,12 @@ public final class Enemy_Default extends Enemy
 		boolean gun, boolean sheild, boolean hide, boolean sword, boolean Sick, int type)
 	{
 		super(creator, X, Y, HP, Worth, gun, sheild, hide, sword, Sick, type);
+		if(control.getRandomInt(3) == 0)
+		{
+			runRandom();
+		}
+		rotation = control.getRandomInt(360);
+		rads = rotation/r2d;
 	}
 	@Override
 	protected void frameCall()
@@ -91,6 +97,9 @@ public final class Enemy_Default extends Enemy
 						if(control.getRandomInt(5) != 0) // we probably just keep wandering
 						{
 							runRandom();
+						} else
+						{
+							action = "Nothing";
 						}
 					}
 				}
@@ -181,12 +190,10 @@ public final class Enemy_Default extends Enemy
 					} else
 					{
 						runTowardPlayer();
-						action = "Move";
 					}
 			} else
 			{
 				runTowardPlayer();
-				action = "Move";
 			}
 		}
 	}
@@ -196,7 +203,7 @@ public final class Enemy_Default extends Enemy
 		if(checkedPlayerLast || distanceFound < 10)
 		{
 			currentFrame=0;
-			if(control.getRandomInt(50) == 0) // around ten frames of pause between random wandering
+			if(control.getRandomInt(30) == 0) // around ten frames of pause between random wandering
 			{
 				runRandom();
 			}

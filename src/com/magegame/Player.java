@@ -193,6 +193,14 @@ public final class Player extends Human
 				rotation = rads * r2d;
 				if(!deleted)
 				{
+					if(touchingShoot)
+					{
+						currentFrame = 31;
+						playing = false;
+						rads = Math.atan2(touchShootY, touchShootX);
+				        rotation=rads*180/Math.PI;
+					} else
+					{
 						if(!touching || (Math.abs(touchX) < 5 && Math.abs(touchY) < 5))
 						{
 							playing = false;
@@ -200,17 +208,9 @@ public final class Player extends Human
 						}
 						else
 						{
-							if(!touchingShoot)
-							{
-								movement();
-							} else
-							{
-								currentFrame = 31;
-								playing = false;
-								rads = Math.atan2(touchShootY, touchShootX);
-				        		rotation=rads*180/Math.PI;
-							}
+							movement();
 						}
+					}
 				}
 			} else
 			{			

@@ -42,6 +42,7 @@ abstract public class Enemy extends Human
 	protected boolean hasSword;
 	protected double projectileVelocity=20;
 	protected int enemyType;
+	protected int hadLOSLastTime=-1;
 	protected String action; //"Nothing", "Move", "Alert", "Shoot", "Melee", "Roll", "Hide", "Sheild", "Stun"
 	/**
 	 * sets danger arrays, speed and control object
@@ -286,6 +287,7 @@ abstract public class Enemy extends Human
 	 */
 	protected void shootLaser()
 	{
+		rads = rotation/r2d;
 			control.spriteController.createProj_TrackerEnemy(rotation, Math.cos(rads) * projectileVelocity, Math.sin(rads) * projectileVelocity, 130, x, y);
 			control.activity.playEffect("arrowrelease");
 	}
@@ -305,29 +307,32 @@ abstract public class Enemy extends Human
 	 */
 	protected void checkLOS()
 	{
-		rads = Math.atan2((control.player.y - y), (control.player.x - x));
-		if(control.player.rollTimer>0)
+		double rads2 = Math.atan2((control.player.y - y), (control.player.x - x));
+		if(control.player.rollTimer>0 && hadLOSLastTime<1)
 		{
 			LOS = false;
 		} else
 		{
-			double rot2 = rads*r2d;
+			double rot2 = rads2*r2d;
 			double difference = Math.abs(rotation-rot2);
 			if(difference>180) difference = 360-difference;
 			if(difference>90&&checkDistance(x, y, control.player.x, control.player.y)>50)
 			{
-				LOS = false;
+				LOS = hadLOSLastTime>0;
+				hadLOSLastTime--;
 			} else
 			{
 				if(!control.checkObstructionsPoint((float)x, (float)y, (float)control.player.x, (float)control.player.y, false))
 				{
 					LOS = true;
+					hadLOSLastTime = 5;
 					lastPlayerX = control.player.x;
 					lastPlayerY = control.player.y;
 					checkedPlayerLast = false;
 				} else
 				{
-					LOS = false;
+					LOS = hadLOSLastTime>3;
+					hadLOSLastTime--;
 				}
 			}
 		}
@@ -454,6 +459,10 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
+	}
+	protected void hitWall()
+	{
+		action="Nothing";
 	}
 	/**
 	 * rolls towards player for 11 frames

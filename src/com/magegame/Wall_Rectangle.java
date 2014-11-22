@@ -109,65 +109,46 @@ public class Wall_Rectangle extends Wall
 		{
 			if(enemies.get(i) != null)
 			{
-				if(enemies.get(i).x > oRX1 && enemies.get(i).x < oRX2 && enemies.get(i).y > oRY1 && enemies.get(i).y < oRY2)
+				if(enemies.get(i).x > oRX1Player && enemies.get(i).x < oRX2Player && enemies.get(i).y > oRY1Player && enemies.get(i).y < oRY2Player)
 				{
-					if(!control.checkHitBackPass(enemies.get(i).x, enemies.get(i).y, true))
-					{
+					enemies.get(i).hitWall();
 						double holdX;
 						double holdY;
 						if(enemies.get(i).x > x)
 						{
-							holdX = Math.abs(enemies.get(i).x - oRX2);
+							holdX = Math.abs(enemies.get(i).x - oRX2Player);
 						} else
 						{
-							holdX = Math.abs(enemies.get(i).x - oRX1);
+							holdX = Math.abs(enemies.get(i).x - oRX1Player);
 						}
 						if(enemies.get(i).y > y)
 						{
-							holdY = Math.abs(enemies.get(i).y - oRY2);
+							holdY = Math.abs(enemies.get(i).y - oRY2Player);
 						} else
 						{
-							holdY = Math.abs(enemies.get(i).y - oRY1);
+							holdY = Math.abs(enemies.get(i).y - oRY1Player);
 						}
 						if((holdX) < (holdY))
 						{
 							if(enemies.get(i).x > x)
 							{
-								enemies.get(i).x = oRX2;
+								enemies.get(i).x = oRX2Player;
 							}
 							else
 							{
-								enemies.get(i).x = oRX1;
+								enemies.get(i).x = oRX1Player;
 							}
-							if(enemies.get(i).y > y)
-							{
-								enemies.get(i).y+=2;
-							}
-							else
-							{
-								enemies.get(i).y-=2;
-							}
-						}
-						else
+						} else
 						{
 							if(enemies.get(i).y > y)
 							{
-								enemies.get(i).y = oRY2;
+								enemies.get(i).y = oRY2Player;
 							}
 							else
 							{
-								enemies.get(i).y = oRY1;
-							}
-							if(enemies.get(i).x > x)
-							{
-								enemies.get(i).x+=2;
-							}
-							else
-							{
-								enemies.get(i).x-=2;
+								enemies.get(i).y = oRY1Player;
 							}
 						}
-					}
 				}
 			}
 		}
