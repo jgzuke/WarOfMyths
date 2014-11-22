@@ -112,7 +112,6 @@ public final class Controller extends View
 	private int healthColor = Color.rgb(150, 0, 0);
 	private int specialColor = Color.rgb(0, 0, 150);
 	private int cooldownColor = Color.rgb(190, 190, 0);
-	private int highlightChoiceColor = Color.BLUE;
 	protected DrawnSprite shootStick = new Graphic_shootStick();
 	protected int playerHit=0;
 	protected int playerBursted = 0;

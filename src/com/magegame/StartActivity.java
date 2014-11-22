@@ -75,9 +75,6 @@ public class StartActivity extends Activity
 	protected byte bExcess = 0;
 	protected byte bReplentish = 0;
 	protected byte bTracking = 0;
-	protected boolean shootTapScreen = false;
-	protected boolean shootTapDirectional = true;
-	protected boolean holdShoot = true;
 	protected boolean ownSkin1 = false;
 	protected boolean ownSkin2 = false;
 	protected boolean ownSkin3 = false;
@@ -85,7 +82,6 @@ public class StartActivity extends Activity
 	protected boolean ownSkin5 = false;
 	protected boolean ownSkin6 = false;
 	protected boolean ownSkin7 = false;
-	protected boolean highGraphics = false;
 	protected byte currentSkin = 0;
 	protected byte levelBeaten = 18;
 	protected boolean gameRunning = false;
@@ -1297,9 +1293,6 @@ public class StartActivity extends Activity
 		savedData[2] = 0;
 		savedData[3] = 1;
 		savedData[29] = 0;
-		if(shootTapScreen) savedData[2] = 1;
-		if(shootTapDirectional) savedData[3] = 0;
-		if(holdShoot) savedData[29] = 1;
 		savedData[4] = levelBeaten;
 		savedData[5] = uApollo;
 		savedData[6] = uPoseidon;
@@ -1360,16 +1353,12 @@ public class StartActivity extends Activity
 		savedData[42] = bReplentish;
 		savedData[43] = bTracking;
 		savedData[44] = 1;
-		if(highGraphics) savedData[44] = 0;
 	}
 	/**
 	 * read data once it has been put into savedData array
 	 */
 	public void readSaveData()
 	{
-		shootTapScreen = savedData[2] == 1;
-		shootTapDirectional = savedData[3] == 0;
-		holdShoot = savedData[29] == 1;
 		levelBeaten = savedData[4];
 		uApollo = savedData[5];
 		uPoseidon = savedData[6];
@@ -1405,7 +1394,6 @@ public class StartActivity extends Activity
 		bReplentish = savedData[42];
 		bTracking = savedData[43];
 		savedData[44] = 1;
-		highGraphics = savedData[44] == 0;
 	}
 	/**
 	 * reads saved data

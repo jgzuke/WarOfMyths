@@ -64,18 +64,8 @@ public class PlayerGestureDetector implements OnTouchListener {
 		            }
 		            if(player.touchingShoot)
 		            {
-		            	if(control.activity.shootTapDirectional)
-		            	{
-		            		if(!control.activity.shootTapScreen)
-			            	{
 			            		player.touchShootY = visualY(e.getY(e.findPointerIndex(touchingShootID)))-267;
 			            		player.touchShootX = visualX(e.getX(e.findPointerIndex(touchingShootID)))-(53+(buttonShiftX*0.95897));
-			            	} else
-			            	{
-			            		player.touchShootY = screenY(e.getY(e.findPointerIndex(touchingShootID)))-player.y;
-			            		player.touchShootX = screenX(e.getX(e.findPointerIndex(touchingShootID)))-player.x;
-			            	}
-		            	}
 		            }
 		        break;
 		        case MotionEvent.ACTION_UP:
@@ -178,53 +168,12 @@ public class PlayerGestureDetector implements OnTouchListener {
         }else if(control.pointOnSquare(x, y, buttonShiftX+12, 145, buttonShiftX+82, 215))
         {
         	player.roll();
-        } else if(control.pointOnCircle(x, y, 53+(buttonShiftX*0.95897), 267, 65) && !control.activity.shootTapScreen)
+        } else if(control.pointOnCircle(x, y, 53+(buttonShiftX*0.95897), 267, 65))
         {
-        	if(control.activity.holdShoot)
-        	{
         		player.touchingShoot = true;
         		touchingShootID = ID;
         		player.touchShootY = visualY(y)-267;
         		player.touchShootX = visualX(x)-(53+(buttonShiftX*0.95897));
-        	} else
-        	{
-        		if(control.activity.shootTapDirectional)
-	        	{
-	        		double temp1 = player.rads;
-	            	player.rads = Math.atan2(visualY(y)-267, visualX(x)-(53+(buttonShiftX*0.95897)));
-	        		player.releaseProj_Tracker();
-	        		control.shootStick.rotation=player.rads*180/Math.PI;
-	        		player.rads = temp1;
-	        	} else
-	        	{
-	        		player.releaseProj_Tracker();
-	        		control.shootStick.rotation=player.rads*180/Math.PI;
-	        	}
-        	}
-        } else if(control.pointOnScreen(x, y))
-        {
-        	if(control.activity.shootTapScreen)
-        	{
-        		if(control.activity.holdShoot)
-            	{
-        			player.touchingShoot = true;
-        			touchingShootID = ID;
-        			player.touchShootY = screenY(y)-player.y;
-            		player.touchShootX = screenX(x)-player.x;
-            	} else
-            	{
-            		if(control.activity.shootTapDirectional)
-	            	{
-	        			double temp1 = player.rads;
-	        			player.rads = Math.atan2(screenY(y)-player.y, screenX(x)-player.x);
-	            		player.releaseProj_Tracker();
-	            		player.rads = temp1;
-	            	} else
-	            	{
-	            		player.releaseProj_Tracker();
-	            	}
-            	}
-        	}
         }
 	}
 	/**

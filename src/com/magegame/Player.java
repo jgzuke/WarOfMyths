@@ -180,27 +180,20 @@ public final class Player extends Human
 			}
 			if(currentFrame == 19)currentFrame = 0; // restart walking animation
 			if(playing) currentFrame++;
+			if(currentFrame > 31)currentFrame = 0; // player stopped shooting
 			super.frameCall();
 			if(rollTimer < 1)
 			{
 				if(touchingShoot)
 	            {
-					currentFrame=32;
 	            	if(abilityTimer_Proj_Tracker > 30&&minimumShootTime<1)
 	            	{
-		            	if(control.activity.shootTapDirectional)
-			        	{
-			        		double temp1 = rads;
-			            	rads = Math.atan2(touchShootY, touchShootX);
-			            	rotation=rads*r2d;
-			        		releaseProj_Tracker();
-			        		control.shootStick.rotation=rads*180/Math.PI;
-			        		rads = temp1;
-			        	} else
-			        	{
-			        		releaseProj_Tracker();
-			        		control.shootStick.rotation=rads*180/Math.PI;
-			        	}
+			        	double temp1 = rads;
+			            rads = Math.atan2(touchShootY, touchShootX);
+			            rotation=rads*r2d;
+			        	releaseProj_Tracker();
+			        	control.shootStick.rotation=rads*180/Math.PI;
+			        	rads = temp1;
 		            	minimumShootTime = 2;
 	            	}
 	            }
@@ -220,15 +213,14 @@ public final class Player extends Human
 								movement();
 							} else
 							{
-								/*currentFrame = 31;
+								currentFrame = 31;
 								playing = false;
 								rads = Math.atan2(touchShootY, touchShootX);
-				        		rotation=rads*180/Math.PI;*/
+				        		rotation=rads*180/Math.PI;
 							}
 						}
 				}
-			}
-			else
+			} else
 			{			
 					x += xMoveRoll;
 					y += yMoveRoll;
