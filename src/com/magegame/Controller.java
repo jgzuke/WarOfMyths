@@ -76,6 +76,7 @@ public final class Controller extends View
 	protected ImageLibrary imageLibrary;
 	private Random randomGenerator = new Random();
 	protected int difficultyLevel;
+	private int wallExtraWidth = 3;
 	private double difficultyLevelMultiplier;
 	protected int levelNum = 10;
 	private Bitmap background;
@@ -200,7 +201,7 @@ public final class Controller extends View
 	 */
 	protected void makeWall_Rectangle(int x, int y, int width, int height, boolean HitPlayer, boolean tall)
 	{
-		wallRects.add(new Wall_Rectangle(this, x - 2, y - 2, width + 4, height + 4, HitPlayer, tall));
+		wallRects.add(new Wall_Rectangle(this, x - wallExtraWidth, y - wallExtraWidth, width + (2*wallExtraWidth), height + (2*wallExtraWidth), HitPlayer, tall));
 	}
 	/**
 	 * creates a ring wall object
@@ -212,7 +213,7 @@ public final class Controller extends View
 	 */
 	protected void makeWall_Ring(int x, int y, int radIn, int radOut, boolean tall)
 	{
-		wallRings.add(new Wall_Ring(this, x, y, radIn - 2, radOut + 2, tall));
+		wallRings.add(new Wall_Ring(this, x, y, radIn - wallExtraWidth, radOut + wallExtraWidth, tall));
 	}
 	/**
 	 * creates a passage through a ring
@@ -223,7 +224,7 @@ public final class Controller extends View
 	 */
 	protected void makeWall_Pass(int x, int y, int width, int height, boolean fullPass)
 	{
-		new Wall_Pass(this, x - 2, y - 2, width + 4, height + 4, fullPass);
+		new Wall_Pass(this, x - wallExtraWidth, y - wallExtraWidth, width + (2*wallExtraWidth), height + (2*wallExtraWidth), fullPass);
 	}
 	/**
 	 * creates circular wall object
@@ -236,7 +237,7 @@ public final class Controller extends View
 	 */
 	protected void makeWall_Circle(int x, int y, int rad, double ratio, boolean tall)
 	{
-		wallCircles.add(new Wall_Circle(this, x, y, rad + 2, ratio, tall));
+		wallCircles.add(new Wall_Circle(this, x, y, rad + wallExtraWidth, ratio, tall));
 	}
 	/**
 	 * ends a round of fighting and resets variables

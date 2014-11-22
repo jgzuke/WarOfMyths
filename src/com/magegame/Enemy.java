@@ -295,7 +295,7 @@ abstract public class Enemy extends Human
 	protected void run(int time)
 	{
 		runTimer = time;
-		action = "Move";
+		action = "Run";
 		xMove = Math.cos(rads) * speedCur;
 		yMove = Math.sin(rads) * speedCur;
         if(currentFrame>17) currentFrame = 0;
@@ -306,15 +306,30 @@ abstract public class Enemy extends Human
 	protected void checkLOS()
 	{
 		rads = Math.atan2((control.player.y - y), (control.player.x - x));
-		if(!control.checkObstructionsPoint((float)x, (float)y, (float)control.player.x, (float)control.player.y, false))
-		{
-			LOS = true;
-			lastPlayerX = control.player.x;
-			lastPlayerY = control.player.y;
-			checkedPlayerLast = false;
-		} else
+		if(control.player.rollTimer>0)
 		{
 			LOS = false;
+		} else
+		{
+			double rot2 = rads*r2d;
+			double difference = Math.abs(rotation-rot2);
+			if(difference>180) difference = 360-difference;
+			if(difference>90&&checkDistance(x, y, control.player.x, control.player.y)>50)
+			{
+				LOS = false;
+			} else
+			{
+				if(!control.checkObstructionsPoint((float)x, (float)y, (float)control.player.x, (float)control.player.y, false))
+				{
+					LOS = true;
+					lastPlayerX = control.player.x;
+					lastPlayerY = control.player.y;
+					checkedPlayerLast = false;
+				} else
+				{
+					LOS = false;
+				}
+			}
 		}
 		checkLOSTimer = 10;
 	}
@@ -721,10 +736,12 @@ abstract public class Enemy extends Human
 		}
 		if(canMove)
 		{
-			run(20);
+			run(10);
+			action = "Wander";
 		} else
 		{
-			run(10);
+			run(5);
+			action = "Wander";
 		}
 	}
 	protected void baseHp(int setHP)

@@ -12,6 +12,9 @@ public final class Enemy_Default extends Enemy
 	@Override
 	protected void frameCall()
 	{
+		checkLOSTimer--;
+		if(checkLOSTimer < 1) checkLOS();
+		checkDanger();
 		if(action.equals("Stun"))
 		{
 			currentFrame=93;
@@ -58,20 +61,44 @@ public final class Enemy_Default extends Enemy
 				checkLOS();
 				if(LOS&&hp>600) currentFrame=25; // shoots again
 			} else if(currentFrame==45) action = "Nothing";   // attack done
-		} else if(action.equals("Move"))
+		} else if(action.equals("Run"))
 		{
 			currentFrame++;
 			if(currentFrame == 19) currentFrame = 0; // restart walking motion
 			x += xMove;
 			y += yMove;
 			runTimer--;
-			if(runTimer==0) action = "Nothing"; // stroll done
-		} else
+			if(runTimer<1) action = "Nothing"; // stroll done
+		} else if(action.equals("Move")||action.equals("Wander"))
+		{
+			if(pathedToHitLength > 0 || LOS)
+			{
+				 action = "Nothing";
+			} else
+			{
+				currentFrame++;
+				if(currentFrame == 19) currentFrame = 0; // restart walking motion
+				x += xMove;
+				y += yMove;
+				runTimer--;
+				if(runTimer<1) //stroll over
+				{
+					if(action.equals("Move"))
+					{
+						frameReactionsNoDangerNoLOS();
+					} else
+					{
+						if(control.getRandomInt(5) != 0) // we probably just keep wandering
+						{
+							runRandom();
+						}
+					}
+				}
+			}
+		}
+		if(action.equals("Nothing"))
 		{
 			currentFrame=0;
-			checkLOSTimer--;
-			if(checkLOSTimer < 1) checkLOS();
-			checkDanger();
 			if(pathedToHitLength > 0)
 			{
 				if(LOS)
@@ -154,10 +181,12 @@ public final class Enemy_Default extends Enemy
 					} else
 					{
 						runTowardPlayer();
+						action = "Move";
 					}
 			} else
 			{
 				runTowardPlayer();
+				action = "Move";
 			}
 		}
 	}
@@ -167,7 +196,7 @@ public final class Enemy_Default extends Enemy
 		if(checkedPlayerLast || distanceFound < 10)
 		{
 			currentFrame=0;
-			if(control.getRandomInt(150) == 0) // around ten frames of pause between random wandering
+			if(control.getRandomInt(50) == 0) // around ten frames of pause between random wandering
 			{
 				runRandom();
 			}
@@ -177,6 +206,7 @@ public final class Enemy_Default extends Enemy
 			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x)); // move towards last seen coordinates
 			rotation = rads * r2d;
 			run(5);
+			action = "Move";
 		}
 	}
 }
