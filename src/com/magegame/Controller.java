@@ -571,7 +571,7 @@ public final class Controller extends View
 		{
 			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimer_burst) / 500), 111, g);
 			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.abilityTimer_roll) / 120), 215, g);
-			drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.abilityTimer_Proj_Tracker) / (91+(activity.bReserve*20))), 310, g);
+			drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.abilityTimer_Proj_Tracker) / (91+(activity.buyExtraReserve*20))), 310, g);
 		} else if(player.transformed==1)
 		{
 			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimerTransformed_pound) / 120), 111, g);

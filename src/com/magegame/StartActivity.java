@@ -45,43 +45,19 @@ public class StartActivity extends Activity
 	protected int screenMinY;
 	protected int gameCurrency = 2000;
 	protected int realCurrency = 2000;
-	protected byte uApollo = 7;
-	protected byte uPoseidon = 7;
-	protected byte uZues = 7;
-	protected byte uHades = 7;
-	protected byte uHephaestus = 7;
-	protected byte uAres = 7;
-	protected byte uAthena = 7;
-	protected byte uHermes = 7;
-	protected byte uHera = 7;
-	protected double wApollo = 7;
-	protected double wPoseidon = 7;
-	protected double wZues = 7;
-	protected double wHades = 7;
-	protected double wHephaestus = 7;
-	protected double wAres = 7;
-	protected double wAthena = 7;
-	protected double wHermes = 7;
-	protected double wHera = 7;
-	protected byte pGolem = 1;
-	protected byte pHammer = 1;
-	protected byte pHeal = 1;
-	protected byte pCool = 1;
-	protected byte pWater = 1;
-	protected byte pEarth = 1;
-	protected byte pAir = 1;
-	protected byte pFire = 1;
-	protected byte bReserve = 0;
-	protected byte bExcess = 0;
-	protected byte bReplentish = 0;
-	protected byte bTracking = 0;
-	protected boolean ownSkin1 = false;
-	protected boolean ownSkin2 = false;
-	protected boolean ownSkin3 = false;
-	protected boolean ownSkin4 = false;
-	protected boolean ownSkin5 = false;
-	protected boolean ownSkin6 = false;
-	protected boolean ownSkin7 = false;
+	
+	protected byte buyUpgradeAttack = 0;
+	protected byte buyUpgradeHealth = 0;
+	protected byte buyUpgradeSpeed = 0;
+	protected byte buyUpgradeCooldown = 0;
+	protected byte buyAttackBoost = 0;
+	protected byte buyHeal = 0;
+	protected byte buyExtraReserve = 0;
+	protected byte buyExtraExcess = 0;
+	protected byte buyExtraReplentish = 0;
+	protected byte buyExtraTracking = 0;
+	
+	protected boolean [] skins = {false, false, false, false, false, false, false};
 	protected byte currentSkin = 0;
 	protected byte levelBeaten = 18;
 	protected boolean gameRunning = false;
@@ -673,221 +649,107 @@ public class StartActivity extends Activity
 		switch(ID)
 		{
 		case 1:
-			cost = (int)(Math.pow(wApollo, power)/2.49);
+			cost = (int)(Math.pow(buyUpgradeAttack, power)/2.49);
 			if(currency >= cost)
 			{
-				if(buying) wApollo++;
+				if(buying) buyUpgradeAttack++;
 				afforded = true;
 			}
 			break;
 		case 2:
-			cost = (int)(Math.pow(wPoseidon, power)/2.49);
+			cost = (int)(Math.pow(buyUpgradeHealth, power)/2.49);
 			if(currency >= cost)
 			{
-				if(buying) wPoseidon++;
+				if(buying) buyUpgradeHealth++;
 				afforded = true;
 			}
 			break;
 		case 3:
-			cost = (int)(Math.pow(wZues, power)/2.49);
+			cost = (int)(Math.pow(buyUpgradeSpeed, power)/2.49);
 			if(currency >= cost)
 			{
-				if(buying) wZues++;
+				if(buying) buyUpgradeSpeed++;
 				afforded = true;
 			}
 			break;
 		case 4:
-			cost = (int)(Math.pow(wHades, power)/2.49);
+			cost = (int)(Math.pow(buyUpgradeCooldown, power)/2.49);
 			if(currency >= cost)
 			{
-				if(buying) wHades++;
-				afforded = true;
-			}
-			break;
-		case 5:
-			cost = (int)(Math.pow(wHephaestus, power)/1.8675);
-			if(currency >= cost)
-			{
-				if(buying) wHephaestus++;
-				afforded = true;
-			}
-			break;
-		case 6:
-			cost = (int)(Math.pow(wAres, power)/1.8675);
-			if(currency >= cost)
-			{
-				if(buying) wAres++;
-				afforded = true;
-			}
-			break;
-		case 7:
-			cost = (int)(Math.pow(wAthena, power)/1.8675);
-			if(currency >= cost)
-			{
-				if(buying) wAthena++;
-				afforded = true;
-			}
-			break;
-		case 8:
-			cost = (int)(Math.pow(wHermes, power)/1.8675);
-			if(currency >= cost)
-			{
-				if(buying) wHermes++;
-				afforded = true;
-			}
-			break;
-		case 15:
-			cost = (int)(Math.pow(wHera, power)/1.8675);
-			if(currency >= cost)
-			{
-				if(buying) wHera++;
+				if(buying) buyUpgradeCooldown++;
 				afforded = true;
 			}
 			break;
 		case 9:
 			cost = 200;
-			if(currency >= cost&&pHeal<10)
+			if(currency >= cost&&buyHeal<10)
 			{
-				if(buying) pHeal++;
+				if(buying) buyHeal++;
 				afforded = true;
 			}
 			break;
 		case 10:
 			cost = 200;
-			if(currency >= cost&&pCool<10)
+			if(currency >= cost&&buyAttackBoost<10)
 			{
-				if(buying) pCool++;
-				afforded = true;
-			}
-			break;
-		case 11:
-			cost = 200;
-			if(currency >= cost&&pWater<10)
-			{
-				if(buying) pWater++;
-				afforded = true;
-			}
-			break;
-		case 12:
-			cost = 200;
-			if(currency >= cost&&pEarth<10)
-			{
-				if(buying) pEarth++;
-				afforded = true;
-			}
-			break;
-		case 13:
-			cost = 200;
-			if(currency >= cost&&pAir<10)
-			{
-				if(buying) pAir++;
-				afforded = true;
-			}
-			break;
-		case 14:
-			cost = 200;
-			if(currency >= cost&&pFire<10)
-			{
-				if(buying) pFire++;
+				if(buying) buyAttackBoost++;
 				afforded = true;
 			}
 			break;
 		case 16:
 			cost = 100;
-			if(currency >= cost)
+			if(currency >= cost && !skins[1])
 			{
-				if(!ownSkin1) 
-				{
-					if(buying)
-					{
-						ownSkin1 = true;
-					}
-					afforded = true;
-				}
+				if(buying) skins[1]=true;
+				afforded = true;
 			}
 			break;
 		case 17:
 			cost = 100;
-			if(currency >= cost)
+			if(currency >= cost && !skins[2])
 			{
-				if(!ownSkin2) 
-				{
-					if(buying)
-					{
-						ownSkin2 = true;
-					}
-					afforded = true;
-				}
+				if(buying) skins[2]=true;
+				afforded = true;
 			}
 			break;
 		case 18:
 			cost = 200;
-			if(currency >= cost)
+			if(currency >= cost && !skins[3])
 			{
-				if(!ownSkin3) 
-				{
-					if(buying)
-					{
-						ownSkin3 = true;
-					}
-					afforded = true;
-				}
+				if(buying) skins[3]=true;
+				afforded = true;
 			}
 			break;
 		case 19:
 			cost = 200;
-			if(currency >= cost)
+			if(currency >= cost && !skins[4])
 			{
-				if(!ownSkin4) 
-				{
-					if(buying)
-					{
-						ownSkin4 = true;
-					}
-					afforded = true;
-				}
+				if(buying) skins[4]=true;
+				afforded = true;
 			}
 			break;
 		case 20:
 			cost = 500;
-			if(currency >= cost)
+			if(currency >= cost && !skins[5])
 			{
-				if(!ownSkin5) 
-				{
-					if(buying)
-					{
-						ownSkin5 = true;
-					}
-					afforded = true;
-				}
+				if(buying) skins[5]=true;
+				afforded = true;
 			}
 			break;
 		case 21:
 			cost = 700;
-			if(currency >= cost)
+			if(currency >= cost && !skins[6])
 			{
-				if(!ownSkin6) 
-				{
-					if(buying)
-					{
-						ownSkin6 = true;
-					}
-					afforded = true;
-				}
+				if(buying) skins[6]=true;
+				afforded = true;
 			}
 			break;
 		case 22:
 			cost = 1000;
-			if(currency >= cost)
+			if(currency >= cost && !skins[7])
 			{
-				if(!ownSkin7) 
-				{
-					if(buying)
-					{
-						ownSkin7 = true;
-					}
-					afforded = true;
-				}
+				if(buying) skins[7]=true;
+				afforded = true;
 			}
 			break;
 		case 23:
@@ -914,51 +776,35 @@ public class StartActivity extends Activity
 				afforded = true;
 			}
 			break;
-		case 26:
-			cost = 25;
-			if(currency >= cost&&pHammer<5)
-			{
-				if(buying) pHammer++;
-				afforded = true;
-			}
-			break;
-		case 27:
-			cost = 25;
-			if(currency >= cost&&pGolem<5)
-			{
-				if(buying) pGolem++;
-				afforded = true;
-			}
-			break;
 		case 28:
-			cost = 30*(int)(Math.pow(bReserve, 2)+1);
+			cost = 30*(int)(Math.pow(buyExtraReserve, 2)+1);
 			if(currency >= cost)
 			{
-				if(buying) bReserve++;
+				if(buying) buyExtraReserve++;
 				afforded = true;
 			}
 			break;
 		case 29:
-			cost = 30*(int)(Math.pow(bExcess, 2)+1);
+			cost = 30*(int)(Math.pow(buyExtraExcess, 2)+1);
 			if(currency >= cost)
 			{
-				if(buying) bExcess++;
+				if(buying) buyExtraExcess++;
 				afforded = true;
 			}
 			break;
 		case 30:
-			cost = 30*(int)(Math.pow(bReplentish, 2)+1);
+			cost = 30*(int)(Math.pow(buyExtraReplentish, 2)+1);
 			if(currency >= cost)
 			{
-				if(buying) bReplentish++;
+				if(buying) buyExtraReplentish++;
 				afforded = true;
 			}
 			break;
 		case 31:
-			cost = 30*(int)(Math.pow(bTracking, 2)+1);
+			cost = 30*(int)(Math.pow(buyExtraTracking, 2)+1);
 			if(currency >= cost)
 			{
-				if(buying) bTracking++;
+				if(buying) buyExtraTracking++;
 				afforded = true;
 			}
 			break;
@@ -1294,22 +1140,16 @@ public class StartActivity extends Activity
 		savedData[3] = 1;
 		savedData[29] = 0;
 		savedData[4] = levelBeaten;
-		savedData[5] = uApollo;
-		savedData[6] = uPoseidon;
-		savedData[7] = uZues;
-		savedData[8] = uHades;
-		savedData[9] = uHephaestus;
-		savedData[10] = uAres;
-		savedData[11] = uAthena;
-		savedData[12] = uHermes;
-		savedData[13] = pHeal;
-		savedData[14] = pCool;
-		savedData[15] = pWater;
-		savedData[16] = pEarth;
-		savedData[17] = pAir;
-		savedData[18] = pFire;
-		savedData[38] = pGolem;
-		savedData[39] = pHammer;
+		savedData[5] = buyUpgradeAttack;
+		savedData[6] = buyUpgradeHealth;
+		savedData[7] = buyUpgradeSpeed;
+		savedData[8] = buyUpgradeCooldown;
+		savedData[9] = buyAttackBoost;
+		savedData[10] = buyHeal;
+		savedData[11] = buyExtraReserve;
+		savedData[12] = buyExtraExcess;
+		savedData[13] = buyExtraReplentish;
+		savedData[14] = buyExtraTracking;
 		savedData[24] = (byte)((int) volumeMusic);
 		savedData[25] = (byte)((int) volumeEffect);
 		String temp = correctDigits(Integer.toBinaryString(gameCurrency), 21);
@@ -1332,26 +1172,18 @@ public class StartActivity extends Activity
 		savedData[21] = (byte)high;
 		savedData[22] = (byte)low;
 		savedData[28] = (byte)huge;
-		savedData[26] = (byte)(wHera);
 		savedData[30] = 0;
 		savedData[31] = 0;
 		savedData[32] = 0;
 		savedData[33] = 0;
 		savedData[34] = 0;
 		savedData[35] = 0;
-		savedData[36] = 0;		
-		if(ownSkin1) savedData[30] = 1;
-		if(ownSkin2) savedData[31] = 1;
-		if(ownSkin3) savedData[32] = 1;
-		if(ownSkin4) savedData[33] = 1;
-		if(ownSkin5) savedData[34] = 1;
-		if(ownSkin6) savedData[35] = 1;
-		if(ownSkin7) savedData[36] = 1;
+		savedData[36] = 0;
+		for(int i = 0; i < 7; i++)
+		{
+			if(skins[i]) savedData[i+30]=1;
+		}
 		savedData[37] = currentSkin;
-		savedData[40] = bReserve;
-		savedData[41] = bExcess;
-		savedData[42] = bReplentish;
-		savedData[43] = bTracking;
 		savedData[44] = 1;
 	}
 	/**
@@ -1360,39 +1192,25 @@ public class StartActivity extends Activity
 	public void readSaveData()
 	{
 		levelBeaten = savedData[4];
-		uApollo = savedData[5];
-		uPoseidon = savedData[6];
-		uZues = savedData[7];
-		uHades = savedData[8];
-		uHephaestus = savedData[9];
-		uAres = savedData[10];
-		uAthena = savedData[11];
-		uHermes = savedData[12];
-		pHeal = savedData[13];
-		pCool = savedData[14];
-		pWater = savedData[15];
-		pEarth = savedData[16];
-		pAir = savedData[17];
-		pFire = savedData[18];
-		pGolem = savedData[38];
-		pHammer = savedData[39];
+		buyUpgradeAttack = savedData[5];
+		buyUpgradeHealth = savedData[6];
+		buyUpgradeSpeed = savedData[7];
+		buyUpgradeCooldown = savedData[8];
+		buyAttackBoost = savedData[9];
+		buyHeal = savedData[10];
+		buyExtraReserve = savedData[11];
+		buyExtraExcess = savedData[12];
+		buyExtraReplentish = savedData[13];
+		buyExtraTracking = savedData[14];
 		gameCurrency = savedData[20] + (128 * savedData[19]) + (16384*savedData[27]);
 		realCurrency = savedData[22] + (128 * savedData[21]) + (16384*savedData[28]);
 		volumeMusic = savedData[24];
 		volumeEffect = savedData[25];
-		wHera = savedData[26];
-		ownSkin1 = savedData[30] == 1;
-		ownSkin2 = savedData[31] == 1;
-		ownSkin3 = savedData[32] == 1;
-		ownSkin4 = savedData[33] == 1;
-		ownSkin5 = savedData[34] == 1;
-		ownSkin6 = savedData[35] == 1;
-		ownSkin7 = savedData[36] == 1;
+		for(int i = 0; i < 7; i++)
+		{
+			skins[i]= savedData[i+30]==1;
+		}
 		currentSkin = savedData[37];
-		bReserve = savedData[40];
-		bExcess = savedData[41];
-		bReplentish = savedData[42];
-		bTracking = savedData[43];
 		savedData[44] = 1;
 	}
 	/**

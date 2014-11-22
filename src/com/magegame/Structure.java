@@ -41,14 +41,10 @@ abstract public class Structure extends DrawnSprite
 	{
 		if(!deleted)
 		{
-			if(control.player.powerUpTimer>0 && control.player.powerID == 4)
-			{
-				damage *= 1.5*Math.pow((double)control.activity.wApollo/10, 0.7);
-			}
-			control.player.abilityTimer_burst += damage*control.activity.bReplentish/30;
-			control.player.abilityTimer_roll += damage*control.activity.bReplentish/50;
-			control.player.abilityTimerTransformed_pound += damage*control.activity.bReplentish/50;
-			control.player.abilityTimer_Proj_Tracker += damage*control.activity.bReplentish/100;
+			control.player.abilityTimer_burst += damage*control.activity.buyExtraReplentish/30;
+			control.player.abilityTimer_roll += damage*control.activity.buyExtraReplentish/50;
+			control.player.abilityTimerTransformed_pound += damage*control.activity.buyExtraReplentish/50;
+			control.player.abilityTimer_Proj_Tracker += damage*control.activity.buyExtraReplentish/100;
 			control.player.sp += damage*0.00003;
 			hp -= damage;
 			if(hp < 1)

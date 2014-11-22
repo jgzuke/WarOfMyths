@@ -77,7 +77,7 @@ public final class Player extends Human
 		touching = false;
 		x = 370;
 		y = 160;
-		hp = (int)(4890 * Math.pow((double)control.activity.wHephaestus/10, 0.9))+2000;
+		hp = (int)(4890 * Math.pow((double)control.activity.buyUpgradeHealth/10, 0.9))+2000;
 		if(control.lowerHp)
 		{
 			hp = (int)(hp/8);
@@ -131,12 +131,8 @@ public final class Player extends Human
 		}
 		sp -= 0.0001;
 		spMod = 1;
-		speedCur = 4.7*Math.pow((double)control.activity.wHermes/10, 0.4);
+		speedCur = 4.7*Math.pow((double)control.activity.buyUpgradeSpeed/10, 0.4);
 		speedCur *= 1.2;
-		if(powerUpTimer>0 && powerID == 3)
-		{
-			speedCur += 0.7*(double)control.activity.wZues/10;
-		}
 		if(sp > 1.5)
 		{
 			sp = 1.5;
@@ -146,26 +142,22 @@ public final class Player extends Human
 			sp = 0.5;
 		}
 			double cooldown;
-			cooldown = (double)control.activity.wAthena*(double)control.activity.wHermes/100;
+			cooldown = (double)control.activity.buyUpgradeCooldown*(double)control.activity.buyUpgradeSpeed/100;
 			abilityTimer_roll += cooldown*1.4;
 			if(abilityTimer_roll >= 120)
 			{
 				abilityTimer_roll = 120;
 			}
-			cooldown = (double)control.activity.wAthena/10;
-			if(powerUpTimer>0 && powerID == 1)
-			{
-				cooldown *= 1.5*(double)control.activity.wPoseidon/10;
-			}
+			cooldown = (double)control.activity.buyUpgradeCooldown/10;
 			abilityTimer_burst += cooldown*1.4;
 			abilityTimer_Proj_Tracker += cooldown*5;
 			if(abilityTimer_burst >= 500)
 			{
 				abilityTimer_burst = 500;
 			}
-			if(abilityTimer_Proj_Tracker >= 91+(control.activity.bReserve*20))
+			if(abilityTimer_Proj_Tracker >= 91+(control.activity.buyExtraReserve*20))
 			{
-				abilityTimer_Proj_Tracker = 91+(control.activity.bReserve*20);
+				abilityTimer_Proj_Tracker = 91+(control.activity.buyExtraReserve*20);
 			}
 			if(control.limitSpells)
 			{
@@ -370,10 +362,6 @@ public final class Player extends Human
 			damage *= 0.1;
 		}
 		damage *= 0.7;
-		if(powerUpTimer>0 && powerID == 2)
-		{
-			damage *= (0.7/control.activity.wHades*10);
-		}
 			damage *= damageMultiplier;
 			super.getHit(damage);
 			sp -= sp*damage/1500;
