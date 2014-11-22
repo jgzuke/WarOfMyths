@@ -145,97 +145,6 @@ public final class Player extends Human
 		{
 			sp = 0.5;
 		}
-		if(transformed == 1||transformed == 2)
-		{
-			hp += 7;
-			speedCur *= 1.2;	
-			double cooldown;
-			cooldown = (double)control.activity.wAthena/10;
-			abilityTimerTransformed_pound += cooldown;
-			abilityTimerTransformed_hit += cooldown;
-			if(abilityTimerTransformed_pound >= 120)
-			{
-				abilityTimerTransformed_pound = 120;
-			}
-			if(abilityTimerTransformed_hit >= 20)
-			{
-				abilityTimerTransformed_hit = 20;
-			}
-			super.frameCall();
-			if(playing)
-			{
-				currentFrame++;
-			}
-			if(currentFrame == 19)
-			{
-				currentFrame = 0;
-			}
-			if(currentFrame<21)
-			{
-				rads = Math.atan2(touchY, touchX);
-				rotation = rads * r2d;
-				if(!deleted)
-				{
-					if(!touching || (Math.abs(touchX) < 5 && Math.abs(touchY) < 5))
-					{
-						playing = false;
-						currentFrame = 0;
-					} else
-					{
-						movement();
-					}
-				}
-			} else
-			{
-				double distanceFound;
-				if(currentFrame == 28)
-				{
-					for(int i = 0; i < control.enemies.size(); i++)
-					{
-						if(control.enemies.get(i) != null)
-						{
-							distanceFound = checkDistance(x + Math.cos(rotation/r2d) * 35, y + Math.sin(rotation/r2d) * 35, control.enemies.get(i).x, control.enemies.get(i).y);
-							if(distanceFound < 50)
-							{
-								control.enemies.get(i).getHit((int)(400*spMod)+400);
-								control.activity.playEffect("sword2");
-							}
-						}
-					}
-					control.activity.playEffect("swordmiss");
-				}
-				if(currentFrame == 53)
-				{
-					double newX = x + Math.cos(rotation/r2d) * 30;
-					double newY = y + Math.sin(rotation/r2d) * 30;
-					if(transformed == 2)
-					{
-						newX = x + Math.cos(rotation/r2d) * 50;
-						newY = y + Math.sin(rotation/r2d) * 50;
-					}
-					for(int i = 0; i<6; i++)
-					{	
-						control.createProj_TrackerPlayerAOE(newX-20+control.getRandomInt(40), newY-20+control.getRandomInt(40), 130, true);
-					}
-					control.createProj_TrackerPlayerBurst(newX, newY, 0);
-					control.activity.playEffect("burst");
-					control.activity.playEffect("burst");
-					control.activity.playEffect("burst");
-					control.activity.playEffect("swordmiss");
-				}
-				if(currentFrame == 37)
-				{
-					currentFrame = 0;
-					playing = false;
-				}
-				if(currentFrame == 57)
-				{
-					currentFrame = 0;
-					playing = false;
-				}
-			}
-		} else
-		{
 			double cooldown;
 			cooldown = (double)control.activity.wAthena*(double)control.activity.wHermes/100;
 			abilityTimer_roll += cooldown*1.4;
@@ -264,22 +173,26 @@ public final class Player extends Human
 				abilityTimer_roll = 0;
 			}
 			rollTimer--;
-			if(currentFrame == 30)
+			if(currentFrame == 30) // roll finished
 			{
 				currentFrame = 0;
 				playing = false;
 			}
+			if(currentFrame == 19)currentFrame = 0; // restart walking animation
+			if(playing) currentFrame++;
 			super.frameCall();
 			if(rollTimer < 1)
 			{
 				if(touchingShoot)
 	            {
+					currentFrame=32;
 	            	if(abilityTimer_Proj_Tracker > 30&&minimumShootTime<1)
 	            	{
 		            	if(control.activity.shootTapDirectional)
 			        	{
 			        		double temp1 = rads;
 			            	rads = Math.atan2(touchShootY, touchShootX);
+			            	rotation=rads*r2d;
 			        		releaseProj_Tracker();
 			        		control.shootStick.rotation=rads*180/Math.PI;
 			        		rads = temp1;
@@ -320,7 +233,6 @@ public final class Player extends Human
 					x += xMoveRoll;
 					y += yMoveRoll;
 			}
-		}
 		visualImage = control.imageLibrary.player_Image[currentFrame];
 		setImageDimensions();
 	}
