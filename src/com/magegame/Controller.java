@@ -555,7 +555,7 @@ public final class Controller extends View
 		paint.setColor(healthColor);
 		drawRect(400 - fix, 148, 400 - fix + (70 * player.getHp() / player.hpMax), 164, g);
 		paint.setColor(specialColor);
-		drawRect(400 - fix, 192, 400 - fix + (int)(140*player.sp/3), 208, g);
+		drawRect(400 - fix, 192, 400 - fix + (int)(140*player.getSp()/3), 208, g);
 		paint.setColor(Color.BLACK);
 		paint.setStyle(Paint.Style.STROKE);
 		drawRect(400 - fix, 148, 470 - fix, 164, g);
@@ -564,15 +564,15 @@ public final class Controller extends View
 		paint.setTextAlign(Align.CENTER);
 		paint.setColor(Color.WHITE);
 		drawText(Integer.toString(player.getHp()), 435 - fix, 158, g);
-		drawText(Integer.toString((int)(2000*player.sp)), 435 - fix, 202, g);
+		drawText(Integer.toString((int)(2000*player.getSp())), 435 - fix, 202, g);
 		//drawText(Integer.toString(activity.gameCurrency), 435 - fix, 205, g);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(cooldownColor);
 		if(player.transformed==0)
 		{
-			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimer_burst) / 500), 111, g);
-			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.abilityTimer_roll) / 120), 215, g);
-			drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.abilityTimer_Proj_Tracker) / (91+(activity.bReserve*20))), 310, g);
+			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.getAbilityTimer_burst()) / 500), 111, g);
+			drawRect(12 + fix, 205, 12 + fix + (int)((66 * player.getAbilityTimer_roll()) / 120), 215, g);
+			drawRect(12 + fix, 300, 12 + fix + (int)((66 * player.getAbilityTimer_Proj_Tracker()) / (91+(activity.bReserve*20))), 310, g);
 		} else if(player.transformed==1)
 		{
 			drawRect(12 + fix, 101, 12 + fix + (int)((66 * player.abilityTimerTransformed_pound) / 120), 111, g);
@@ -595,11 +595,11 @@ public final class Controller extends View
 		paint.setAlpha(151);
 			if(player.transformed==0)
 			{
-				if(player.abilityTimer_burst < 300)
+				if(player.getAbilityTimer_burst() < 300)
 				{
 					drawRect(12 + fix, 45, 78 + fix, 111, g);
 				}
-				if(player.abilityTimer_roll < 40)
+				if(player.getAbilityTimer_roll() < 40)
 				{
 					drawRect(12 + fix, 149, 78 + fix, 215, g);
 				}
@@ -1056,6 +1056,19 @@ public final class Controller extends View
 		proj_Trackers.add(new Proj_Tracker_Enemy(this, (int) (x+xVel*2), (int) (y+yVel*2), power, xVel, yVel, rotation));
 	}
 	/**
+	 * creates an enemy crossbow bolt
+	 * @param rotation rotation of bolt
+	 * @param xVel horizontal velocity of bolt
+	 * @param yVel vertical velocity of bolt
+	 * @param power power of bolt
+	 * @param x x position
+	 * @param y y position
+	 */
+	protected void createCrossbowBolt(double rotation, double xVel, double yVel, int power, double x, double y)
+	{
+		proj_Trackers.add(new CrossbowBolt(this, (int) (x+xVel), (int) (y+yVel), power, xVel, yVel, rotation));
+	}
+	/**
 	 * creates a consumable the player can pick up
 	 * @param X x position
 	 * @param Y y position
@@ -1063,7 +1076,7 @@ public final class Controller extends View
 	 */
 	protected void createConsumable(double X, double Y, int ID) // 0: random powerup or
 	{															// 1-6:powerups 7:coin1
-		powerUps.add(new PowerUp(this, X, Y, ID));				// 9: coin5, 10:coin20, 8:key 
+		powerUps.add(new PowerUp(this, X, Y, 7));				// 9: coin5, 10:coin20, 8:key 
 		Log.e("dropped", "dropped");
 	}
 	/**

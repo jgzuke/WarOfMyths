@@ -18,18 +18,14 @@ abstract public class Proj_Tracker extends DrawnSprite
 	@ Override
 	protected void frameCall()
 	{
-		for(int i = 0; i < 8; i++)
-		{
-			realX += xForward/8;
-			realY += yForward/8;
-			hitTarget((int)realX, (int)realY);
-			hitBack((int)realX, (int)realY);
-		}
+		realX += xForward;
+		realY += yForward;
 		x = (int) realX;
 		y = (int) realY;
+		power--;
+		if(power < 5)
+		{
+			deleted = true;
+		}
 	}
-	abstract protected void hitTarget(int x, int y);
-	abstract protected void hitBack(int x, int y);
-	abstract public void explodeBack();
-	abstract public void explode();
 }

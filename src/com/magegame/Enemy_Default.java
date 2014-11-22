@@ -124,37 +124,43 @@ public final class Enemy_Default extends Enemy
 		rads = Math.atan2(( control.player.y - y), (control.player.x - x));
 		rotation = rads * r2d;
 		distanceFound = checkDistance(x, y, control.player.x,  control.player.y);
-		if(hp<800)
+		if(distanceFound < 30)
 		{
-			if(distanceFound < 30)
+			if(hp<800)
 			{
 				rollAway();
 			} else
 			{
+				if(hasSword)
+				{
+					action = "Melee";
+					currentFrame = 46;
+				} else
+				{
+					rollSideways();
+				}
+			}
+		} else if(distanceFound < 200)
+		{
+			if(hp<800)
+			{
 				runAway();
+			} else
+			{
+				if(hasGun)
+				{
+					action = "Shoot";
+					currentFrame = 21;
+				} else
+				{
+					runTowardPlayer();
+				}
 			}
 		} else
 		{
-			if(distanceFound < 30)
+			if(hp<800)
 			{
-					if(hasSword)
-					{
-						action = "Melee";
-						currentFrame = 46;
-					} else
-					{
-						rollAway();
-					}
-			} else if(distanceFound < 200)
-			{
-					if(hasGun)
-					{
-						action = "Shoot";
-						currentFrame = 21;
-					} else
-					{
-						runTowardPlayer();
-					}
+				runAway();//TODO change to run to safe
 			} else
 			{
 				runTowardPlayer();
@@ -163,20 +169,9 @@ public final class Enemy_Default extends Enemy
 	}
 	protected void frameReactionsNoDangerNoLOS()
 	{
-		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY); // lastPlayerX and Y are the last seen coordinates
-		if(checkedPlayerLast || distanceFound < 10)
+		if(control.getRandomInt(20) == 0)
 		{
-			currentFrame=0;
-			if(control.getRandomInt(150) == 0) // around ten frames of pause between random wandering
-			{
-				runRandom();
-			}
-			checkedPlayerLast = true; // has checked where player was last seen
-		} else
-		{
-			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x)); // move towards last seen coordinates
-			rotation = rads * r2d;
-			run(5);
+			runRandom();
 		}
 	}
 }
