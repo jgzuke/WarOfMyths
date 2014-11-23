@@ -253,11 +253,11 @@ public class StartActivity extends Activity
 	{
 		//setContentView(R.layout.options);
 	}
-	private String[] boostNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
+	private String[] boostNames = new String[] {"    Attack Boost", "    Heal", "    100", "    1000", "    10000"};
 	ListView boostList;
-	private String[] upgradeNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
+	private String[] upgradeNames = new String[] {"    Attack", "    HP", "    Speed", "    Cooldown", "    Reserve", "    Excess", "    Replentish", "    Tracking"};
 	ListView upgradeList;
-	private String[] skinNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
+	private String[] skinNames = new String[] {"    1", "    2", "    3", "    4", "    5", "    6", "    7"};
 	ListView skinList;
 	public void storeClickHandler(View v)
 	{
@@ -273,14 +273,6 @@ public class StartActivity extends Activity
 			    return textView;
 			}
 		});
-		boostList.setOnItemClickListener(new OnItemClickListener()
-		{
-	         @Override
-             public void onItemClick(AdapterView<?> parent, View view,int position, long id)
-	         {
-	        	 clickBuyItem(position);
-	         }
-	    });
 		upgradeList = (ListView) findViewById(R.id.scroll2);
 		upgradeList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, upgradeNames)
 		{
@@ -292,14 +284,6 @@ public class StartActivity extends Activity
 			    return textView;
 			}
 		});
-		upgradeList.setOnItemClickListener(new OnItemClickListener()
-		{
-	         @Override
-             public void onItemClick(AdapterView<?> parent, View view,int position, long id)
-	         {
-	        	 clickBuyItem(position+10);
-	         }
-	    });
 		skinList = (ListView) findViewById(R.id.scroll3);
 		skinList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, skinNames)
 		{
@@ -311,44 +295,63 @@ public class StartActivity extends Activity
 			    return textView;
 			}
 		});
+		boostList.setOnItemClickListener(new OnItemClickListener()
+		{
+	         @Override
+             public void onItemClick(AdapterView<?> parent, View view,int position, long id)
+	         {
+	        	 clickBuyItem(position+1);
+	         }
+	    });
+		upgradeList.setOnItemClickListener(new OnItemClickListener()
+		{
+	         @Override
+             public void onItemClick(AdapterView<?> parent, View view,int position, long id)
+	         {
+	        	 Log.e("k", Integer.toString(position));
+	        	 clickBuyItem(position+6);
+	         }
+	    });
 		skinList.setOnItemClickListener(new OnItemClickListener()
 		{
 	         @Override
              public void onItemClick(AdapterView<?> parent, View view,int position, long id)
 	         {
-	        	 clickBuyItem(position+20);
+	        	 clickBuyItem(position+14);
 	         }
 	    });
-		/*
-		 protected byte buyUpgradeAttack = 0;
-	protected byte buyUpgradeHealth = 0;
-	protected byte buyUpgradeSpeed = 0;
-	protected byte buyUpgradeCooldown = 0;
-	protected byte buyAttackBoost = 0;
-	protected byte buyHeal = 0;
-	protected byte buyExtraReserve = 0;
-	protected byte buyExtraExcess = 0;
-	protected byte buyExtraReplentish = 0;
-	protected byte buyExtraTracking = 0;
-	
-	protected boolean [] skins = {false, false, false, false, false, false, false};
-		 */
+	}
+	private boolean [] boostAffordable = new boolean[5];
+	private boolean [] upgradeAffordable = new boolean[8];
+	private boolean [] skinAffordable = new boolean[7];	
+	private void greyOutExpensive()
+	{
+		for(int i = 0; i < 5; i++) boostAffordable[i]=afford(i+1);
+		for(int i = 0; i < 8; i++) upgradeAffordable[i]=afford(i+6);
+		for(int i = 0; i < 7; i++) skinAffordable[i]=afford(i+14);
 	}
 	private int getPrice(int ID)
 	{
 		double power = 3.4;
-		if(ID<10) // upgrades
-		{
-			return (int)(Math.pow(upgrades[ID], power)/2.49);
-		}
-		if(ID<20) // boosts
-		{
-			if(ID<13)return 200;
-			if(ID==13)return 100;
-			if(ID==14)return 600;
-			if(ID==15)return 2500;
-		}
-		return 200;
+		if(ID<3) return 200;
+		if(ID==3) return 100;
+		if(ID==4) return 600;
+		if(ID==5) return 2500;
+		if(ID<10) return (int)(Math.pow(upgrades[ID-6], power)/2.49); 
+		if(ID<14) return (int)(Math.pow(premiumUpgrades[ID-10], power)/2.49);
+		if(ID==14) return 100;
+		if(ID==15) return 200;
+		if(ID==16) return 300;
+		if(ID==17) return 100;
+		if(ID==18) return 200;
+		if(ID==19) return 300;
+		return 400;
+	}
+	private boolean afford(int ID)
+	{
+		if(isRealCurrency(ID)&&getPrice(ID)>realCurrency) return false;
+		if(!isRealCurrency(ID)&&getPrice(ID)>gameCurrency) return false;
+		return true;
 	}
 	private boolean afford(int ID, int currency)
 	{
@@ -362,20 +365,74 @@ public class StartActivity extends Activity
 			Toast.makeText(context, "Can't Afford", Toast.LENGTH_LONG).show();
 		} else
 		{
-			currency -= getPrice(ID);
-			getItem(ID);
+			if(getItem(ID))currency -= getPrice(ID);
 		}
 		return currency;
 	}
+	private boolean isRealCurrency(int ID)
+	{
+		if(ID>16||(ID>2&&ID<6)||(ID>9&&ID<14)) return true;
+		return false;
+	}
 	private void clickBuyItem(int ID)
 	{
-		boolean real = false;
+		boolean real = isRealCurrency(ID);
 		if(real) realCurrency = buyItem(ID, realCurrency);
 		if(!real) gameCurrency = buyItem(ID, gameCurrency);
+		greyOutExpensive();
 	}
-	private void getItem(int ID)
+	private boolean getItem(int ID) 
 	{
-		
+		if(ID<3)
+		{
+			if(boosts[ID-1]<6)
+			{
+				boosts[ID-1]++;
+				return true;
+			} else
+			{
+				Toast.makeText(context, "Cannot hold more than five of one item", Toast.LENGTH_LONG).show();
+				return false;
+			}
+		}
+		if(ID==3)
+		{
+			gameCurrency+=100;
+			return true;
+		}
+		if(ID==4)
+		{
+			gameCurrency+=1000;
+			return true;
+		}
+		if(ID==5)
+		{
+			gameCurrency+=1000;
+			return true;
+		}
+		if(ID<10)
+		{
+			upgrades[ID-6]++;
+			return true;
+		}
+		if(ID<14)
+		{
+			premiumUpgrades[ID-10]++;
+			return true;
+		}
+		if(ID<20)
+		{
+			if(!skins[ID-14])
+			{
+				skins[ID-14]=true;
+				return true;
+			} else
+			{
+				Toast.makeText(context, "Skin already purchased", Toast.LENGTH_LONG).show();
+				return false;
+			}
+		}
+		return false;
 	}
 	public void toMenuClickHandler(View v)
 	{
