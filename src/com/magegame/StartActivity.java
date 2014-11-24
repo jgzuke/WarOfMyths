@@ -34,6 +34,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -158,7 +159,7 @@ public class StartActivity extends Activity
 	private LayoutInflater layoutInflater;
 	private int levelSelectedToPlay = 10;
 	private String[] levelNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
-	ListView playLevelList;
+	ScrollView playLevelList;
 	private boolean drainHp=false;
 	private boolean lowerHp=false;
 	private boolean limitSpells=false;
@@ -190,7 +191,7 @@ public class StartActivity extends Activity
 		if(lowerHp) hurtClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		if(limitSpells) limitedClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		if(enemyRegen) regenerateClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
-		playLevelList = (ListView) findViewById(R.id.scroll);
+		playLevelList = (ScrollView) findViewById(R.id.scroll);
 		playLevelList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, levelNames)
 		{
 			@Override
@@ -256,15 +257,15 @@ public class StartActivity extends Activity
 	TextView gameMoneyText;
 	TextView realMoneyText;
 	private String[] boostNames = new String[] {"    Attack Boost", "    Heal", "    100", "    1000", "    10000"};
-	ListView boostList;
+	ScrollView boostList;
 	private String[] upgradeNames = new String[] {"    Attack", "    HP", "    Speed", "    Cooldown", "    Reserve", "    Excess", "    Replentish", "    Tracking"};
-	ListView upgradeList;
+	ScrollView upgradeList;
 	private String[] skinNames = new String[] {"    1", "    2", "    3", "    4", "    5", "    6", "    7"};
-	ListView skinList;
+	ScrollView skinList;
 	public void storeClickHandler(View v)
 	{
 		setContentView(R.layout.store);
-		boostList = (ListView) findViewById(R.id.scroll1);
+		boostList = (ScrollView) findViewById(R.id.scroll1);
 		gameMoneyText = (TextView) findViewById(R.id.gameMoney);
 		realMoneyText = (TextView) findViewById(R.id.realMoney);
 		boostList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, boostNames)
@@ -277,7 +278,7 @@ public class StartActivity extends Activity
 			    return textView;
 			}
 		});
-		upgradeList = (ListView) findViewById(R.id.scroll2);
+		upgradeList = (ScrollView) findViewById(R.id.scroll2);
 		upgradeList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, upgradeNames)
 		{
 			@Override
@@ -288,7 +289,7 @@ public class StartActivity extends Activity
 			    return textView;
 			}
 		});
-		skinList = (ListView) findViewById(R.id.scroll3);
+		skinList = (ScrollView) findViewById(R.id.scroll3);
 		skinList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, skinNames)
 		{
 			@Override
