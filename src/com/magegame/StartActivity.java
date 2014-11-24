@@ -213,15 +213,32 @@ public class StartActivity extends Activity
 	        	 highlightSelectedLevel(position, true);
 	         }
 	    });
+		playLevelList.setOnScrollListener(new OnScrollListener()
+		{
+			@Override
+			public void onScroll(AbsListView view, int first, int visibleItemCount, int totalItemCount)
+			{
+				for(int i = 0; i < visibleItemCount; i++)
+				{
+					if(i==(levelSelectedToPlay/10)-1) playLevelList.getChildAt(i).setBackgroundColor(Color.parseColor("#33209af1"));
+					else playLevelList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+				}
+			}
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {}
+		});
 	}
 	public void highlightSelectedLevel(int position, boolean selected)
 	{
 		if(selected)
 		{
-			((TextView)playLevelList.getChildAt(position)).setTextColor(Color.parseColor("#1D8BD9"));
+			playLevelList.getChildAt(position).setBackgroundColor(Color.parseColor("#33209af1"));
 		} else
 		{
-			((TextView)playLevelList.getChildAt(position)).setTextColor(Color.parseColor("#FFFFFF"));
+			if(playLevelList.getFirstVisiblePosition()<=position&& position<=playLevelList.getLastVisiblePosition())
+			{
+				playLevelList.getChildAt(position).setBackgroundColor(Color.TRANSPARENT);
+			}
 		}
 	}
 	public void startRetry()
@@ -309,7 +326,11 @@ public class StartActivity extends Activity
 				for(int i = 0; i < visibleItemCount; i++)
 				{
 					if(boostAffordable[i+first]) boostList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-					else boostList.getChildAt(i).setBackgroundColor(Color.GRAY);
+					else boostList.getChildAt(i).setBackgroundColor(Color.parseColor("#33209af1"));
+					if(i+first<2)
+					{
+						if(boosts[i+first]>4) boostList.getChildAt(i).setBackgroundColor(Color.parseColor("#260c3b5d"));
+					}
 				}
 			}
 			@Override
@@ -323,7 +344,7 @@ public class StartActivity extends Activity
 				for(int i = 0; i < visibleItemCount; i++)
 				{
 					if(upgradeAffordable[i+first]) upgradeList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-					else upgradeList.getChildAt(i).setBackgroundColor(Color.GRAY);
+					else upgradeList.getChildAt(i).setBackgroundColor(Color.parseColor("#33209af1"));
 				}
 			}
 			@Override
@@ -336,8 +357,9 @@ public class StartActivity extends Activity
 			{
 				for(int i = 0; i < visibleItemCount; i++)
 				{
-					if(skinAffordable[i+first]) skinList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-					else skinList.getChildAt(i).setBackgroundColor(Color.GRAY);
+					if(skins[i+first]) skinList.getChildAt(i).setBackgroundColor(Color.parseColor("#260c3b5d"));
+					else if(skinAffordable[i+first]) skinList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+					else skinList.getChildAt(i).setBackgroundColor(Color.parseColor("#33209af1"));
 				}
 			}
 			@Override
@@ -420,7 +442,8 @@ public class StartActivity extends Activity
 			Toast.makeText(context, "Can't Afford", Toast.LENGTH_LONG).show();
 		} else
 		{
-			if(getItem(ID))currency -= getPrice(ID);
+			getItem(ID);
+			currency -= getPrice(ID);
 		}
 		return currency;
 	}
@@ -432,63 +455,35 @@ public class StartActivity extends Activity
 	private void clickBuyItem(int ID)
 	{
 		boolean real = isRealCurrency(ID);
-		if(real) realCurrency = buyItem(ID, realCurrency);
-		if(!real) gameCurrency = buyItem(ID, gameCurrency);
-		greyOutExpensive();
-		refreshMoney();
+		if(canGetItem(ID))
+		{
+			if(real) realCurrency = buyItem(ID, realCurrency);
+			if(!real) gameCurrency = buyItem(ID, gameCurrency);
+			greyOutExpensive();
+			refreshMoney();
+		}
 	}
-	private boolean getItem(int ID) 
+	private boolean canGetItem(int ID) 
 	{
 		if(ID<3)
 		{
-			if(boosts[ID-1]<6)
-			{
-				boosts[ID-1]++;
-				return true;
-			} else
-			{
-				Toast.makeText(context, "Cannot hold more than five of one item", Toast.LENGTH_LONG).show();
-				return false;
-			}
+			if(boosts[ID-1]<6)return true;
+			Toast.makeText(context, "Cannot hold more than five of one item", Toast.LENGTH_LONG).show();
+			return false;
 		}
-		if(ID==3)
-		{
-			gameCurrency+=100;
-			return true;
-		}
-		if(ID==4)
-		{
-			gameCurrency+=1000;
-			return true;
-		}
-		if(ID==5)
-		{
-			gameCurrency+=1000;
-			return true;
-		}
-		if(ID<10)
-		{
-			upgrades[ID-6]++;
-			return true;
-		}
-		if(ID<14)
-		{
-			premiumUpgrades[ID-10]++;
-			return true;
-		}
-		if(ID<20)
-		{
-			if(!skins[ID-14])
-			{
-				skins[ID-14]=true;
-				return true;
-			} else
-			{
-				Toast.makeText(context, "Skin already purchased", Toast.LENGTH_LONG).show();
-				return false;
-			}
-		}
+		if(ID<14) return true;
+		if(!skins[ID-14]) return true;
 		return false;
+	}
+	private void getItem(int ID) 
+	{
+		if(ID<3) boosts[ID-1]++;
+		if(ID==3) gameCurrency+=100;
+		if(ID==4) gameCurrency+=1000;
+		if(ID==5) gameCurrency+=1000;
+		if(ID<10) upgrades[ID-6]++;
+		if(ID<14) premiumUpgrades[ID-10]++;
+		if(ID<20) skins[ID-14]=true;
 	}
 	public void toMenuClickHandler(View v)
 	{
