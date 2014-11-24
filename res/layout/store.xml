@@ -13,6 +13,26 @@
         android:onClick="toMenuClickHandler"
         android:background="@drawable/menu_text30x30"/>
     <TextView
+        android:id="@+id/realMoney"
+        android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+        android:textColor="#ffffff"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginLeft="30dp"
+        android:text="ONE TIME"
+        android:textSize="20sp"
+        android:layout_toRightOf="@id/back"/>
+     <TextView
+        android:id="@+id/gameMoney"
+        android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+        android:textColor="#ffffff"
+        android:layout_marginTop="5dp"
+        android:text="ONE TIME"
+        android:textSize="20sp"
+        android:layout_toRightOf="@id/realMoney"/>
+    <TextView
         android:id="@+id/boosts"
         android:layout_width="wrap_content"
 		android:layout_height="wrap_content"

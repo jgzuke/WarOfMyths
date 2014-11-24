@@ -253,6 +253,8 @@ public class StartActivity extends Activity
 	{
 		//setContentView(R.layout.options);
 	}
+	TextView gameMoneyText;
+	TextView realMoneyText;
 	private String[] boostNames = new String[] {"    Attack Boost", "    Heal", "    100", "    1000", "    10000"};
 	ListView boostList;
 	private String[] upgradeNames = new String[] {"    Attack", "    HP", "    Speed", "    Cooldown", "    Reserve", "    Excess", "    Replentish", "    Tracking"};
@@ -263,6 +265,8 @@ public class StartActivity extends Activity
 	{
 		setContentView(R.layout.store);
 		boostList = (ListView) findViewById(R.id.scroll1);
+		gameMoneyText = (TextView) findViewById(R.id.gameMoney);
+		realMoneyText = (TextView) findViewById(R.id.realMoney);
 		boostList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, boostNames)
 		{
 			@Override
@@ -320,6 +324,12 @@ public class StartActivity extends Activity
 	        	 clickBuyItem(position+14);
 	         }
 	    });
+		refreshMoney();
+	}
+	private void refreshMoney()
+	{
+		gameMoneyText.setText(gameCurrency);
+		realMoneyText.setText(realCurrency);
 	}
 	private boolean [] boostAffordable = new boolean[5];
 	private boolean [] upgradeAffordable = new boolean[8];
@@ -380,6 +390,7 @@ public class StartActivity extends Activity
 		if(real) realCurrency = buyItem(ID, realCurrency);
 		if(!real) gameCurrency = buyItem(ID, gameCurrency);
 		greyOutExpensive();
+		refreshMoney();
 	}
 	private boolean getItem(int ID) 
 	{
