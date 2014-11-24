@@ -27,7 +27,6 @@ public final class PowerUp extends DrawnSprite
 		{
 			ID = control.getRandomInt(6)+1;
 		}
-		if(Type==8) Log.e("done", "doneo");
 		visualImage = control.imageLibrary.powerUps[ID-1];
 	}
 	/**
@@ -36,19 +35,10 @@ public final class PowerUp extends DrawnSprite
 	@ Override
 	protected void frameCall()
 	{
-		double xDif = x - control.player.x;
-		double yDif = y - control.player.y;
-		double dist = Math.pow(xDif, 2) + Math.pow(yDif, 2);
-		if(dist < 625)
+		if(Math.abs(x - control.player.x)<20&&Math.abs(y - control.player.y)<20)
 		{			
 			control.player.getPowerUp(ID);
 			deleted = true;
-		}		
-		if(dist < 30000)
-		{
-			double rads = Math.atan2(yDif, xDif);
-			x -= Math.cos(rads)*4000/dist;
-			y -= Math.sin(rads)*4000/dist;
 		}
 	}
 }

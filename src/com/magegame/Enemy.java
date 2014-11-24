@@ -353,8 +353,10 @@ abstract public class Enemy extends Human
 	}
 	protected void turnToward(double nx, double ny)
 	{
-		rads = Math.atan2((ny - y), (nx - x));
-		rotation = rads*r2d;
+		LOS=true;
+		hadLOSLastTime = 5;
+		//rads = Math.atan2((ny - y), (nx - x));
+		//rotation = rads*r2d;
 	}
 	/**
 	 * Checks whether any Proj_Trackers are headed for object

@@ -287,6 +287,10 @@ public final class SpriteController
 		{
 			if(powerUps.get(i) != null)
 			{
+				if(powerUps.get(i).ID==8)
+				{
+					control.drawBitmapLevel(imageLibrary.haskey, (int) enemies.get(i).x - 20, (int) enemies.get(i).y - 20, g);
+				}
 				control.drawBitmapLevel(powerUps.get(i).getVisualImage(), (int) powerUps.get(i).x - 15, (int) powerUps.get(i).y - 15, g);
 			}
 		}
