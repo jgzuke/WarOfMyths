@@ -29,12 +29,13 @@ import android.view.Menu;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -159,7 +160,7 @@ public class StartActivity extends Activity
 	private LayoutInflater layoutInflater;
 	private int levelSelectedToPlay = 10;
 	private String[] levelNames = new String[] {"    Tutorial", "    Level 1", "    Level 2"};
-	ScrollView playLevelList;
+	ListView playLevelList;
 	private boolean drainHp=false;
 	private boolean lowerHp=false;
 	private boolean limitSpells=false;
@@ -191,7 +192,7 @@ public class StartActivity extends Activity
 		if(lowerHp) hurtClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		if(limitSpells) limitedClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
 		if(enemyRegen) regenerateClick.setBackgroundResource(R.drawable.menu_text_selected150x40);
-		playLevelList = (ScrollView) findViewById(R.id.scroll);
+		playLevelList = (ListView) findViewById(R.id.scroll);
 		playLevelList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, levelNames)
 		{
 			@Override
@@ -257,15 +258,15 @@ public class StartActivity extends Activity
 	TextView gameMoneyText;
 	TextView realMoneyText;
 	private String[] boostNames = new String[] {"    Attack Boost", "    Heal", "    100", "    1000", "    10000"};
-	ScrollView boostList;
+	ListView boostList;
 	private String[] upgradeNames = new String[] {"    Attack", "    HP", "    Speed", "    Cooldown", "    Reserve", "    Excess", "    Replentish", "    Tracking"};
-	ScrollView upgradeList;
+	ListView upgradeList;
 	private String[] skinNames = new String[] {"    1", "    2", "    3", "    4", "    5", "    6", "    7"};
-	ScrollView skinList;
+	ListView skinList;
 	public void storeClickHandler(View v)
 	{
 		setContentView(R.layout.store);
-		boostList = (ScrollView) findViewById(R.id.scroll1);
+		boostList = (ListView) findViewById(R.id.scroll1);
 		gameMoneyText = (TextView) findViewById(R.id.gameMoney);
 		realMoneyText = (TextView) findViewById(R.id.realMoney);
 		boostList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, boostNames)
@@ -278,7 +279,7 @@ public class StartActivity extends Activity
 			    return textView;
 			}
 		});
-		upgradeList = (ScrollView) findViewById(R.id.scroll2);
+		upgradeList = (ListView) findViewById(R.id.scroll2);
 		upgradeList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, upgradeNames)
 		{
 			@Override
@@ -289,7 +290,7 @@ public class StartActivity extends Activity
 			    return textView;
 			}
 		});
-		skinList = (ScrollView) findViewById(R.id.scroll3);
+		skinList = (ListView) findViewById(R.id.scroll3);
 		skinList.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, android.R.id.text1, skinNames)
 		{
 			@Override
@@ -299,6 +300,48 @@ public class StartActivity extends Activity
 			    textView.setTextColor(Color.parseColor("#FFFFFF"));
 			    return textView;
 			}
+		});
+		boostList.setOnScrollListener(new OnScrollListener()
+		{
+			@Override
+			public void onScroll(AbsListView view, int first, int visibleItemCount, int totalItemCount)
+			{
+				for(int i = 0; i < visibleItemCount; i++)
+				{
+					if(boostAffordable[i+first]) boostList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+					else boostList.getChildAt(i).setBackgroundColor(Color.GRAY);
+				}
+			}
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {}
+		});
+		upgradeList.setOnScrollListener(new OnScrollListener()
+		{
+			@Override
+			public void onScroll(AbsListView view, int first, int visibleItemCount, int totalItemCount)
+			{
+				for(int i = 0; i < visibleItemCount; i++)
+				{
+					if(upgradeAffordable[i+first]) upgradeList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+					else upgradeList.getChildAt(i).setBackgroundColor(Color.GRAY);
+				}
+			}
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {}
+		});
+		skinList.setOnScrollListener(new OnScrollListener()
+		{
+			@Override
+			public void onScroll(AbsListView view, int first, int visibleItemCount, int totalItemCount)
+			{
+				for(int i = 0; i < visibleItemCount; i++)
+				{
+					if(skinAffordable[i+first]) skinList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
+					else skinList.getChildAt(i).setBackgroundColor(Color.GRAY);
+				}
+			}
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {}
 		});
 		boostList.setOnItemClickListener(new OnItemClickListener()
 		{
@@ -325,12 +368,13 @@ public class StartActivity extends Activity
 	        	 clickBuyItem(position+14);
 	         }
 	    });
+		greyOutExpensive();
 		refreshMoney();
 	}
 	private void refreshMoney()
 	{
-		gameMoneyText.setText(gameCurrency);
-		realMoneyText.setText(realCurrency);
+		gameMoneyText.setText(Integer.toString(gameCurrency));
+		realMoneyText.setText(Integer.toString(realCurrency));
 	}
 	private boolean [] boostAffordable = new boolean[5];
 	private boolean [] upgradeAffordable = new boolean[8];

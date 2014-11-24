@@ -44,7 +44,7 @@
         android:text="ONE TIME"
         android:gravity="center"
         android:background="@drawable/menu_text200x50"/>
-    <ScrollView
+    <ListView
         android:layout_below="@id/boosts"
         android:layout_width="200dp"
         android:layout_height="260dp"
@@ -63,7 +63,7 @@
         android:text="UPGRADES"
         android:gravity="center"
         android:background="@drawable/menu_text200x50"/>
-    <ScrollView
+    <ListView
         android:layout_below="@id/store"
         android:layout_toRightOf="@id/scroll1"
         android:layout_width="200dp"
@@ -82,7 +82,7 @@
         android:text="SKINS"
         android:gravity="center"
         android:background="@drawable/menu_text200x50"/>
-    <ScrollView
+    <ListView
         android:layout_below="@id/play"
         android:layout_toRightOf="@id/scroll2"
         android:layout_width="200dp"
