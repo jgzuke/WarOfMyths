@@ -572,7 +572,18 @@ public final class Controller extends View
 	{
 		Bitmap drawTo = Bitmap.createBitmap(levelWidth, levelHeight, Config.ARGB_8888);
 		Canvas g = new Canvas(drawTo);
-		drawBitmapLevel(imageLibrary.backDrop, 0, 0, g);
+		int w = 0;
+		int h = 0;
+		while(w < levelWidth)
+		{
+			while(h < levelHeight)
+			{
+				drawBitmapLevel(imageLibrary.backDrop, w, h, g);
+				h += 300;
+			}
+			w += 300;
+			h = 0;
+		}
 		drawBitmap(imageLibrary.currentLevel, 0, 0, g);
 		drawBitmapLevel(imageLibrary.exitFightPortal, exitX - 30, exitY - 30, g);
 		spriteController.drawStructures(g, paint, imageLibrary);

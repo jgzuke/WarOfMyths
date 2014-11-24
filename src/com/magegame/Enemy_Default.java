@@ -189,11 +189,11 @@ public final class Enemy_Default extends Enemy
 						currentFrame = 21;
 					} else
 					{
-						runTowardPlayer();
+						runTowardsPoint(control.player.x, control.player.y);
 					}
 			} else
 			{
-				runTowardPlayer();
+				runTowardsPoint(control.player.x, control.player.y);
 			}
 		}
 	}
@@ -211,9 +211,7 @@ public final class Enemy_Default extends Enemy
 			checkedPlayerLast = true; // has checked where player was last seen
 		} else
 		{
-			rads = Math.atan2((lastPlayerY - y), (lastPlayerX - x)); // move towards last seen coordinates
-			rotation = rads * r2d;
-			run(3);
+			runTowardsPoint(lastPlayerX, lastPlayerY);
 			action = "Move";
 		}
 	}

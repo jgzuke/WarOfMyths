@@ -6,6 +6,7 @@ package com.magegame;
 
 import java.util.ArrayList;
 
+import android.util.Log;
 import android.widget.Toast;
 
 abstract public class Enemy extends Human
@@ -172,6 +173,7 @@ abstract public class Enemy extends Human
 	 */
 	protected void getHit(double damage)
 	{
+		turnToward(control.player.x, control.player.y);
 		if(!deleted)
 		{
 			if(action.equals("Hide")) action = "Nothing";
@@ -336,7 +338,23 @@ abstract public class Enemy extends Human
 				}
 			}
 		}
+		if(LOS)	//tell others where player is
+		{
+			for(int i = 0; i < control.spriteController.enemies.size(); i++)
+			{
+				Enemy enemy = control.spriteController.enemies.get(i);
+				if(!enemy.LOS&&checkDistance(x, y, enemy.x, enemy.y)<200)
+				{
+					enemy.turnToward(control.player.x, control.player.y);
+				}
+			}
+		}
 		checkLOSTimer = 10;
+	}
+	protected void turnToward(double nx, double ny)
+	{
+		rads = Math.atan2((ny - y), (nx - x));
+		rotation = rads*r2d;
 	}
 	/**
 	 * Checks whether any Proj_Trackers are headed for object
@@ -518,38 +536,99 @@ abstract public class Enemy extends Human
 	/**
 	 * Runs towards player, if you cant, run randomly
 	 */
-	protected void runTowardPlayer()
+	protected void runTowardsPoint(double fx, double fy)
 	{
-		//TODO
-		double dX = control.player.x;
-		double dY = control.player.y;
-		if(Math.pow(dX-x, 2)+Math.pow(dY-y, 2)<Math.pow(dX+pXVelocity-x, 2)+Math.pow(dY+pYVelocity-y, 2))
+		Log.e("k", Double.toString(fx));
+		Log.e("k", Double.toString(fy));
+		if(control.checkObstructionsPoint((int)fx, (int)fy, (int)x, (int)y, true))
 		{
-			double timeToHit = (checkDistance(x, y, dX, dY))/speedCur;
-			dX += (pXVelocity*timeToHit);
-			dY += (pYVelocity*timeToHit);
-		}
-		rads = Math.atan2(dY - y, dX - x);
-		rotation = rads * r2d;
-		if(control.checkObstructions(x, y, rads, 32, true))
-		{
-			if(!runTowardDistanceGood(dX, dY, 20))
+			int foundPlayer = -1;			//try to find enemy
+			int sX = (int)(fx/20);		//start at player
+			int sY = (int)(fy/20);
+			int eX = (int)x;
+			int eY = (int)y;
+			int[] p1 = {sX, sY, sX, sY};
+			boolean[][] checked=new boolean[(control.levelWidth/20)][(control.levelHeight/20)];
+			ArrayList<int[]> points = new ArrayList<int[]>();
+			points.add(p1);
+			checked[sX][sY]=true;
+			int count = 0;
+			while(foundPlayer==-1&&count<40)
 			{
-				if(!runTowardDistanceGood(dX, dY, 40))
-				{
-					if(!runTowardDistanceGood(dX, dY, 60))
-					{
-						if(!runAroundCorner(dX, dY))
-						{
-							runRandom();
-						}
-					}
-				}
+				foundPlayer=iterateSearch(points, checked, eX, eY);
+				count++;
+			}
+			Log.e("k", Double.toString(foundPlayer));
+			Log.e("k", Double.toString(count));
+			if(foundPlayer==-1)
+			{
+				runRandom();
+			} else
+			{
+				int[] closest = points.get(foundPlayer);
+				Log.e("k", Double.toString(closest[3]));
+				Log.e("k", Double.toString(closest[2]));
+				rads = Math.atan2(closest[3]*20 - y, closest[2]*20 - x);
+				rotation = rads * r2d;
+				run(8);
 			}
 		} else
 		{
+			rads = Math.atan2(fy - y, fx - x);
+			rotation = rads * r2d;
 			run(8);
 		}
+	}
+	private int iterateSearch(ArrayList<int[]> points, boolean[][] checked, int eX, int eY)
+	{
+		int numPoints = points.size();
+		for(int i = 0; i < numPoints; i++) // for every endpoint we have, expand
+		{
+			int x = points.get(i)[0];
+			int y = points.get(i)[1];
+			if(!control.checkObstructionsPoint(x*20, y*20, eX, eY, true)) return i;
+			if(x>0)
+			{	//if were not on the edge, we havent checked it, and its free
+				if(!checked[x-1][y]&&!control.checkHitBack((x-1)*20, y*20, true))
+				{
+					int[] newPoint = {x-1, y, x, y}; // its a new endpoint
+					points.add(newPoint);
+					checked[x-1][y]=true;			//weve checked this square
+				}
+			}
+			if(x<checked.length-1)
+			{
+				if(!checked[x+1][y]&&!control.checkHitBack((x+1)*20, y*20, true))
+				{
+					int[] newPoint = {x+1, y, x, y};
+					points.add(newPoint);
+					checked[x+1][y]=true;
+				}
+			}
+			if(y>0)
+			{
+				if(!checked[x][y-1]&&!control.checkHitBack(x*20, (y-1)*20, true))
+				{
+					int[] newPoint = {x, y-1, x, y};
+					points.add(newPoint);
+					checked[x][y-1]=true;
+				}
+			}
+			if(y<checked[0].length-1)
+			{
+				if(!checked[x][y+1]&&!control.checkHitBack(x*20, (y+1)*20, true))
+				{
+					int[] newPoint = {x, y+1, x, y};
+					points.add(newPoint);
+					checked[x][y+1]=true;
+				}
+			}
+		}
+		for(int i = 0; i < numPoints; i++) // remove all the old points
+		{
+			points.remove(0);
+		}
+		return -1;
 	}
 	/**
 	 * runs towards a set x and y

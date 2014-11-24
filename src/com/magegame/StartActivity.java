@@ -326,10 +326,10 @@ public class StartActivity extends Activity
 				for(int i = 0; i < visibleItemCount; i++)
 				{
 					if(boostAffordable[i+first]) boostList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-					else boostList.getChildAt(i).setBackgroundColor(Color.parseColor("#33209af1"));
+					else boostList.getChildAt(i).setBackgroundColor(Color.parseColor("#260c3b5d"));
 					if(i+first<2)
 					{
-						if(boosts[i+first]>4) boostList.getChildAt(i).setBackgroundColor(Color.parseColor("#260c3b5d"));
+						if(boosts[i+first]>4) boostList.getChildAt(i).setBackgroundColor(Color.parseColor("#400c3b5d"));
 					}
 				}
 			}
@@ -344,7 +344,7 @@ public class StartActivity extends Activity
 				for(int i = 0; i < visibleItemCount; i++)
 				{
 					if(upgradeAffordable[i+first]) upgradeList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-					else upgradeList.getChildAt(i).setBackgroundColor(Color.parseColor("#33209af1"));
+					else upgradeList.getChildAt(i).setBackgroundColor(Color.parseColor("#260c3b5d"));
 				}
 			}
 			@Override
@@ -357,9 +357,9 @@ public class StartActivity extends Activity
 			{
 				for(int i = 0; i < visibleItemCount; i++)
 				{
-					if(skins[i+first]) skinList.getChildAt(i).setBackgroundColor(Color.parseColor("#260c3b5d"));
+					if(skins[i+first]) skinList.getChildAt(i).setBackgroundColor(Color.parseColor("#400c3b5d"));
 					else if(skinAffordable[i+first]) skinList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
-					else skinList.getChildAt(i).setBackgroundColor(Color.parseColor("#33209af1"));
+					else skinList.getChildAt(i).setBackgroundColor(Color.parseColor("#260c3b5d"));
 				}
 			}
 			@Override
