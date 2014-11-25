@@ -47,7 +47,7 @@ public class StartActivity extends Activity
 	protected int screenMinY;
 	protected int gameCurrency = 2000;
 	protected int realCurrency = 2000;
-	protected byte [] boosts = {0, 0}; // attack, heal
+	protected byte [] boosts = {0, 0, 0, 0, 0, 0}; // attack, heal
 	protected byte [] upgrades = {0, 0, 0, 0}; // attack, hp, speed, cooldown
 	protected byte [] premiumUpgrades = {0, 0, 0, 0}; // reserve, excess, replentish, tracking
 	protected boolean [] skins = {false, false, false, false, false, false, false};
@@ -274,7 +274,7 @@ public class StartActivity extends Activity
 	}
 	TextView gameMoneyText;
 	TextView realMoneyText;
-	private String[] boostNames = new String[] {"    Attack Boost", "    Heal", "    100", "    1000", "    10000"};
+	private String[] boostNames = new String[] {"    Heal", "    Cooldown", "    Attack Boost", "    Recharge Boost", "    Speed Boost", "    Armor Boost", "    100", "    1000", "    10000"};
 	ListView boostList;
 	private String[] upgradeNames = new String[] {"    Attack", "    HP", "    Speed", "    Cooldown", "    Reserve", "    Excess", "    Replentish", "    Tracking"};
 	ListView upgradeList;
@@ -327,7 +327,7 @@ public class StartActivity extends Activity
 				{
 					if(boostAffordable[i+first]) boostList.getChildAt(i).setBackgroundColor(Color.TRANSPARENT);
 					else boostList.getChildAt(i).setBackgroundColor(Color.parseColor("#260c3b5d"));
-					if(i+first<2)
+					if(i+first<6)
 					{
 						if(boosts[i+first]>4) boostList.getChildAt(i).setBackgroundColor(Color.parseColor("#400c3b5d"));
 					}
@@ -379,7 +379,7 @@ public class StartActivity extends Activity
              public void onItemClick(AdapterView<?> parent, View view,int position, long id)
 	         {
 	        	 Log.e("k", Integer.toString(position));
-	        	 clickBuyItem(position+6);
+	        	 clickBuyItem(position+10);
 	         }
 	    });
 		skinList.setOnItemClickListener(new OnItemClickListener()
@@ -387,7 +387,7 @@ public class StartActivity extends Activity
 	         @Override
              public void onItemClick(AdapterView<?> parent, View view,int position, long id)
 	         {
-	        	 clickBuyItem(position+14);
+	        	 clickBuyItem(position+18);
 	         }
 	    });
 		greyOutExpensive();
@@ -398,30 +398,30 @@ public class StartActivity extends Activity
 		gameMoneyText.setText(Integer.toString(gameCurrency));
 		realMoneyText.setText(Integer.toString(realCurrency));
 	}
-	private boolean [] boostAffordable = new boolean[5];
+	private boolean [] boostAffordable = new boolean[9];
 	private boolean [] upgradeAffordable = new boolean[8];
 	private boolean [] skinAffordable = new boolean[7];	
 	private void greyOutExpensive()
 	{
-		for(int i = 0; i < 5; i++) boostAffordable[i]=afford(i+1);
-		for(int i = 0; i < 8; i++) upgradeAffordable[i]=afford(i+6);
-		for(int i = 0; i < 7; i++) skinAffordable[i]=afford(i+14);
+		for(int i = 0; i < 9; i++) boostAffordable[i]=afford(i+1);
+		for(int i = 0; i < 8; i++) upgradeAffordable[i]=afford(i+10);
+		for(int i = 0; i < 7; i++) skinAffordable[i]=afford(i+18);
 	}
 	private int getPrice(int ID)
 	{
 		double power = 3.4;
-		if(ID<3) return 200;
-		if(ID==3) return 100;
-		if(ID==4) return 600;
-		if(ID==5) return 2500;
-		if(ID<10) return (int)(Math.pow(upgrades[ID-6], power)/2.49); 
-		if(ID<14) return (int)(Math.pow(premiumUpgrades[ID-10], power)/2.49);
-		if(ID==14) return 100;
-		if(ID==15) return 200;
-		if(ID==16) return 300;
-		if(ID==17) return 100;
-		if(ID==18) return 200;
-		if(ID==19) return 300;
+		if(ID<7) return 200;
+		if(ID==7) return 100;
+		if(ID==8) return 600;
+		if(ID==9) return 2500;
+		if(ID<14) return (int)(Math.pow(upgrades[ID-10], power)/2.49); 
+		if(ID<18) return (int)(Math.pow(premiumUpgrades[ID-14], power)/2.49);
+		if(ID==18) return 100;
+		if(ID==19) return 200;
+		if(ID==20) return 300;
+		if(ID==21) return 100;
+		if(ID==22) return 200;
+		if(ID==23) return 300;
 		return 400;
 	}
 	private boolean afford(int ID)
@@ -449,7 +449,7 @@ public class StartActivity extends Activity
 	}
 	private boolean isRealCurrency(int ID)
 	{
-		if(ID>16||(ID>2&&ID<6)||(ID>9&&ID<14)) return true;
+		if(ID>20||(ID>6&&ID<10)||(ID>13&&ID<18)) return true;
 		return false;
 	}
 	private void clickBuyItem(int ID)
@@ -465,25 +465,25 @@ public class StartActivity extends Activity
 	}
 	private boolean canGetItem(int ID) 
 	{
-		if(ID<3)
+		if(ID<7)
 		{
 			if(boosts[ID-1]<6)return true;
 			Toast.makeText(context, "Cannot hold more than five of one item", Toast.LENGTH_LONG).show();
 			return false;
 		}
-		if(ID<14) return true;
-		if(!skins[ID-14]) return true;
+		if(ID<18) return true;
+		if(!skins[ID-18]) return true;
 		return false;
 	}
 	private void getItem(int ID) 
 	{
-		if(ID<3) boosts[ID-1]++;
-		if(ID==3) gameCurrency+=100;
-		if(ID==4) gameCurrency+=1000;
-		if(ID==5) gameCurrency+=1000;
-		if(ID<10) upgrades[ID-6]++;
-		if(ID<14) premiumUpgrades[ID-10]++;
-		if(ID<20) skins[ID-14]=true;
+		if(ID<7) boosts[ID-1]++;
+		if(ID==7) gameCurrency+=100;
+		if(ID==8) gameCurrency+=1000;
+		if(ID==9) gameCurrency+=1000;
+		if(ID<14) upgrades[ID-10]++;
+		if(ID<18) premiumUpgrades[ID-10]++;
+		if(ID<24) skins[ID-18]=true;
 	}
 	public void toMenuClickHandler(View v)
 	{
@@ -646,12 +646,16 @@ public class StartActivity extends Activity
 	protected void startMenu()
 	{
 		gameRunning = false;
+		gameOnAtAll=false;
 		setContentView(R.layout.activity_main);
 	}
+	
+	
 	protected void pauseGame()
 	{
 		gameRunning = false;
-		setContentView(R.layout.activity_main);
+		setContentView(R.layout.paused);
+		
 	}
 	/**
 	 * player loses a fight, start screen
@@ -668,15 +672,8 @@ public class StartActivity extends Activity
 	 */
 	protected void winFight()
 	{
-		Toast.makeText(control.context, "Won Round ("+Integer.toString((int)control.moneyMade)+"g)", Toast.LENGTH_SHORT).show();
 		if(control.levelNum < 180)
 		{
-			if((int)(control.levelNum / 10) - 2 == levelBeaten)
-			{
-				levelBeaten++;
-				realCurrency += control.moneyMultiplier*3;
-				Toast.makeText(control.context, "Victory ("+Integer.toString((int)control.moneyMade)+"g/"+Integer.toString((int)control.moneyMultiplier*3)+"p)", Toast.LENGTH_SHORT).show();
-			}
 			control.startingLevel =(int)(control.levelNum/10)-1;
 			if(control.difficultyLevel == 10)
 			{
@@ -710,6 +707,15 @@ public class StartActivity extends Activity
 			if(control.enemyRegen)
 			{
 				control.moneyMultiplier *= 1.4;
+			}
+			if((int)(control.levelNum / 10) - 2 == levelBeaten)
+			{
+				levelBeaten++;
+				realCurrency += control.moneyMultiplier*3;
+				Toast.makeText(control.context, "Level Unlocked, Earned "+Integer.toString((int)control.moneyMade)+"g and "+Integer.toString((int)control.moneyMultiplier*3)+"p", Toast.LENGTH_SHORT).show();
+			} else
+			{
+				Toast.makeText(control.context, "Won Round, Earned "+Integer.toString((int)control.moneyMade)+"g", Toast.LENGTH_SHORT).show();
 			}
 			startFight(control.startingLevel+2);
 		} else

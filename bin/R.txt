@@ -712,9 +712,10 @@ int layout abc_simple_decor 0x7f03001d
 int layout abc_simple_dropdown_hint 0x7f03001e
 int layout activity_main 0x7f03001f
 int layout lostfight 0x7f030020
-int layout play 0x7f030021
-int layout store 0x7f030022
-int layout support_simple_spinner_dropdown_item 0x7f030023
+int layout paused 0x7f030021
+int layout play 0x7f030022
+int layout store 0x7f030023
+int layout support_simple_spinner_dropdown_item 0x7f030024
 int menu start 0x7f0d0000
 int raw busqueda 0x7f050000
 int raw effect_pageflip 0x7f050001
