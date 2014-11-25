@@ -649,13 +649,91 @@ public class StartActivity extends Activity
 		gameOnAtAll=false;
 		setContentView(R.layout.activity_main);
 	}
-	
-	
+	Button p1Use;
+	Button p2Use;
+	Button p3Use;
+	Button p4Use;
+	Button p5Use;
+	Button p6Use;
 	protected void pauseGame()
 	{
 		gameRunning = false;
 		setContentView(R.layout.paused);
-		
+		p1Use = (Button) findViewById(R.id.u1);
+		p2Use = (Button) findViewById(R.id.u2);
+		p3Use = (Button) findViewById(R.id.u3);
+		p4Use = (Button) findViewById(R.id.u4);
+		p5Use = (Button) findViewById(R.id.u5);
+		p6Use = (Button) findViewById(R.id.u6);
+		p1Use.setText(Integer.toString(boosts[0]));
+		p2Use.setText(Integer.toString(boosts[1]));
+		p3Use.setText(Integer.toString(boosts[3]));
+		p4Use.setText(Integer.toString(boosts[4]));
+		p5Use.setText(Integer.toString(boosts[2]));
+		p6Use.setText(Integer.toString(boosts[5]));
+	}
+	public void useP1(View v)
+	{
+		if(boosts[0]>0)
+		{
+			control.player.getPowerUp(1);
+			boosts[0]--;
+		}
+		p1Use.setText(Integer.toString(boosts[0]));
+	}
+	public void useP2(View v)
+	{
+		if(boosts[1]>0)
+		{
+			control.player.getPowerUp(2);
+			boosts[1]--;
+		}
+		p2Use.setText(Integer.toString(boosts[1]));
+	}
+	public void useP3(View v)
+	{
+		if(boosts[3]>0)
+		{
+			control.player.getPowerUp(4);
+			boosts[3]--;
+		}
+		p3Use.setText(Integer.toString(boosts[3]));
+	}
+	public void useP4(View v)
+	{
+		if(boosts[4]>0)
+		{
+			control.player.getPowerUp(5);
+			boosts[4]--;
+		}
+		p4Use.setText(Integer.toString(boosts[4]));
+	}
+	public void useP5(View v)
+	{
+		if(boosts[2]>0)
+		{
+			control.player.getPowerUp(3);
+			boosts[2]--;
+		}
+		p5Use.setText(Integer.toString(boosts[2]));
+	}
+	public void useP6(View v)
+	{
+		if(boosts[5]>0)
+		{
+			control.player.getPowerUp(6);
+			boosts[5]--;
+		}
+		p6Use.setText(Integer.toString(boosts[5]));
+	}
+	public void resumeGame(View v)
+	{
+		gameRunning = true;
+		setContentView(control);
+	}
+	public void endGame(View v)
+	{
+		startMenu();
 	}
 	/**
 	 * player loses a fight, start screen
