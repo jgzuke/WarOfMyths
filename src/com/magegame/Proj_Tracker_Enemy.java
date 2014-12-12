@@ -27,7 +27,7 @@ public final class Proj_Tracker_Enemy extends Proj_Tracker
 		setImageDimensions();
 		power = Power;
 		rotation = Rotation;
-		if(control.player.currentFrame < 22 && !deleted) // currentframe under 22 because if player rolls it doesnt hit
+		if((control.player.currentFrame < 22|| control.player.currentFrame==31)&& !deleted) // currentframe under 22 because if player rolls it doesnt hit
 		{
 			xDif = x - control.player.x;
 			yDif = y - control.player.y;
