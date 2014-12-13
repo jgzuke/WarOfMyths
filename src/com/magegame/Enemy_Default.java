@@ -23,54 +23,54 @@ public final class Enemy_Default extends Enemy
 		checkDanger();
 		if(action.equals("Stun"))
 		{
-			currentFrame=93;
+			frame=93;
 			stunTimer--;
 			if(stunTimer==0) action = "Nothing";		//stun over, go have fun
 		} else if(action.equals("Melee"))
 		{
-			currentFrame++;
-			if(currentFrame==53)
+			frame++;
+			if(frame==53)
 			{
 				meleeAttack(300);
-			} else if(currentFrame==63)
+			} else if(frame==63)
 			{
 				meleeAttack(420);
 			}
-			if(currentFrame==71) action = "Nothing";	//attack over
+			if(frame==71) action = "Nothing";	//attack over
 		} else if(action.equals("Sheild"))
 		{
-			currentFrame++;
-			if(currentFrame==81) action = "Nothing";	//block done
+			frame++;
+			if(frame==81) action = "Nothing";	//block done
 		} else if(action.equals("Roll"))
 		{
 			x += xMove;
 			y += yMove;
-			currentFrame++;
-			if(currentFrame==93) action = "Nothing";	//roll done
+			frame++;
+			if(frame==93) action = "Nothing";	//roll done
 		} else if(action.equals("Hide"))
 		{
-			currentFrame = 94;
+			frame = 94;
 			if(checkDistance(x, y, control.player.x,  control.player.y) < 30) //player close enough to attack
 			{
 				action = "Melee";
-				currentFrame = 49;
+				frame = 49;
 			}
 		} else if(action.equals("Shoot"))
 		{
-			currentFrame++;
-			if(currentFrame<27) //geting weapon ready+aiming
+			frame++;
+			if(frame<27) //geting weapon ready+aiming
 			{
 				aimAheadOfPlayer();
-			} else if(currentFrame==36) // shoots
+			} else if(frame==36) // shoots
 			{
 				shootLaser();
 				checkLOS();
-				if(LOS&&hp>600) currentFrame=25; // shoots again
-			} else if(currentFrame==45) action = "Nothing";   // attack done
+				if(LOS&&hp>600) frame=25; // shoots again
+			} else if(frame==45) action = "Nothing";   // attack done
 		} else if(action.equals("Run"))
 		{
-			currentFrame++;
-			if(currentFrame == 19) currentFrame = 0; // restart walking motion
+			frame++;
+			if(frame == 19) frame = 0; // restart walking motion
 			x += xMove;
 			y += yMove;
 			runTimer--;
@@ -82,8 +82,8 @@ public final class Enemy_Default extends Enemy
 				 action = "Nothing";
 			} else
 			{
-				currentFrame++;
-				if(currentFrame == 19) currentFrame = 0; // restart walking motion
+				frame++;
+				if(frame == 19) frame = 0; // restart walking motion
 				x += xMove;
 				y += yMove;
 				runTimer--;
@@ -107,7 +107,7 @@ public final class Enemy_Default extends Enemy
 		}
 		if(action.equals("Nothing"))
 		{
-			currentFrame=0;
+			frame=0;
 			if(pathedToHitLength > 0)
 			{
 				if(LOS)
@@ -129,7 +129,7 @@ public final class Enemy_Default extends Enemy
 				}
 			}
 		}
-		visualImage = control.imageLibrary.enemy_Image[currentFrame];
+		image = control.imageLibrary.enemy_Image[frame];
 		super.frameCall();
 	}
 	protected void frameReactionsDangerLOS()
@@ -144,7 +144,7 @@ public final class Enemy_Default extends Enemy
 			if(hasSheild)
 			{
 				action = "Sheild";
-				currentFrame=72;
+				frame=72;
 			} else
 			{
 				rads = Math.atan2((danger[1][0] - y), (danger[0][0] - x));
@@ -176,7 +176,7 @@ public final class Enemy_Default extends Enemy
 					if(hasSword)
 					{
 						action = "Melee";
-						currentFrame = 46;
+						frame = 46;
 					} else
 					{
 						rollAway();
@@ -186,7 +186,7 @@ public final class Enemy_Default extends Enemy
 					if(hasGun)
 					{
 						action = "Shoot";
-						currentFrame = 21;
+						frame = 21;
 					} else
 					{
 						runTowardsPoint(control.player.x, control.player.y);
@@ -202,7 +202,7 @@ public final class Enemy_Default extends Enemy
 		distanceFound = checkDistance(x, y, lastPlayerX, lastPlayerY); // lastPlayerX and Y are the last seen coordinates
 		if(checkedPlayerLast || distanceFound < 20)
 		{
-			currentFrame=0;
+			frame=0;
 			action = "Nothing";
 			if(control.getRandomInt(20) == 0) // around ten frames of pause between random wandering
 			{

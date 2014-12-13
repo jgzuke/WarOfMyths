@@ -3,6 +3,8 @@
  */
 package com.magegame;
 
+import com.spritelib.Sprite;
+
 import android.util.Log;
 
 public final class Proj_Tracker_Player extends Proj_Tracker
@@ -17,20 +19,19 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 	 * @param Yforward bolts y velocity
 	 * @param Rotation bolts direction of travel
 	 */
-	private DrawnSprite target;
+	private Sprite target;
 	private double r2d = 180/Math.PI;
 	private double speed;
 	private int rotChange;
 	private SpriteController spriteController;
 	protected Proj_Tracker_Player(Controller creator, int X, int Y, int Power, double Speed, double Rotation, SpriteController spriteControllerSet)
 	{
+		super(X, Y, Rotation, creator.imageLibrary.shotPlayer);
 		spriteController = spriteControllerSet;
 		control = creator;
 		speed = Speed;
 		xForward = Math.cos(Rotation/r2d) * Speed;
 		yForward = Math.sin(Rotation/r2d) * Speed;
-		x = X;
-		y = Y;
 		if(control.checkHitBack(x, y, false))
 		{
 			explodeBack();
@@ -43,10 +44,7 @@ public final class Proj_Tracker_Player extends Proj_Tracker
 		}
 		realX = x;
 		realY = y;
-		visualImage = control.imageLibrary.shotPlayer;
-		setImageDimensions();
 		power = Power;
-		rotation = Rotation;
 		rotChange = 6+(control.activity.premiumUpgrades[3]*1);
 		while(rotation<0)
 		{

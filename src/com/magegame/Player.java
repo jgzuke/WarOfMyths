@@ -33,15 +33,16 @@ public final class Player extends Human
 	protected int powerID = 0;
 	private int minimumShootTime = 4;
 	private double hpAccurate;
+	Controller control;
 	/**
 	 * Sets all variables to start, sets image
 	 * @param creator control object
 	 */
 	public Player(Controller creator)
 	{
+		super(0, 0, 0, 0, true, false, creator.imageLibrary.player_Image[0]);
 		control = creator;
 		resetVariables();
-		visualImage = control.imageLibrary.player_Image[0];
 		/*if(control.activity.useHestiasBlessing>0)
 		{
 			control.activity.useHestiasBlessing --;
@@ -139,14 +140,14 @@ public final class Player extends Human
 				abilityTimer_roll = 0;
 			}
 			rollTimer--;
-			if(currentFrame == 30) // roll finished
+			if(frame == 30) // roll finished
 			{
-				currentFrame = 0;
+				frame = 0;
 				playing = false;
 			}
-			if(currentFrame == 19)currentFrame = 0; // restart walking animation
-			if(playing) currentFrame++;
-			if(currentFrame > 31)currentFrame = 0; // player stopped shooting
+			if(frame == 19)frame = 0; // restart walking animation
+			if(playing) frame++;
+			if(frame > 31)frame = 0; // player stopped shooting
 			super.frameCall();
 			if(rollTimer < 1)
 			{
@@ -154,7 +155,7 @@ public final class Player extends Human
 				{
 					if(touchingShoot)
 					{
-						currentFrame = 31;
+						frame = 31;
 						playing = false;
 						rads = Math.atan2(touchShootY, touchShootX);
 				        rotation=rads*180/Math.PI;
@@ -169,7 +170,7 @@ public final class Player extends Human
 						if(!touching || (Math.abs(touchX) < 5 && Math.abs(touchY) < 5))
 						{
 							playing = false;
-							currentFrame = 0;
+							frame = 0;
 						}
 						else
 						{
@@ -184,8 +185,8 @@ public final class Player extends Human
 					x += xMoveRoll;
 					y += yMoveRoll;
 			}
-		visualImage = control.imageLibrary.player_Image[currentFrame];
-		setImageDimensions();
+		image = control.imageLibrary.player_Image[frame];
+		sizeImage();
 	}
 	/**
 	 * moves player at a set speed, direction is based of move stick
@@ -227,7 +228,7 @@ public final class Player extends Human
 			rotation = rads * r2d;
 			rollTimer = 11;
 			playing = true;
-			currentFrame = 21;
+			frame = 21;
 			xMoveRoll = Math.cos(rads) * 8;
 			yMoveRoll = Math.sin(rads) * 8;
 			abilityTimer_roll -= 40;
@@ -243,10 +244,10 @@ public final class Player extends Human
 	{
 		if(abilityTimerTransformed_pound > 100)
 		{
-			if(currentFrame<21)
+			if(frame<21)
 			{
 				playing = true;
-				currentFrame = 39;
+				frame = 39;
 				abilityTimerTransformed_pound -= 100;
 			}
 		} else
@@ -261,10 +262,10 @@ public final class Player extends Human
 	{
 		if(abilityTimerTransformed_hit > 10)
 		{
-			if(currentFrame<21)
+			if(frame<21)
 			{
 				playing = true;
-				currentFrame = 21;
+				frame = 21;
 				abilityTimerTransformed_hit -= 15;
 			}
 		} else
@@ -303,7 +304,7 @@ public final class Player extends Human
 			{
 				rotation = rads * r2d + 180;
 		        roll();
-		        currentFrame = 0;
+		        frame = 0;
 		        xMoveRoll /= 3;
 		        yMoveRoll /= 3;
 		        abilityTimer_roll += 20;

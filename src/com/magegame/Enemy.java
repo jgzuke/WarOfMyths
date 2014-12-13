@@ -52,6 +52,7 @@ abstract public class Enemy extends Human
 	public Enemy(Controller creator, double X, double Y, int HP, int Worth,
 			boolean gun, boolean sheild, boolean hide, boolean sword, boolean Sick, int type)
 	{
+		super(X, Y, 0, 0, true, false, creator.imageLibrary.enemy_Image[0]);
 		control = creator;
 		danger[0] = levelX;
 		danger[1] = levelY;
@@ -61,7 +62,7 @@ abstract public class Enemy extends Human
 		hasGun = gun;
 		sick = Sick;
 		hasSword = sword;
-		currentFrame=0;
+		frame=0;
 		x = X;
 		y = Y;
 		enemyType = type;
@@ -70,9 +71,8 @@ abstract public class Enemy extends Human
 		lastPlayerX = x;
 		lastPlayerY = y;
 		speedCur = 1.8 + (Math.pow(control.getDifficultyLevelMultiplier(), 0.4)*2.6);
-		visualImage = control.imageLibrary.enemy_Image[0];
-		if(hide) visualImage = control.imageLibrary.enemy_Image[94]; //TODO change to arrayList position
-		setImageDimensions();
+		image = control.imageLibrary.enemy_Image[0];
+		if(hide) image = control.imageLibrary.enemy_Image[94]; //TODO change to arrayList position
 		baseHp(HP);
 		worth = Worth;
 		action = "Nothing";
@@ -120,7 +120,7 @@ abstract public class Enemy extends Human
 		clearArray(levelXForward, 30);
 		clearArray(levelYForward, 30);
 		clearArray(pathedToHit, 30);
-		setImageDimensions();
+		sizeImage();
 		pushOtherPeople();
 	}
 	/**
@@ -302,7 +302,7 @@ abstract public class Enemy extends Human
 		action = "Run";
 		xMove = Math.cos(rads) * speedCur;
 		yMove = Math.sin(rads) * speedCur;
-        if(currentFrame>17) currentFrame = 0;
+        if(frame>17) frame = 0;
 	}
 	/**
 	 * Checks whether object can 'see' player
@@ -392,7 +392,7 @@ abstract public class Enemy extends Human
 	 */
 	protected void roll()
 	{
-		currentFrame = 82;
+		frame = 82;
 		action = "Roll";
 		rotation = rads * r2d;
 		xMove = Math.cos(rads) * 8;

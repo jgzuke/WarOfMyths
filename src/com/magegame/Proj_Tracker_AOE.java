@@ -2,7 +2,12 @@
  * behavior for all AOE effects
  */
 package com.magegame;
-abstract public class Proj_Tracker_AOE extends DrawnSprite
+
+import android.graphics.Bitmap;
+
+import com.spritelib.Sprite;
+
+abstract public class Proj_Tracker_AOE extends Sprite
 {
 	protected double r2d = 180 / Math.PI;
 	protected boolean normal;
@@ -22,8 +27,10 @@ abstract public class Proj_Tracker_AOE extends DrawnSprite
 	 * @param Power power or size to start at
 	 * @param Shrinking whether it is shrinking or growing
 	 */
-	public Proj_Tracker_AOE(Controller creator, int X, int Y, double Power, boolean Shrinking, SpriteController spriteControllerSet)
+	Controller control;
+	public Proj_Tracker_AOE(Controller creator, int X, int Y, double Power, boolean Shrinking, SpriteController spriteControllerSet, Bitmap image)
 	{
+		super(X, Y, 2, 2, 0, image);
 		spriteController = spriteControllerSet;
 		normal = Shrinking;
 		control = creator;

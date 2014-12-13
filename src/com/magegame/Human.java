@@ -2,8 +2,23 @@
  * Enemies and player, regains health, provides variables and universal getHit method
  */
 package com.magegame;
-abstract public class Human extends DrawnSprite
+
+import android.graphics.Bitmap;
+
+import com.spritelib.Sprite;
+
+abstract public class Human extends Sprite
 {
+	public Human(double X, double Y, double Rotation, int Frame,
+			boolean IsVideo, boolean Playing, Bitmap Image) {
+		super(X, Y, Rotation, Frame, IsVideo, Playing, Image);
+		// TODO Auto-generated constructor stub
+	}
+	public Human(double X, double Y, int Width, int Height, double Rotation,
+			int Frame, boolean IsVideo, boolean Playing, Bitmap Image) {
+		super(X, Y, Width, Height, Rotation, Frame, IsVideo, Playing, Image);
+		// TODO Auto-generated constructor stub
+	}
 	protected int hp;
 	protected int hpMax;
 	protected double r2d = 180 / Math.PI;
@@ -11,6 +26,7 @@ abstract public class Human extends DrawnSprite
 	protected double speedCur;
 	protected boolean hitBack;
 	protected boolean thisPlayer = false;
+	protected Controller control;
 	/**
 	 * Regains health, ends walk animation, plays animation
 	 */

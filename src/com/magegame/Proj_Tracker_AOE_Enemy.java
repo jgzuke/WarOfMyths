@@ -14,8 +14,7 @@ public final class Proj_Tracker_AOE_Enemy extends Proj_Tracker_AOE
 	 */
 	public Proj_Tracker_AOE_Enemy(Controller creator, int X, int Y, double Power, boolean Shrinking, SpriteController spriteController)
 	{
-		super(creator, X, Y, Power, Shrinking, spriteController);
-		visualImage = control.imageLibrary.shotAOEEnemy;
+		super(creator, X, Y, Power, Shrinking, spriteController, creator.imageLibrary.shotAOEEnemy);
 	}
 	/**
 	 * checks whether it damages player

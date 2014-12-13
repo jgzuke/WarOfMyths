@@ -3,9 +3,11 @@
  */
 package com.magegame;
 
+import com.spritelib.Sprite;
+
 import android.util.Log;
 
-public final class PowerUp extends DrawnSprite
+public final class PowerUp extends Sprite
 {
 	protected int ID;
 	/**
@@ -15,19 +17,16 @@ public final class PowerUp extends DrawnSprite
 	 * @param Y starting y value
 	 * @param Type type of powerup
 	 */
+	Controller control;
 	public PowerUp(Controller creator, double X, double Y, int Type)
 	{
-		width = 30;
-		height = 30;
+		super(X, Y, 30, 30, 0, creator.imageLibrary.powerUps[Type-1]);
 		control = creator;
-		x = X;
-		y = Y;
 		ID=Type;
 		if(ID == 0)
 		{
 			ID = control.getRandomInt(6)+1;
 		}
-		visualImage = control.imageLibrary.powerUps[ID-1];
 	}
 	/**
 	 * checks whether player is close enough to pick up

@@ -4,21 +4,24 @@
  */
 package com.magegame;
 
-abstract public class Structure extends DrawnSprite
+import android.graphics.Bitmap;
+
+import com.spritelib.Sprite;
+
+abstract public class Structure extends Sprite
 {
+	public Structure(double X, double Y, int Width, int Height,
+			double Rotation, Bitmap Image) {
+		super(X, Y, Width, Height, Rotation, Image);
+		// TODO Auto-generated constructor stub
+	}
 	protected int hp;
 	protected int hpMax;
 	protected int timer = 0;
 	protected int width;
 	protected int height;
 	protected int worth;
-	/**
-	 * sets danger arrays, speed and control object
-	 * @param creator control object
-	 */
-	public Structure()
-	{
-	}
+	Controller control;
 	/**
 	 * Clears danger arrays, sets current dimensions, and counts timers
 	 */

@@ -12,14 +12,11 @@ public class Structure_Spawn extends Structure
 	 */
 	public Structure_Spawn(Controller creator, double X, double Y)
 	{
+		super(X, Y, 25, 25, 0, creator.imageLibrary.structure_Spawn);
 		control = creator;
-		x = X;
-		y = Y;
 		hp = 6000;
 		baseHp();
 		hpMax = hp;
-		width = 25;
-		height = 25;
 		worth = 17;
 	}
 	/**

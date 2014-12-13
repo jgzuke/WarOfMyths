@@ -52,6 +52,8 @@ import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import com.spritelib.Sprite;
 public final class Controller extends View
 {
 	protected int screenMinX;
@@ -107,7 +109,7 @@ public final class Controller extends View
 	private int healthColor = Color.rgb(150, 0, 0);
 	private int specialColor = Color.rgb(0, 0, 150);
 	private int cooldownColor = Color.rgb(190, 190, 0);
-	protected DrawnSprite shootStick = new Graphic_shootStick();
+	protected Sprite shootStick;
 	protected int playerHit=0;
 	protected int playerBursted = 0;
 	SpriteController spriteController;
@@ -140,6 +142,7 @@ public final class Controller extends View
 		context = startSet;
 		changeDifficulty(difficulty);
 		imageLibrary = new ImageLibrary(startSet, this); // creates image library
+		shootStick = new Graphic_shootStick(imageLibrary.loadImage("icon_shoot", 70, 35));
 		screenMinX = activitySet.screenMinX;
 		screenMinY = activitySet.screenMinY;
 		screenDimensionMultiplier = activitySet.screenDimensionMultiplier;
@@ -152,7 +155,6 @@ public final class Controller extends View
 		detect = new PlayerGestureDetector(this); // creates gesture detector object
 		setOnTouchListener(detect);
 		detect.setPlayer(player);
-		shootStick.visualImage = imageLibrary.loadImage("icon_shoot", 70, 35);
 		changePlayOptions();
 		frameCaller.run();
 		startFighting(levelToStart);
@@ -183,8 +185,6 @@ public final class Controller extends View
 	 */
 	protected void changePlayOptions()
 	{
-		shootStick.x = 426;
-		shootStick.y = 268;
 		background = drawStart(); // redraws play screen
 		invalidate();
 		activity.saveGame(); // saves game state in case of interuption
@@ -1236,13 +1236,13 @@ public final class Controller extends View
 	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
 	 */
-	protected void drawBitmapRotated(DrawnSprite sprite, Canvas g)
+	protected void drawBitmapRotated(Sprite sprite, Canvas g)
 	{
 		rotateImages.reset();
-		rotateImages.postTranslate(-sprite.getVisualImage().getWidth() / 2, -sprite.getVisualImage().getHeight() / 2);
+		rotateImages.postTranslate(-sprite.width / 2, -sprite.height / 2);
 		rotateImages.postRotate((float) sprite.rotation);
 		rotateImages.postTranslate((float) sprite.x, (float) sprite.y);
-		g.drawBitmap(sprite.getVisualImage(), rotateImages, paint);
+		g.drawBitmap(sprite.image, rotateImages, paint);
 		sprite = null;
 	}
 	/**
@@ -1262,17 +1262,17 @@ public final class Controller extends View
 	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
 	 */
-	protected void drawBitmapRotatedLevel(DrawnSprite sprite, Canvas g)
+	protected void drawBitmapRotatedLevel(Sprite sprite, Canvas g)
 	{
-		int width = sprite.getVisualImage().getWidth();
-		int height = sprite.getVisualImage().getHeight();
+		int width = sprite.width;
+		int height = sprite.height;
 		if(inView((int) sprite.x - (width / 2) - 10, (int) sprite.y - (height / 2) - 10, width + 20, height + 20))
 		{
 			rotateImages.reset();
 			rotateImages.postTranslate(-width / 2, -height / 2);
 			rotateImages.postRotate((float) sprite.rotation);
 			rotateImages.postTranslate((float) sprite.x, (float) sprite.y);
-			g.drawBitmap(sprite.getVisualImage(), rotateImages, paint);
+			g.drawBitmap(sprite.image, rotateImages, paint);
 			sprite = null;
 		}
 	}

@@ -14,8 +14,7 @@ public final class Proj_Tracker_AOE_Player extends Proj_Tracker_AOE
 	 */
 	public Proj_Tracker_AOE_Player(Controller creator, int X, int Y, double Power, boolean Shrinking, SpriteController spriteController)
 	{
-		super(creator, X, Y, Power, Shrinking, spriteController);
-		visualImage = control.imageLibrary.shotAOEPlayer;
+		super(creator, X, Y, Power, Shrinking, spriteController, creator.imageLibrary.shotAOEPlayer);
 	}
 	/**
 	 * checks whether it damages player

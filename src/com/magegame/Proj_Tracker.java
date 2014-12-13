@@ -2,8 +2,18 @@
  * behavior for all projectiles
  */
 package com.magegame;
-abstract public class Proj_Tracker extends DrawnSprite
+
+import android.graphics.Bitmap;
+
+import com.spritelib.Sprite;
+
+abstract public class Proj_Tracker extends Sprite
 {
+	public Proj_Tracker(double X, double Y,
+			double Rotation, Bitmap Image) {
+		super(X, Y, Rotation, Image);
+		// TODO Auto-generated constructor stub
+	}
 	protected boolean hitBack;
 	protected double xForward;
 	protected double yForward;
@@ -12,6 +22,7 @@ abstract public class Proj_Tracker extends DrawnSprite
 	protected double yDif = 0;
 	protected double realX;
 	protected double realY;
+	Controller control;
 	/**
 	 * moves ball forward and decreases power
 	 */

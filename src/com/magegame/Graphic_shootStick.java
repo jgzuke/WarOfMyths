@@ -2,16 +2,16 @@
  * Handles visuals for players shooting stick
  */
 package com.magegame;
-public final class Graphic_shootStick extends DrawnSprite
+
+import android.graphics.Bitmap;
+
+import com.spritelib.Sprite;
+
+public final class Graphic_shootStick extends Sprite
 {
-	/**
-	 * creates object
-	 */
-	public Graphic_shootStick()
+	public Graphic_shootStick(Bitmap Image)
 	{
-	}
-	@ Override
-	protected void frameCall()
-	{
+		super(426, 268, 0, Image);
+		// TODO Auto-generated constructor stub
 	}
 }

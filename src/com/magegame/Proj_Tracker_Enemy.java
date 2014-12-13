@@ -16,18 +16,14 @@ public final class Proj_Tracker_Enemy extends Proj_Tracker
 	 */
 	public Proj_Tracker_Enemy(Controller creator, int X, int Y, int Power, double Xforward, double Yforward, double Rotation)
 	{
+		super(X, Y, Rotation, creator.imageLibrary.shotEnemy);
 		control = creator;
-		x = X;
-		y = Y;
 		realX = x;
 		realY = y;
 		xForward = Xforward;
 		yForward = Yforward;
-		visualImage = control.imageLibrary.shotEnemy;
-		setImageDimensions();
 		power = Power;
-		rotation = Rotation;
-		if((control.player.currentFrame < 22|| control.player.currentFrame==31)&& !deleted) // currentframe under 22 because if player rolls it doesnt hit
+		if((control.player.frame < 22|| control.player.frame==31)&& !deleted) // currentframe under 22 because if player rolls it doesnt hit
 		{
 			xDif = x - control.player.x;
 			yDif = y - control.player.y;
@@ -75,7 +71,7 @@ public final class Proj_Tracker_Enemy extends Proj_Tracker
 	@Override
 	protected void hitTarget(int px, int py)
 	{
-		if(control.player.currentFrame < 22 && !deleted) // currentframe under 22 because if player rolls it doesnt hit
+		if(control.player.frame < 22 && !deleted) // currentframe under 22 because if player rolls it doesnt hit
 		{
 			xDif = px - control.player.x;
 			yDif = py - control.player.y;
