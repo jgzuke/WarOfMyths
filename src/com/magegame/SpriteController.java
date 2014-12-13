@@ -41,6 +41,8 @@ import android.graphics.Rect;
 import android.util.Log;
 
 import java.util.ArrayList;
+
+import com.spritelib.Sprite;
 public final class SpriteController
 {
 	private Controller control;
@@ -244,10 +246,7 @@ public final class SpriteController
 	{
 		for(int i = 0; i < structures.size(); i++)
 		{
-			if(structures.get(i) != null)
-			{
-				control.drawBitmapLevel(imageLibrary.structure_Spawn, (int)structures.get(i).x-structures.get(i).width, (int)structures.get(i).y-structures.get(i).height, g);
-			}
+			drawSpriteFlat(structures.get(i), g);
 		}
 	}
 	protected void drawSprites(Canvas g, Paint paint, ImageLibrary imageLibrary, Rect aoeRect)
@@ -279,7 +278,7 @@ public final class SpriteController
 				aoeRect.left = (int)(proj_Tracker_AOEs.get(i).x - (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
 				aoeRect.right = (int)(proj_Tracker_AOEs.get(i).x + (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
 				paint.setAlpha(proj_Tracker_AOEs.get(i).getAlpha());
-				control.drawBitmapRectLevel(proj_Tracker_AOEs.get(i).getVisualImage(), aoeRect, g);
+				control.drawBitmapRectLevel(proj_Tracker_AOEs.get(i).image, aoeRect, g);
 			}
 		}
 		paint.setAlpha(255);
@@ -291,8 +290,22 @@ public final class SpriteController
 				{
 					control.drawBitmapLevel(imageLibrary.haskey, (int) powerUps.get(i).x - 20, (int) powerUps.get(i).y - 20, g);
 				}
-				control.drawBitmapLevel(powerUps.get(i).getVisualImage(), (int) powerUps.get(i).x - 15, (int) powerUps.get(i).y - 15, g);
+				drawSpriteFlat(powerUps.get(i), g);
 			}
+		}
+	}
+	private void drawSprite(Sprite sprite, Canvas g)
+	{
+		if(sprite != null)
+		{
+			control.drawBitmapLevel(sprite.image, (int)sprite.x-(sprite.width/2), (int)sprite.y-(sprite.height/2), g);
+		}
+	}
+	private void drawSpriteFlat(Sprite sprite, Canvas g)
+	{
+		if(sprite != null)
+		{
+			control.drawBitmapLevel(sprite.image, (int)sprite.x-sprite.width, (int)sprite.y-sprite.height, g);
 		}
 	}
 	/**
