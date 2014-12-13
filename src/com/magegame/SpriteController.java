@@ -44,7 +44,8 @@ import android.util.Log;
 import java.util.ArrayList;
 
 import com.spritelib.Sprite;
-public final class SpriteController
+import com.spritelib.SpriteDrawer;
+public final class SpriteController extends SpriteDrawer
 {
 	private Controller control;
 	private Context context;
@@ -58,9 +59,9 @@ public final class SpriteController
 	 */
 	public SpriteController(Context contextSet, Controller controlSet)
 	{
+		super();
 		control = controlSet;
 		context = contextSet;
-		
 	}
 	/*
 	 * 
@@ -220,10 +221,10 @@ public final class SpriteController
 					maxY = (int) enemies.get(i).y - 20;
 					paint.setColor(Color.RED);
 					paint.setStyle(Paint.Style.FILL);
-					control.drawRect(minX, minY, minX + (40 * enemies.get(i).getHp() / enemies.get(i).getHpMax()), maxY, g);
+					g.drawRect(minX, minY, minX + (40 * enemies.get(i).getHp() / enemies.get(i).getHpMax()), maxY, paint);
 					paint.setColor(Color.BLACK);
 					paint.setStyle(Paint.Style.STROKE);
-					control.drawRect(minX, minY, maxX, maxY, g);
+					g.drawRect(minX, minY, maxX, maxY, paint);
 			}
 		}
 		for(int i = 0; i < structures.size(); i++)
@@ -236,10 +237,10 @@ public final class SpriteController
 				maxY = (int) structures.get(i).y - 20;
 				paint.setColor(Color.BLUE);
 				paint.setStyle(Paint.Style.FILL);
-				control.drawRect(minX, minY, minX + (40 * structures.get(i).hp / structures.get(i).hpMax), maxY, g);
+				g.drawRect(minX, minY, minX + (40 * structures.get(i).hp / structures.get(i).hpMax), maxY, paint);
 				paint.setColor(Color.BLACK);
 				paint.setStyle(Paint.Style.STROKE);
-				control.drawRect(minX, minY, maxX, maxY, g);
+				g.drawRect(minX, minY, maxX, maxY, paint);
 			}
 		}
 	}
@@ -252,6 +253,11 @@ public final class SpriteController
 	}
 	protected void drawSprites(Canvas g, Paint paint, ImageLibrary imageLibrary, Rect aoeRect)
 	{
+		if(control.player != null)
+		{
+			drawFlat(control.player, imageLibrary.isPlayer, g, paint);
+			draw(control.player, g, paint);
+		}
 		for(int i = 0; i < enemies.size(); i++)
 		{
 			if(enemies.get(i) != null)
@@ -260,14 +266,14 @@ public final class SpriteController
 				{
 					control.drawBitmapLevel(imageLibrary.haskey, (int) enemies.get(i).x - 20, (int) enemies.get(i).y - 20, g);
 				}
-				control.drawBitmapRotatedLevel(enemies.get(i), g);
+				draw(enemies.get(i), g, paint);
 			}
 		}
 		for(int i = 0; i < proj_Trackers.size(); i++)
 		{
 			if(proj_Trackers.get(i) != null)
 			{
-				control.drawBitmapRotatedLevel(proj_Trackers.get(i), g);
+				draw(proj_Trackers.get(i), g, paint);
 			}
 		}
 		for(int i = 0; i < proj_Tracker_AOEs.size(); i++)
@@ -279,7 +285,7 @@ public final class SpriteController
 				aoeRect.left = (int)(proj_Tracker_AOEs.get(i).x - (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
 				aoeRect.right = (int)(proj_Tracker_AOEs.get(i).x + (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
 				paint.setAlpha(proj_Tracker_AOEs.get(i).getAlpha());
-				control.drawBitmapRectLevel(proj_Tracker_AOEs.get(i).image, aoeRect, g);
+				draw(proj_Tracker_AOEs.get(i).image, aoeRect, paint);
 			}
 		}
 		paint.setAlpha(255);
@@ -388,5 +394,18 @@ public final class SpriteController
 	protected void createProj_TrackerPlayerBurst(double x, double y, double power)
 	{
 		proj_Tracker_AOEs.add(new Proj_Tracker_AOE_Player(control, (int) x, (int) y, power, false, this));
+	}
+	/**
+		 * checks whether object is in view
+		 * @param lowx objects low x
+		 * @param lowy objects low y
+		 * @param width objects width
+		 * @param height objects height
+		 * @return whether object is in view
+		 */
+	@Override
+	protected boolean onScreen(double x, double y, int width, int height)
+	{
+		return control.inView(x, y, width, height);
 	}
 }

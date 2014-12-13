@@ -459,22 +459,22 @@ public final class Controller extends View
 		paint.setAlpha(255);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(healthColor);
-		drawRect(14, 169, 14 + (62 * player.getHp() / player.hpMax), 181, g);
+		g.drawRect(14, 169, 14 + (62 * player.getHp() / player.hpMax), 181, paint);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(cooldownColor);
-		drawRect(404, 94, 404 + (int)((63 * player.abilityTimer_burst) / 500), 104, g);
-		drawRect(404, 199, 404 + (int)((63 * player.abilityTimer_roll) / 120), 209, g);
-		drawRect(404, 303, 404 + (int)((63 * player.abilityTimer_Proj_Tracker) / (91+(activity.premiumUpgrades[0]*20))), 313, g);
+		g.drawRect(404, 94, 404 + (int)((63 * player.abilityTimer_burst) / 500), 104, paint);
+		g.drawRect(404, 199, 404 + (int)((63 * player.abilityTimer_roll) / 120), 209, paint);
+		g.drawRect(404, 303, 404 + (int)((63 * player.abilityTimer_Proj_Tracker) / (91+(activity.premiumUpgrades[0]*20))), 313, paint);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
 		paint.setAlpha(151);
 				if(player.abilityTimer_burst < 300)
 				{
-					drawRect(404, 42, 466, 104, g);
+					g.drawRect(404, 42, 466, 104, paint);
 				}
 				if(player.abilityTimer_roll < 40)
 				{
-					drawRect(402, 147, 466, 209, g);
+					g.drawRect(402, 147, 466, 209, paint);
 				}
 		paint.setAlpha(255);
 		drawBitmapRotated(shootStick, g);
@@ -561,7 +561,7 @@ public final class Controller extends View
 		paint.setAlpha(255);
 		Bitmap drawTo = Bitmap.createBitmap(480, 320, Bitmap.Config.ARGB_8888);
 		Canvas g = new Canvas(drawTo);
-		drawBitmap(imageLibrary.loadImage("menu_screen", 480, 320), 0, 0, g);
+		g.drawBitmap(imageLibrary.loadImage("menu_screen", 480, 320), 0, 0, paint);
 		return drawTo;
 	}
 	/**
@@ -584,14 +584,9 @@ public final class Controller extends View
 			w += 300;
 			h = 0;
 		}
-		drawBitmap(imageLibrary.currentLevel, 0, 0, g);
+		g.drawBitmap(imageLibrary.currentLevel, 0, 0, paint);
 		drawBitmapLevel(imageLibrary.exitFightPortal, exitX - 30, exitY - 30, g);
 		spriteController.drawStructures(g, paint, imageLibrary);
-		if(player != null)
-		{
-			drawBitmap(imageLibrary.isPlayer, (int)player.x-imageLibrary.isPlayerWidth, (int)player.y-imageLibrary.isPlayerWidth, g);
-			drawBitmapRotatedLevel(player, g);
-		}
 		spriteController.drawSprites(g, paint, imageLibrary, aoeRect);
 		if(imageLibrary.currentLevelTop != null)
 		{
@@ -612,12 +607,14 @@ public final class Controller extends View
 	 * @param height objects height
 	 * @return whether object is in view
 	 */
-	private boolean inView(int lowx, int lowy, int width, int height)
+	protected boolean inView(double x, double y, int width, int height)
 	{
-		lowx += curXShift;
-		int highx = lowx + width;
-		lowy += curYShift;
-		int highy = lowy + height;
+		int lowx = (int)x - (width / 2);
+		int lowy = (int)y - (height / 2);
+		lowx += curXShift - 10;
+		int highx = lowx + width + 20;
+		lowy += curXShift - 10;
+		int highy = lowy + height + 20;
 		return !(lowx > 300 || highx < 0 || lowy > 300 || highy < 0);
 	}
 	/**
@@ -697,7 +694,7 @@ public final class Controller extends View
 		paint.setTextAlign(Align.LEFT);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.GRAY);
-		drawRect(90, 10, 390, 310, g);
+		g.drawRect(90, 10, 390, 310, paint);
 			xShiftLevel = 150 - (int) player.x;
 			yShiftLevel = 150 - (int) player.y;
 			if(player.x < 150)
@@ -718,40 +715,40 @@ public final class Controller extends View
 			}
 		curXShift = xShiftLevel;
 		curYShift = yShiftLevel;
-		drawBitmap(drawLevel(), xShiftLevel + 90, yShiftLevel + 10, g);
+		g.drawBitmap(drawLevel(), xShiftLevel + 90, yShiftLevel + 10, paint);
 		paint.setStyle(Paint.Style.FILL);
 		paint.setColor(Color.BLACK);
-		drawRect(-1000, -1000, 0, 1320, g);
-		drawRect(480, -1000, 1480, 1320, g);
-		drawRect(-1000, -1000, 1480, 0, g);
-		drawRect(-1000, 320, 1480, 1320, g);
+		g.drawRect(-1000, -1000, 0, 1320, paint);
+		g.drawRect(480, -1000, 1480, 1320, paint);
+		g.drawRect(-1000, -1000, 1480, 0, paint);
+		g.drawRect(-1000, 320, 1480, 1320, paint);
 		if(playerBursted<6)
 		{
 			paint.setColor(Color.WHITE);
 			paint.setStyle(Paint.Style.FILL);
 			paint.setAlpha(255-(30*playerBursted));
-			drawRect(90, 10, 390, 310, g);
+			g.drawRect(90, 10, 390, 310, paint);
 		}
 		if(playerHit<6)
 		{
 			paint.setColor(Color.RED);
 			paint.setStyle(Paint.Style.FILL);
 			paint.setAlpha(100-(15*playerHit));
-			drawRect(90, 10, 390, 310, g);
+			g.drawRect(90, 10, 390, 310, paint);
 		}
 		paint.setAlpha(255);
 		paint.setColor(Color.GREEN);
 		paint.setAlpha(255);
-		drawBitmap(background, 0, 0, g);
+		g.drawBitmap(background, 0, 0, paint);
 		drawContestantStats(g);
 		paint.setStyle(Paint.Style.STROKE);
 		if(player.powerUpTimer > 0)
 		{
-			drawBitmap(imageLibrary.powerUpBigs[player.powerID - 1], 10, 25, g);
+			g.drawBitmap(imageLibrary.powerUpBigs[player.powerID - 1], 10, 25, paint);
 		}
 		if(hasKey)
 		{
-			drawBitmap(imageLibrary.powerUpBigs[4], 10, 25, g);
+			g.drawBitmap(imageLibrary.powerUpBigs[4], 10, 25, paint);
 		}
 	}
 	/**
@@ -1213,27 +1210,6 @@ public final class Controller extends View
 		wallRingValues.add(vals);
 	}
 	/**
-	 * Replaces canvas.drawRect(int, int, int, int, Paint) and auto scales
-	 */
-	protected void drawRect(int x, int y, int x2, int y2, Canvas g)
-	{
-		g.drawRect(x, y, x2, y2, paint);
-	}
-	/**
-	 * Replaces canvas.drawCircle(int, int, int paint) and auto scales
-	 */
-	protected void drawCircle(int x, int y, int radius, Canvas g)
-	{
-		g.drawCircle(x, y, radius, paint);
-	}
-	/**
-	 * Replaces canvas.drawBitmap(Bitmap, int, int, paint) and auto scales
-	 */
-	protected void drawBitmap(Bitmap picture, int x, int y, Canvas g)
-	{
-		g.drawBitmap(picture, x, y, paint);
-	}
-	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
 	 */
 	protected void drawBitmapRotated(Sprite sprite, Canvas g)
@@ -1246,52 +1222,10 @@ public final class Controller extends View
 		sprite = null;
 	}
 	/**
-	 * Replaces canvas.drawBitmap(Bitmap, Rect, Rect, Paint) and auto scales
-	 */
-	protected void drawBitmapRect(Bitmap picture, Rect rectangle, Canvas g)
-	{
-		g.drawBitmap(picture, null, rectangle, paint);
-	}
-	/**
 	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and only draws object if it is in view
 	 */
 	protected void drawBitmapLevel(Bitmap picture, int x, int y, Canvas g)
 	{
 		if(inView(x, y, picture.getWidth(), picture.getHeight())) g.drawBitmap(picture, x, y, paint);
-	}
-	/**
-	 * Replaces canvas.drawBitmap(Bitmap, Matrix, Paint) and auto scales and rotates image based on drawnSprite values
-	 */
-	protected void drawBitmapRotatedLevel(Sprite sprite, Canvas g)
-	{
-		int width = sprite.width;
-		int height = sprite.height;
-		if(inView((int) sprite.x - (width / 2) - 10, (int) sprite.y - (height / 2) - 10, width + 20, height + 20))
-		{
-			rotateImages.reset();
-			rotateImages.postTranslate(-width / 2, -height / 2);
-			rotateImages.postRotate((float) sprite.rotation);
-			rotateImages.postTranslate((float) sprite.x, (float) sprite.y);
-			g.drawBitmap(sprite.image, rotateImages, paint);
-			sprite = null;
-		}
-	}
-	/**
-	 * Replaces canvas.drawBitmap(Bitmap, Rect, Rect, Paint) and auto scales
-	 */
-	protected void drawBitmapRectLevel(Bitmap picture, Rect rectangle, Canvas g)
-	{
-		if(inView(rectangle.left, rectangle.top, rectangle.bottom - rectangle.top, rectangle.right - rectangle.left))
-		{
-			g.drawBitmap(picture, null, rectangle, paint);
-		}
-	}
-	/**
-	 * Replaces canvas.drawText(String, int, int, Paint) and auto scales
-	 */
-	protected void drawText(String text, int x, int y, Canvas g)
-	{
-		// TODO
-		g.drawText(text, x, y, paint);
 	}
 }
