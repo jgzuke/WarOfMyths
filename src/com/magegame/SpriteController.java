@@ -34,6 +34,7 @@
  */
 package com.magegame;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -288,17 +289,10 @@ public final class SpriteController
 			{
 				if(powerUps.get(i).ID==8)
 				{
-					control.drawBitmapLevel(imageLibrary.haskey, (int) powerUps.get(i).x - 20, (int) powerUps.get(i).y - 20, g);
+					drawSpriteFlat(powerUps.get(i), imageLibrary.haskey, g);
 				}
 				drawSpriteFlat(powerUps.get(i), g);
 			}
-		}
-	}
-	private void drawSprite(Sprite sprite, Canvas g)
-	{
-		if(sprite != null)
-		{
-			control.drawBitmapLevel(sprite.image, (int)sprite.x-(sprite.width/2), (int)sprite.y-(sprite.height/2), g);
 		}
 	}
 	private void drawSpriteFlat(Sprite sprite, Canvas g)
@@ -306,6 +300,13 @@ public final class SpriteController
 		if(sprite != null)
 		{
 			control.drawBitmapLevel(sprite.image, (int)sprite.x-sprite.width, (int)sprite.y-sprite.height, g);
+		}
+	}
+	private void drawSpriteFlat(Sprite sprite, Bitmap image, Canvas g)
+	{
+		if(sprite != null)
+		{
+			control.drawBitmapLevel(image, (int)sprite.x-sprite.width, (int)sprite.y-sprite.height, g);
 		}
 	}
 	/**

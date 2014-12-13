@@ -20,12 +20,16 @@ public final class PowerUp extends Sprite
 	Controller control;
 	public PowerUp(Controller creator, double X, double Y, int Type)
 	{
-		super(X, Y, 30, 30, 0, creator.imageLibrary.powerUps[Type-1]);
+		super(X, Y, 30, 30, 0, null);
 		control = creator;
 		ID=Type;
 		if(ID == 0)
 		{
 			ID = control.getRandomInt(6)+1;
+			image = creator.imageLibrary.powerUps[ID-1];
+		} else
+		{
+			image = creator.imageLibrary.powerUps[Type-1];
 		}
 	}
 	/**
