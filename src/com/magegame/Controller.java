@@ -346,7 +346,6 @@ public final class Controller extends View
 	 */
 	protected void loadLevelSection(int level)
 	{
-		Log.e("worked", "worked");
 		clearWallArrays();
 		levelNum = level;
 		for(int i = 0; i < spriteController.powerUps.size(); i++)
@@ -609,13 +608,9 @@ public final class Controller extends View
 	 */
 	protected boolean inView(double x, double y, int width, int height)
 	{
-		int lowx = (int)x - (width / 2);
-		int lowy = (int)y - (height / 2);
-		lowx += curXShift - 10;
-		int highx = lowx + width + 20;
-		lowy += curXShift - 10;
-		int highy = lowy + height + 20;
-		return !(lowx > 300 || highx < 0 || lowy > 300 || highy < 0);
+		x += curXShift;
+		y += curYShift;
+		return !(x > 300+width || x < -width || y > 300+height || y < -height);
 	}
 	/**
 	 * checks whether enemy is in view

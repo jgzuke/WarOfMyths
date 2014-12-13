@@ -330,8 +330,8 @@ public final class Player extends Human
 	 */
 	protected void getPowerUp(int PowerID)
 	{
-		if(PowerID<7||PowerID>10) control.activity.playEffect("powerup");
-		if(PowerID>6&&PowerID<11) control.activity.playMoney();
+		//if(PowerID<7||PowerID>10) control.activity.playEffect("powerup");
+		//if(PowerID>6&&PowerID<11) control.activity.playMoney();
 		switch(PowerID)
 		{
 		case 1:

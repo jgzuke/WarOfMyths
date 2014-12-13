@@ -248,7 +248,7 @@ public final class SpriteController extends SpriteDrawer
 	{
 		for(int i = 0; i < structures.size(); i++)
 		{
-			drawSpriteFlat(structures.get(i), g);
+			drawFlat(structures.get(i), g, paint);
 		}
 	}
 	protected void drawSprites(Canvas g, Paint paint, ImageLibrary imageLibrary, Rect aoeRect)
@@ -285,7 +285,7 @@ public final class SpriteController extends SpriteDrawer
 				aoeRect.left = (int)(proj_Tracker_AOEs.get(i).x - (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
 				aoeRect.right = (int)(proj_Tracker_AOEs.get(i).x + (proj_Tracker_AOEs.get(i).getWidth() / 2.5));
 				paint.setAlpha(proj_Tracker_AOEs.get(i).getAlpha());
-				draw(proj_Tracker_AOEs.get(i).image, aoeRect, paint);
+				drawRect(proj_Tracker_AOEs.get(i).image, aoeRect, g, paint);
 			}
 		}
 		paint.setAlpha(255);
@@ -295,24 +295,10 @@ public final class SpriteController extends SpriteDrawer
 			{
 				if(powerUps.get(i).ID==8)
 				{
-					drawSpriteFlat(powerUps.get(i), imageLibrary.haskey, g);
+					drawFlat(powerUps.get(i), imageLibrary.haskey, g, paint);
 				}
-				drawSpriteFlat(powerUps.get(i), g);
+				drawFlat(powerUps.get(i), g, paint);
 			}
-		}
-	}
-	private void drawSpriteFlat(Sprite sprite, Canvas g)
-	{
-		if(sprite != null)
-		{
-			control.drawBitmapLevel(sprite.image, (int)sprite.x-sprite.width, (int)sprite.y-sprite.height, g);
-		}
-	}
-	private void drawSpriteFlat(Sprite sprite, Bitmap image, Canvas g)
-	{
-		if(sprite != null)
-		{
-			control.drawBitmapLevel(image, (int)sprite.x-sprite.width, (int)sprite.y-sprite.height, g);
 		}
 	}
 	/**

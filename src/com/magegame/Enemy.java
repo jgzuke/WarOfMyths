@@ -540,8 +540,6 @@ abstract public class Enemy extends Human
 	 */
 	protected void runTowardsPoint(double fx, double fy)
 	{
-		Log.e("k", Double.toString(fx));
-		Log.e("k", Double.toString(fy));
 		if(control.checkObstructionsPoint((int)fx, (int)fy, (int)x, (int)y, true))
 		{
 			int foundPlayer = -1;			//try to find enemy
@@ -560,16 +558,12 @@ abstract public class Enemy extends Human
 				foundPlayer=iterateSearch(points, checked, eX, eY);
 				count++;
 			}
-			Log.e("k", Double.toString(foundPlayer));
-			Log.e("k", Double.toString(count));
 			if(foundPlayer==-1)
 			{
 				runRandom();
 			} else
 			{
 				int[] closest = points.get(foundPlayer);
-				Log.e("k", Double.toString(closest[3]));
-				Log.e("k", Double.toString(closest[2]));
 				rads = Math.atan2(closest[3]*20 - y, closest[2]*20 - x);
 				rotation = rads * r2d;
 				run(8);
