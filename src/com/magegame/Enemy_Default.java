@@ -18,8 +18,7 @@ public final class Enemy_Default extends Enemy
 	@Override
 	protected void frameCall()
 	{
-		checkLOSTimer--;
-		if(checkLOSTimer < 1) checkLOS();
+		checkLOS((int)control.player.x, (int)control.player.y);
 		checkDanger();
 		if(action.equals("Stun"))
 		{
@@ -64,7 +63,7 @@ public final class Enemy_Default extends Enemy
 			} else if(frame==36) // shoots
 			{
 				shootLaser();
-				checkLOS();
+				checkLOS((int)control.player.x, (int)control.player.y);
 				if(LOS&&hp>600) frame=25; // shoots again
 			} else if(frame==45) action = "Nothing";   // attack done
 		} else if(action.equals("Run"))
@@ -110,7 +109,7 @@ public final class Enemy_Default extends Enemy
 			frame=0;
 			if(pathedToHitLength > 0)
 			{
-				if(LOS)
+				if(HasLocation)
 				{
 					frameReactionsDangerLOS();
 				} else
@@ -119,7 +118,7 @@ public final class Enemy_Default extends Enemy
 				}
 			} else
 			{
-				if(LOS == true)
+				if(HasLocation)
 				{
 					frameReactionsNoDangerLOS();
 				}
@@ -185,8 +184,14 @@ public final class Enemy_Default extends Enemy
 			{
 					if(hasGun)
 					{
-						action = "Shoot";
-						frame = 21;
+						if(LOS)
+						{
+							action = "Shoot";
+							frame = 21;
+						} else
+						{
+							runTowardsPoint(control.player.x, control.player.y);
+						}
 					} else
 					{
 						runTowardsPoint(control.player.x, control.player.y);
@@ -211,8 +216,17 @@ public final class Enemy_Default extends Enemy
 			checkedPlayerLast = true; // has checked where player was last seen
 		} else
 		{
-			runTowardsPoint(lastPlayerX, lastPlayerY);
-			action = "Move";
+			boolean temp = LOS;
+			checkLOS((int)lastPlayerX, (int)lastPlayerY);
+			if(LOS)
+			{
+				runTowardsPoint(lastPlayerX, lastPlayerY);
+				action = "Move";
+			} else
+			{
+				checkedPlayerLast = true;
+			}
+			LOS = temp;
 		}
 	}
 }

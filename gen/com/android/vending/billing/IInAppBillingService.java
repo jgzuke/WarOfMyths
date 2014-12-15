@@ -1,6 +1,6 @@
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: /Users/jgzuke/Documents/CODE/WarOfMyths/src/com/android/vending/billing/IInAppBillingService.aidl
+ * Original file: /Users/jgzuke/Documents/CODE/OpenWOM/src/com/android/vending/billing/IInAppBillingService.aidl
  */
 package com.android.vending.billing;
 /**

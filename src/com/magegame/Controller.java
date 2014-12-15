@@ -765,7 +765,7 @@ public final class Controller extends View
 	 * @param y2 second y
 	 * @return whether it could travel between points
 	 */
-	protected boolean checkObstructionsPoint(float x1, float y1, float x2, float y2, boolean objectOnGround)
+	protected boolean checkObstructionsPoint(float x1, float y1, float x2, float y2, boolean objectOnGround, int expand)
 	{
 		boolean hitBack = false;
 		float m1 = (y2 - y1) / (x2 - x1);
@@ -784,9 +784,10 @@ public final class Controller extends View
 		}
 		for(int i = 0; i < wallCircleValues.size(); i++)
 		{
-			int [] values = wallCircleValues.get(i);
+			int [] values = wallCircleValues.get(i).clone();
 			if(values[3]==1||objectOnGround) // OBJECT IS TALL OR OBJECT ON GROUND
 			{
+				values[2]+=expand;
 				if(!hitBack)
 				{
 					circM = -(1 / m1);
@@ -817,13 +818,17 @@ public final class Controller extends View
 		}
 		for(int i = 0; i < wallRectValues.size(); i++)
 		{
-			int [] values = wallRectValues.get(i);
+			int [] values = wallRectValues.get(i).clone();
 			if(values[4]==1||objectOnGround) // OBJECT IS TALL
 			{
+				values[0]-=expand;
+				values[1]+=expand;
+				values[2]-=expand;
+				values[3]+=expand;
 				if(!hitBack)
 				{
 					//Right and left Checks
-					if(x1 < values[0] && values[0] < x2)
+					if(x1 < values[0] && values[0] < x2) // if left sid of wall 
 					{
 						tempY = (m1 * values[0]) + b1;
 						if(values[2] < tempY && tempY < values[3])
@@ -847,8 +852,7 @@ public final class Controller extends View
 						{
 							hitBack = true;
 						}
-					}
-					if(y1 < values[3] && values[3] < y2)
+					} else if(y1 < values[3] && values[3] < y2)
 					{
 						tempX = (values[2] - b1) / m1;
 						if(values[0] < tempX && tempX < values[1])
@@ -861,9 +865,11 @@ public final class Controller extends View
 		}
 		for(int i = 0; i < wallRingValues.size(); i++)
 		{
-			int [] values = wallRingValues.get(i);
+			int [] values = wallRingValues.get(i).clone();
 			if(values[4]==1||objectOnGround) // OBJECT IS TALL
 			{
+				values[2]-=expand;
+				values[3]+=expand;
 				if(!hitBack)
 				{
 					double a = Math.pow(m1, 2) + 1;
@@ -917,13 +923,13 @@ public final class Controller extends View
 	 * @param distance distance to travel
 	 * @return whether it could travel along the given line
 	 */
-	protected boolean checkObstructions(double x1, double y1, double rads, int distance, boolean objectOnGround)
+	protected boolean checkObstructions(double x1, double y1, double rads, int distance, boolean objectOnGround, int offset)
 	{
 		double x2 = x1 + (Math.cos(rads) * distance);
 		double y2 = y1 + (Math.sin(rads) * distance);
-		return checkObstructionsPoint((float) x1, (float) y1, (float) x2, (float) y2, objectOnGround);
+		return checkObstructionsPoint((float) x1, (float) y1, (float) x2, (float) y2, objectOnGround, offset);
 	}
-	/**
+	/**x
 	 * checks whether a given point hits any obstacles
 	 * @param X x point
 	 * @param Y y point
@@ -985,15 +991,11 @@ public final class Controller extends View
 						double dist = Math.pow(X - values[0], 2) + Math.pow((Y - values[1]), 2);
 						if(dist < Math.pow(values[3], 2) && dist > Math.pow(values[2], 2))
 						{
-							hitBack = true;
+							hitBack = !checkHitBackPass(X, Y, objectOnGround);
 						}
 					}
 				}
 			}
-		}
-		if(hitBack)
-		{
-			hitBack = !checkHitBackPass(X, Y, objectOnGround);
 		}
 		return hitBack;
 	}
